@@ -1,0 +1,511 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Logiciel de Devis</title>
+    <link rel="stylesheet" href="styles/output.css">
+</head>
+<body class="bg-gray-50 h-screen">
+    <!-- Barre de titre personnalisée -->
+    <div class="drag-region h-12 bg-white border-b border-gray-200 flex items-center justify-between px-4">
+        <div cla                  
+                // Test 4: Initialisation de l'app
+                console.log('🚀 [MAIN WINDOW] Initialisation de QuoteApp...');
+                await window.app.initialize();
+                console.log('✅ [MAIN WINDOW] Application prête !');
+                
+            } catch (error) {  console.log('✅ [MAIN WINDOW] Application prête !');
+                
+            } catch (error) {
+                console.log('✅ [MAIN WINDOW] Application prête !');
+                
+            } catch (error) {// Test 5: Navigation prête
+                console.log('✅ [MAIN WINDOW] Application prête ! Navigation fonctionnelle.');
+                
+            } catch (error) {s-center space-x-3">
+            <div class="w-8 h-8 bg-primary-600 rounded-lg flex items-center justify-center">
+                <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                </svg>
+            </div>
+            <span class="font-semibold text-gray-900">Logiciel de Devis</span>
+        </div>
+        
+        <div class="no-drag flex items-center space-x-2">
+            <button id="minimizeBtn" class="p-2 hover:bg-gray-100 rounded-lg transition-colors">
+                <svg class="w-4 h-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 12H4"></path>
+                </svg>
+            </button>
+            <button id="maximizeBtn" class="p-2 hover:bg-gray-100 rounded-lg transition-colors">
+                <svg class="w-4 h-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4"></path>
+                </svg>
+            </button>
+            <button id="closeBtn" class="p-2 hover:bg-red-100 hover:text-red-600 rounded-lg transition-colors">
+                <svg class="w-4 h-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                </svg>
+            </button>
+        </div>
+    </div>
+
+    <!-- Contenu principal -->
+    <div class="flex h-[calc(100vh-3rem)]">
+        <!-- Sidebar -->
+        <aside class="w-64 bg-white border-r border-gray-200 flex flex-col">
+            <!-- User info -->
+            <div class="p-4 border-b border-gray-200">
+                <div class="flex items-center space-x-3">
+                    <div class="w-10 h-10 bg-primary-100 rounded-full flex items-center justify-center">
+                        <span id="userInitials" class="text-primary-600 font-semibold text-sm">U</span>
+                    </div>
+                    <div>
+                        <div id="userName" class="font-medium text-gray-900">Utilisateur</div>
+                        <div id="userCompany" class="text-sm text-gray-600">Mon Entreprise</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Navigation -->
+            <nav class="flex-1 p-4 space-y-2">
+                <button class="sidebar-item active" data-tab="dashboard">
+                    <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2H5a2 2 0 00-2-2z"></path>
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5a2 2 0 012-2h4a2 2 0 012 2v6a2 2 0 01-2 2H10a2 2 0 01-2-2V5z"></path>
+                    </svg>
+                    <span>Tableau de bord</span>
+                </button>
+
+                <button class="sidebar-item" data-tab="quotes">
+                    <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                    </svg>
+                    <span>Devis</span>
+                    <span id="quotesCount" class="ml-auto px-2 py-1 text-xs bg-primary-100 text-primary-600 rounded-full">0</span>
+                </button>
+
+                <button class="sidebar-item" data-tab="clients">
+                    <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path>
+                    </svg>
+                    <span>Clients</span>
+                    <span id="clientsCount" class="ml-auto px-2 py-1 text-xs bg-blue-100 text-blue-600 rounded-full">0</span>
+                </button>
+
+                <button class="sidebar-item" data-tab="products">
+                    <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"></path>
+                    </svg>
+                    <span>Produits</span>
+                    <span id="productsCount" class="ml-auto px-2 py-1 text-xs bg-green-100 text-green-600 rounded-full">0</span>
+                </button>
+
+                <button class="sidebar-item" data-tab="suppliers">
+                    <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path>
+                    </svg>
+                    <span>Fournisseurs</span>
+                </button>
+
+                <button class="sidebar-item" data-tab="settings">
+                    <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path>
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                    </svg>
+                    <span>Paramètres</span>
+                </button>
+            </nav>
+
+            <!-- Version info -->
+            <div class="p-4 border-t border-gray-200">
+                <div class="text-xs text-gray-500 text-center">
+                    Version 2.0.0
+                </div>
+            </div>
+        </aside>
+
+        <!-- Contenu principal -->
+        <main class="flex-1 overflow-hidden">
+            <!-- Tabs content will be loaded here -->
+            <div id="tabContent" class="h-full overflow-y-auto">
+                <!-- Dashboard sera chargé par défaut -->
+            </div>
+        </main>
+    </div>
+
+    <!-- Modal pour les formulaires -->
+    <div id="modal" class="modal-overlay hidden">
+        <div id="modalContent" class="modal-content">
+            <!-- Le contenu sera injecté dynamiquement -->
+        </div>
+    </div>
+
+    <!-- Loading overlay -->
+    <div id="loadingOverlay" class="fixed inset-0 bg-white bg-opacity-90 flex items-center justify-center z-50 hidden">
+        <div class="flex items-center space-x-3">
+            <svg class="animate-spin h-8 w-8 text-primary-600" fill="none" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+            </svg>
+            <span class="text-lg font-medium text-gray-900">Chargement...</span>
+        </div>
+    </div>
+
+    <script src="js/supabase.min.js"></script>
+    <script src="js/init.js"></script>
+    <script src="services/auth.js"></script>
+    <script src="services/database.js"></script>
+    
+    <!-- Test temporaire : QuoteApp minimaliste inline -->
+    <script>
+        console.log('🧪 [INLINE] Création de QuoteApp temporaire...');
+        
+        class QuoteApp {
+            constructor() {
+                console.log('🏗️ [INLINE] Constructeur QuoteApp appelé');
+                this.currentTab = 'dashboard';
+                this.currentUser = null;
+                this.isInitialized = false;
+            }
+            
+            async initialize() {
+                console.log('🚀 [INLINE] Début initialisation QuoteApp');
+                try {
+                    // Attendre que l'application soit prête
+                    console.log('⏳ [INLINE] Attente de l\'initialisation de l\'application...');
+                    await window.initializeApp();
+                    
+                    const { authService, dbService } = await window.waitForApp();
+                    
+                    // Vérifier l'authentification
+                    console.log('🔐 [INLINE] Vérification de l\'authentification...');
+                    const isAuthenticated = authService.isUserAuthenticated();
+                    console.log('🔐 [INLINE] Utilisateur authentifié:', isAuthenticated);
+                    
+                    if (!isAuthenticated) {
+                        console.log('❌ [INLINE] Utilisateur non authentifié, redirection vers la connexion');
+                        window.electronAPI.switchToLoginWindow();
+                        return;
+                    }
+
+                    this.currentUser = authService.getCurrentUser();
+                    console.log('👤 [INLINE] Utilisateur actuel:', this.currentUser?.email || 'Non défini');
+                    
+                    dbService.setCurrentUser(this.currentUser);
+
+                    // Initialiser l'interface
+                    console.log('🎨 [INLINE] Initialisation de l\'interface...');
+                    this.initializeUI();
+                    this.setupEventListeners();
+                    
+                    console.log('📊 [INLINE] Chargement du tableau de bord...');
+                    await this.loadDashboard();
+
+                    this.isInitialized = true;
+                    console.log('✅ [INLINE] Application initialisée avec succès');
+
+                } catch (error) {
+                    console.error('❌ [INLINE] Erreur lors de l\'initialisation:', error);
+                    console.error('❌ [INLINE] Stack trace:', error.stack);
+                }
+            }
+            
+            initializeUI() {
+                console.log('🎨 [INLINE] initializeUI appelée');
+                // Afficher les informations utilisateur
+                this.updateUserInfo();
+                
+                // Charger le tableau de bord par défaut
+                this.showTab('dashboard');
+            }
+            
+            setupEventListeners() {
+                console.log('👂 [INLINE] setupEventListeners appelée');
+                
+                // Navigation des onglets - utiliser data-tab au lieu d'IDs
+                const sidebarItems = document.querySelectorAll('.sidebar-item');
+                console.log('🔍 [INLINE] Boutons sidebar trouvés:', sidebarItems.length);
+                
+                sidebarItems.forEach((item, index) => {
+                    const tabName = item.getAttribute('data-tab');
+                    console.log(`📌 [INLINE] Bouton ${index}: data-tab="${tabName}"`);
+                    
+                    if (tabName) {
+                        item.addEventListener('click', (e) => {
+                            e.preventDefault();
+                            console.log('👆 [INLINE] Clic sur onglet:', tabName);
+                            this.showTab(tabName);
+                        });
+                    }
+                });
+
+                // Boutons de contrôle de la fenêtre
+                const minimizeBtn = document.getElementById('minimizeBtn');
+                const maximizeBtn = document.getElementById('maximizeBtn');
+                const closeBtn = document.getElementById('closeBtn');
+                
+                console.log('🔍 [INLINE] Boutons contrôle:', {
+                    minimize: !!minimizeBtn,
+                    maximize: !!maximizeBtn,
+                    close: !!closeBtn
+                });
+
+                minimizeBtn?.addEventListener('click', () => {
+                    console.log('👆 [INLINE] Minimiser');
+                    window.electronAPI.minimize();
+                });
+
+                maximizeBtn?.addEventListener('click', () => {
+                    console.log('👆 [INLINE] Maximiser');
+                    window.electronAPI.maximize();
+                });
+
+                closeBtn?.addEventListener('click', () => {
+                    console.log('👆 [INLINE] Fermer');
+                    window.electronAPI.close();
+                });
+                
+                console.log('✅ Event listeners configurés');
+            }
+            
+            showTab(tabName) {
+                console.log('📄 [INLINE] Changement vers l\'onglet:', tabName);
+                
+                // Désactiver tous les boutons de sidebar
+                const sidebarItems = document.querySelectorAll('.sidebar-item');
+                sidebarItems.forEach(item => {
+                    item.classList.remove('active');
+                    item.classList.remove('bg-primary-100', 'text-primary-700');
+                    item.classList.add('text-gray-600');
+                });
+                
+                // Activer le bouton sélectionné
+                const activeButton = document.querySelector(`[data-tab="${tabName}"]`);
+                if (activeButton) {
+                    activeButton.classList.add('active');
+                    activeButton.classList.add('bg-primary-100', 'text-primary-700');
+                    activeButton.classList.remove('text-gray-600');
+                    console.log('✅ [INLINE] Bouton activé:', tabName);
+                } else {
+                    console.warn('⚠️ [INLINE] Bouton non trouvé pour:', tabName);
+                }
+                
+                // Changer le contenu principal
+                const tabContent = document.getElementById('tabContent');
+                if (tabContent) {
+                    tabContent.innerHTML = `
+                        <div class="p-6">
+                            <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+                                <h2 class="text-2xl font-bold text-gray-900 mb-4">
+                                    ${this.getTabTitle(tabName)}
+                                </h2>
+                                <p class="text-gray-600 mb-4">
+                                    ${this.getTabDescription(tabName)}
+                                </p>
+                                <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                                    <p class="text-blue-800">
+                                        📊 Page "${tabName}" chargée avec succès !
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                    console.log('✅ [INLINE] Contenu mis à jour pour:', tabName);
+                } else {
+                    console.warn('⚠️ [INLINE] Element tabContent non trouvé');
+                }
+                
+                this.currentTab = tabName;
+                
+                // Charger les données spécifiques à l'onglet
+                this.loadTabData(tabName);
+            }
+            
+            getTabTitle(tabName) {
+                const titles = {
+                    'dashboard': '📊 Tableau de Bord',
+                    'quotes': '📄 Gestion des Devis',
+                    'clients': '👥 Gestion des Clients', 
+                    'products': '📦 Gestion des Produits',
+                    'suppliers': '🏪 Gestion des Fournisseurs',
+                    'settings': '⚙️ Paramètres'
+                };
+                return titles[tabName] || tabName;
+            }
+            
+            getTabDescription(tabName) {
+                const descriptions = {
+                    'dashboard': 'Vue d\'ensemble de votre activité avec les statistiques principales.',
+                    'quotes': 'Créez, modifiez et gérez vos devis clients.',
+                    'clients': 'Gérez votre base de données clients.',
+                    'products': 'Gérez votre catalogue de produits et services.',
+                    'suppliers': 'Gérez vos fournisseurs et leurs informations.',
+                    'settings': 'Configurez les paramètres de l\'application.'
+                };
+                return descriptions[tabName] || `Gestion de ${tabName}`;
+            }
+            
+            loadTabData(tabName) {
+                console.log('� [INLINE] Chargement des données pour:', tabName);
+                
+                switch(tabName) {
+                    case 'dashboard':
+                        this.loadDashboardData();
+                        break;
+                    case 'clients':
+                        this.loadClientsData();
+                        break;
+                    case 'products':
+                        this.loadProductsData();
+                        break;
+                    case 'quotes':
+                        this.loadQuotesData();
+                        break;
+                    case 'suppliers':
+                        this.loadSuppliersData();
+                        break;
+                    case 'settings':
+                        this.loadSettingsData();
+                        break;
+                    default:
+                        console.warn('⚠️ Onglet non géré:', tabName);
+                }
+            }
+            
+            updateUserInfo() {
+                console.log('👤 [INLINE] Mise à jour des informations utilisateur');
+                if (this.currentUser) {
+                    const userNameElement = document.getElementById('userName');
+                    const userEmailElement = document.getElementById('userEmail');
+                    
+                    if (userNameElement) {
+                        userNameElement.textContent = this.currentUser.user_metadata?.full_name || 'Utilisateur';
+                    }
+                    if (userEmailElement) {
+                        userEmailElement.textContent = this.currentUser.email;
+                    }
+                }
+            }
+            
+            // Méthodes de chargement des données (versions simplifiées)
+            loadDashboardData() {
+                console.log('📊 Chargement tableau de bord');
+            }
+            
+            loadClientsData() {
+                console.log('👥 Chargement clients');
+            }
+            
+            loadProductsData() {
+                console.log('📦 Chargement produits');
+            }
+            
+            loadQuotesData() {
+                console.log('📄 Chargement devis');
+            }
+            
+            loadSuppliersData() {
+                console.log('🏪 Chargement fournisseurs');
+            }
+            
+            loadSettingsData() {
+                console.log('⚙️ Chargement paramètres');
+            }
+            
+            // Méthodes stub pour éviter les erreurs si appelées
+            showClientForm(clientId = null) {
+                console.log('📝 Formulaire client demandé pour ID:', clientId);
+                // Pas d'alerte, juste un log
+            }
+            
+            showProductForm(productId = null) {
+                console.log('📝 Formulaire produit demandé pour ID:', productId);
+                // Pas d'alerte, juste un log
+            }
+            
+            showQuoteForm(quoteId = null) {
+                console.log('📝 Formulaire devis demandé pour ID:', quoteId);
+                // Pas d'alerte, juste un log
+            }
+            
+            async loadDashboard() {
+                console.log('📊 [INLINE] loadDashboard appelée');
+                // Dashboard basique
+            }
+        }
+        
+        console.log('✅ [INLINE] Classe QuoteApp définie');
+    </script>
+    
+    <!-- <script src="js/app.js"></script> Temporairement désactivé -->
+    
+    
+    <script>
+        // Test de base pour vérifier que JavaScript fonctionne
+        console.log('🔧 [MAIN WINDOW] JavaScript de base fonctionne');
+        
+        // Initialiser l'application au chargement de la page
+        document.addEventListener('DOMContentLoaded', async () => {
+            console.log('🚀 [MAIN WINDOW] === DOMContentLoaded DÉCLENCHÉ ===');
+            console.log('🚀 [MAIN WINDOW] Initialisation de l\'application principale...');
+            
+            try {
+                // Test 1: Vérifier que les fonctions globales existent
+                console.log('🔍 [MAIN WINDOW] window.initializeApp existe:', typeof window.initializeApp);
+                console.log('🔍 [MAIN WINDOW] QuoteApp existe:', typeof QuoteApp);
+                console.log('🔍 [MAIN WINDOW] window.electronAPI existe:', typeof window.electronAPI);
+                
+                if (typeof window.initializeApp !== 'function') {
+                    throw new Error('window.initializeApp n\'est pas disponible');
+                }
+                
+                if (typeof QuoteApp !== 'function') {
+                    throw new Error('QuoteApp n\'est pas disponible');
+                }
+                
+                // Test 2: Initialisation
+                console.log('🚀 [MAIN WINDOW] Attente initialisation...');
+                await window.initializeApp();
+                console.log('✅ [MAIN WINDOW] Initialisation terminée');
+                
+                // Test 3: Création de l'app
+                console.log('🚀 [MAIN WINDOW] Création de QuoteApp...');
+                window.app = new QuoteApp();
+                console.log('✅ [MAIN WINDOW] QuoteApp créée');
+                
+                // Test 4: Initialisation de l'app
+                console.log('🚀 [MAIN WINDOW] Initialisation de QuoteApp...');
+                await window.app.initialize();
+                console.log('✅ [MAIN WINDOW] Application prête !');
+                
+                // Test 5: Ajouter des gestionnaires de clic temporaires
+                const buttons = document.querySelectorAll('button');
+                console.log('� [MAIN WINDOW] Boutons trouvés:', buttons.length);
+                
+                buttons.forEach((button, index) => {
+                    button.addEventListener('click', (e) => {
+                        console.log(`👆 [MAIN WINDOW] Bouton ${index} cliqué:`, button.textContent);
+                        e.preventDefault();
+                        console.log('🔘 Bouton cliqué:', button.textContent || 'Sans texte');
+                    });
+                });
+                
+            } catch (error) {
+                console.error('❌ [MAIN WINDOW] Erreur:', error);
+                console.error('❌ [MAIN WINDOW] Stack:', error.stack);
+                
+                // Afficher l'erreur visuellement
+                document.body.innerHTML = `
+                    <div style="padding: 20px; background: #fee; border: 2px solid #f00; margin: 20px;">
+                        <h2>Erreur d'initialisation</h2>
+                        <p><strong>Message:</strong> ${error.message}</p>
+                        <pre>${error.stack}</pre>
+                    </div>
+                `;
+            }
+        });
+    </script>
+</body>
+</html>
