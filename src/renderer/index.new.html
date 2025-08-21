@@ -351,33 +351,58 @@
                         </div>
 
                         <!-- Prestations équilibrées -->
-                        <div>
-                            <div class="flex items-center justify-between mb-3">
-                                <label class="text-sm font-medium text-gray-700">Prestations</label>
-                                <button type="button" id="addServiceBtn" class="bg-green-600 hover:bg-green-700 text-white w-8 h-8 rounded-full flex items-center justify-center text-lg font-bold transition-colors">
-                                    ✕
+                        <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+                            <div class="flex items-center justify-between mb-4">
+                                <h3 class="text-lg font-semibold text-gray-800 flex items-center">
+                                    <svg class="w-5 h-5 mr-2 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                                    </svg>
+                                    Prestations
+                                </h3>
+                                <button type="button" id="addServiceBtn" class="bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white px-4 py-2 rounded-lg flex items-center gap-2 text-sm font-medium transition-all duration-200 shadow-md hover:shadow-lg transform hover:scale-105">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                                    </svg>
+                                    Ajouter une prestation
                                 </button>
                             </div>
-                            <!-- Header des colonnes - SANS colonne Total -->
-                            <div class="grid grid-cols-10 gap-3 text-sm text-gray-500 font-medium mb-2 px-2">
-                                <div class="col-span-5">Description</div>
-                                <div class="col-span-2 text-center">Quantité</div>
-                                <div class="col-span-2 text-center">Prix HT</div>
-                                <div class="col-span-1"></div>
+                            
+                            <!-- Header des colonnes -->
+                            <div class="grid grid-cols-8 gap-3 text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2 px-3">
+                                <div class="col-span-4">Prestation</div>
+                                <div class="col-span-1 text-center">Qté</div>
+                                <div class="col-span-1 text-center">Unité</div>
+                                <div class="col-span-1 text-center">Prix HT</div>
+                                <div class="col-span-1 text-center">Action</div>
                             </div>
                             <div id="servicesContainerFullPage" class="space-y-2">
-                                <div class="grid grid-cols-10 gap-3 items-center p-3 bg-gray-50 rounded-lg border">
-                                    <div class="col-span-5">
-                                        <input type="text" name="service_description[]" placeholder="Description de la prestation" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 text-sm" required>
+                                <div class="grid grid-cols-8 gap-3 items-center p-3 bg-gradient-to-r from-gray-50 to-gray-100 rounded-xl border border-gray-200 hover:shadow-md transition-all duration-200">
+                                    <div class="col-span-4">
+                                        <textarea name="service_description[]" placeholder="Décrivez votre prestation..." rows="2" class="w-full px-3 py-2 border-2 border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm bg-white shadow-sm transition-all duration-200 hover:border-gray-300 resize-none" required></textarea>
                                     </div>
-                                    <div class="col-span-2">
-                                        <input type="number" name="service_quantity[]" min="1" value="1" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 text-sm text-center" required>
+                                    <div class="col-span-1">
+                                        <input type="number" name="service_quantity[]" min="1" value="1" class="w-full px-2 py-2 border-2 border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm text-center bg-white font-medium shadow-sm transition-all duration-200 hover:border-gray-300" required>
                                     </div>
-                                    <div class="col-span-2">
-                                        <input type="number" name="service_price[]" step="0.01" min="0" placeholder="0.00" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 text-sm text-right" required>
+                                    <div class="col-span-1">
+                                        <select name="service_unit[]" class="w-full px-2 py-2 border-2 border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm bg-white shadow-sm transition-all duration-200 hover:border-gray-300">
+                                            <option value="">Unité</option>
+                                            <option value="heure">Heure</option>
+                                            <option value="jour">Jour</option>
+                                            <option value="piece">Pièce</option>
+                                            <option value="metre">Mètre</option>
+                                            <option value="m2">m²</option>
+                                            <option value="forfait">Forfait</option>
+                                            <option value="autre">Autre</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-span-1">
+                                        <div class="relative">
+                                            <input type="number" name="service_price[]" step="0.01" min="0" placeholder="0.00" class="w-full px-2 py-2 pl-6 border-2 border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm text-right bg-white font-medium shadow-sm transition-all duration-200 hover:border-gray-300" required>
+                                            <span class="absolute left-2 top-1/2 transform -translate-y-1/2 text-gray-400 text-xs">€</span>
+                                        </div>
                                     </div>
                                     <div class="col-span-1 text-center">
-                                        <button type="button" class="text-red-600 hover:text-red-800 p-1 rounded" onclick="this.closest('.grid').remove(); updateTotal();">
+                                        <button type="button" class="text-red-500 hover:text-red-700 hover:bg-red-50 p-2 rounded-full transition-all duration-200 transform hover:scale-110" onclick="this.closest('.grid').remove(); updateTotal();" title="Supprimer cette prestation">
                                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
                                             </svg>
@@ -388,31 +413,56 @@
                         </div>
 
                         <!-- Layout 2 colonnes: Notes à gauche, Total à droite -->
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-8">
                             <!-- Notes -->
-                            <div>
-                                <label for="quoteNotes" class="block text-sm font-medium text-gray-700 mb-1">Notes et conditions</label>
-                                <textarea id="quoteNotes" name="quoteNotes" rows="4" class="w-full px-3 py-2 border border-gray-300 rounded focus:ring-1 focus:ring-blue-500 focus:border-blue-500 text-sm" placeholder="Conditions de paiement, délais, etc."></textarea>
+                            <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+                                <h3 class="text-lg font-semibold text-gray-800 mb-4 flex items-center">
+                                    <svg class="w-5 h-5 mr-2 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                                    </svg>
+                                    Notes et conditions
+                                </h3>
+                                <textarea id="quoteNotes" name="quoteNotes" rows="4" class="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 text-sm shadow-sm transition-all duration-200 hover:border-gray-300" placeholder="Conditions de paiement, délais de livraison, garanties..."></textarea>
                             </div>
 
-                            <!-- Total - Compact -->
-                            <div class="bg-blue-50 p-3 rounded border">
-                                <h3 class="text-sm font-medium text-gray-700 mb-2">Récapitulatif</h3>
-                                <div class="space-y-1">
-                                    <div class="flex justify-between items-center">
-                                        <span class="text-sm text-gray-600">Total HT:</span>
-                                        <span id="totalAmount" class="text-lg font-bold text-blue-600">0.00 €</span>
+                            <!-- Total - Elegant -->
+                            <div class="bg-gradient-to-br from-blue-50 to-indigo-100 rounded-lg shadow-sm border border-blue-200 p-6">
+                                <h3 class="text-lg font-semibold text-gray-800 mb-4 flex items-center">
+                                    <svg class="w-5 h-5 mr-2 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z"></path>
+                                    </svg>
+                                    Récapitulatif
+                                </h3>
+                                <div class="space-y-3">
+                                    <div class="flex justify-between items-center py-2 border-b border-blue-200">
+                                        <span class="text-sm font-medium text-gray-700">Total HT:</span>
+                                        <span id="totalAmount" class="text-xl font-bold text-blue-600">0.00 €</span>
                                     </div>
-                                    <div class="flex justify-between items-center">
-                                        <span class="text-xs text-gray-500">TVA (20%):</span>
-                                        <span id="taxAmount" class="text-xs text-gray-500">0.00 €</span>
+                                    <div class="flex justify-between items-center py-2">
+                                        <span class="text-sm text-gray-600">TVA (20%):</span>
+                                        <span id="taxAmount" class="text-sm font-medium text-gray-600">0.00 €</span>
                                     </div>
-                                    <div class="flex justify-between items-center pt-1 border-t border-blue-200">
-                                        <span class="text-sm font-medium text-gray-700">Total TTC:</span>
-                                        <span id="totalAmountTTC" class="text-xl font-bold text-blue-600">0.00 €</span>
+                                    <div class="flex justify-between items-center py-3 bg-white rounded-lg px-4 shadow-sm border-2 border-blue-300">
+                                        <span class="text-lg font-bold text-gray-800">Total TTC:</span>
+                                        <span id="totalAmountTTC" class="text-2xl font-bold text-blue-600">0.00 €</span>
                                     </div>
                                 </div>
                             </div>
+                        </div>
+
+                        <!-- Bouton d'enregistrement principal -->
+                        <div class="mt-8 flex justify-center space-x-4">
+                            <button type="button" id="saveQuoteBtnMain" class="bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white px-8 py-4 rounded-xl font-bold text-lg shadow-lg transition-all duration-200 transform hover:scale-105 focus:ring-4 focus:ring-green-300">
+                                <svg class="w-6 h-6 inline-block mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                </svg>
+                                Enregistrer le Devis et Générer le PDF
+                            </button>
+                            
+                            <!-- Bouton de test simple -->
+                            <button type="button" onclick="testSaveFunction()" class="bg-red-500 hover:bg-red-600 text-white px-6 py-4 rounded-xl font-bold text-lg shadow-lg transition-all duration-200">
+                                TEST SAUVEGARDE
+                            </button>
                         </div>
                     </form>
                 </div>
@@ -430,6 +480,58 @@
     <script src="js/app.js"></script>
     
     <script>
+        // ==========================================
+        // FONCTION DE TEST SIMPLE (disponible immédiatement)
+        // ==========================================
+        window.testSaveFunction = function() {
+            alert('🔥 TEST: La fonction JavaScript fonctionne !');
+            console.log('🔥 TEST: Bouton de test cliqué !');
+            
+            // Test de collecte des données du formulaire
+            const form = document.getElementById('newQuoteForm');
+            if (!form) {
+                alert('❌ ERREUR: Formulaire non trouvé');
+                return;
+            }
+            
+            console.log('✅ Formulaire trouvé:', form);
+            
+            // Test de collecte des services
+            const services = document.querySelectorAll('#servicesContainerFullPage > div');
+            console.log('📊 Services trouvés:', services.length);
+            
+            if (services.length === 0) {
+                alert('⚠️ Aucune ligne de service trouvée. Ajoutez une prestation d\'abord !');
+                return;
+            }
+            
+            // Collecter les données du premier service
+            const firstService = services[0];
+            const description = firstService.querySelector('textarea[name="service_description[]"]')?.value || firstService.querySelector('input[name="service_description[]"]')?.value;
+            const quantity = firstService.querySelector('input[name="service_quantity[]"]')?.value;
+            const price = firstService.querySelector('input[name="service_price[]"]')?.value;
+            
+            console.log('📊 Premier service:', {description, quantity, price});
+            
+            if (!description || !quantity || !price) {
+                alert('⚠️ Veuillez remplir au moins une prestation complète (description, quantité, prix)');
+                return;
+            }
+            
+            alert(`✅ Test réussi ! Service trouvé: "${description}" - Qté: ${quantity} - Prix: ${price}€`);
+            
+            // Maintenant essayer la vraie sauvegarde
+            if (confirm('Voulez-vous essayer de sauvegarder ce devis ?')) {
+                // Appeler la fonction réelle de sauvegarde
+                if (window.handleSaveQuote) {
+                    const btn = document.getElementById('saveQuoteBtnMain');
+                    window.handleSaveQuote(btn);
+                } else {
+                    alert('❌ Fonction de sauvegarde non trouvée');
+                }
+            }
+        };
+        
         // Navigation functionality
         document.addEventListener('DOMContentLoaded', function() {
             console.log('🚀 [MAIN WINDOW] Initialisation de la navigation...');
@@ -622,6 +724,7 @@
                         // Afficher la vue création de devis en plein écran
                         const newQuoteView = document.getElementById('newQuoteView');
                         if (newQuoteView) {
+                            console.log('✅ Vue newQuoteView trouvée, ouverture...');
                             newQuoteView.classList.remove('hidden');
                             
                             // FORCER LES STYLES POUR PRENDRE TOUT L'ÉCRAN
@@ -700,23 +803,40 @@
                 // Bouton "Ajouter une prestation" - VERSION SANS colonne Total
                 const addServiceBtnFullPage = document.getElementById('addServiceBtn');
                 if (addServiceBtnFullPage) {
+                    console.log('✅ Bouton Ajouter une prestation trouvé et configuré');
                     addServiceBtnFullPage.addEventListener('click', () => {
+                        console.log('🔄 Ajout d\'une nouvelle prestation...');
                         const container = document.getElementById('servicesContainerFullPage');
                         if (container) {
                             const newService = document.createElement('div');
-                            newService.className = 'grid grid-cols-10 gap-3 items-center p-3 bg-gray-50 rounded-lg border';
+                            newService.className = 'grid grid-cols-8 gap-3 items-center p-3 bg-gradient-to-r from-gray-50 to-gray-100 rounded-xl border border-gray-200 hover:shadow-md transition-all duration-200';
                             newService.innerHTML = `
-                                <div class="col-span-5">
-                                    <input type="text" name="service_description[]" placeholder="Description de la prestation" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 text-sm" required>
+                                <div class="col-span-4">
+                                    <textarea name="service_description[]" placeholder="Décrivez votre prestation..." rows="2" class="w-full px-3 py-2 border-2 border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm bg-white shadow-sm transition-all duration-200 hover:border-gray-300 resize-none" required></textarea>
                                 </div>
-                                <div class="col-span-2">
-                                    <input type="number" name="service_quantity[]" min="1" value="1" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 text-sm text-center" required>
+                                <div class="col-span-1">
+                                    <input type="number" name="service_quantity[]" min="1" value="1" class="w-full px-2 py-2 border-2 border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm text-center bg-white font-medium shadow-sm transition-all duration-200 hover:border-gray-300" required>
                                 </div>
-                                <div class="col-span-2">
-                                    <input type="number" name="service_price[]" step="0.01" min="0" placeholder="0.00" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 text-sm text-right" required>
+                                <div class="col-span-1">
+                                    <select name="service_unit[]" class="w-full px-2 py-2 border-2 border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm bg-white shadow-sm transition-all duration-200 hover:border-gray-300">
+                                        <option value="">Unité</option>
+                                        <option value="heure">Heure</option>
+                                        <option value="jour">Jour</option>
+                                        <option value="piece">Pièce</option>
+                                        <option value="metre">Mètre</option>
+                                        <option value="m2">m²</option>
+                                        <option value="forfait">Forfait</option>
+                                        <option value="autre">Autre</option>
+                                    </select>
+                                </div>
+                                <div class="col-span-1">
+                                    <div class="relative">
+                                        <input type="number" name="service_price[]" step="0.01" min="0" placeholder="0.00" class="w-full px-2 py-2 pl-6 border-2 border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm text-right bg-white font-medium shadow-sm transition-all duration-200 hover:border-gray-300" required>
+                                        <span class="absolute left-2 top-1/2 transform -translate-y-1/2 text-gray-400 text-xs">€</span>
+                                    </div>
                                 </div>
                                 <div class="col-span-1 text-center">
-                                    <button type="button" class="text-red-600 hover:text-red-800 p-1 rounded" onclick="this.closest('.grid').remove(); updateTotal();">
+                                    <button type="button" class="text-red-500 hover:text-red-700 hover:bg-red-50 p-2 rounded-full transition-all duration-200 transform hover:scale-110" onclick="this.closest('.grid').remove(); updateTotal();" title="Supprimer cette prestation">
                                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
                                         </svg>
@@ -737,59 +857,271 @@
                 
                 // Bouton "Enregistrer le Devis" dans la vue pleine page
                 const saveQuoteBtnFullPage = document.getElementById('saveQuoteBtn');
-                if (saveQuoteBtnFullPage) {
-                    saveQuoteBtnFullPage.addEventListener('click', async () => {
-                        console.log('💾 Tentative de sauvegarde du devis...');
-                        
-                        const form = document.getElementById('newQuoteForm');
-                        if (!form.checkValidity()) {
-                            form.reportValidity();
-                            return;
-                        }
-                        
+                const saveQuoteBtnMain = document.getElementById('saveQuoteBtnMain');
+                console.log('🔍 Boutons Enregistrer trouvés:', {saveQuoteBtnFullPage, saveQuoteBtnMain});
+                
+                // Fonction de sauvegarde commune
+                window.handleSaveQuote = async (buttonElement) => {
+                    console.log('💾 Clic sur le bouton Enregistrer détecté !');
+                    
+                    const form = document.getElementById('newQuoteForm');
+                    console.log('📋 Formulaire trouvé:', form);
+                    
+                    if (!form) {
+                        console.error('❌ Formulaire non trouvé !');
+                        alert('❌ Erreur: Formulaire non trouvé');
+                        return;
+                    }
+                    
+                    console.log('🔍 Vérification validité du formulaire...');
+                    const isValid = form.checkValidity();
+                    console.log('📋 Formulaire valide:', isValid);
+                    
+                    if (!isValid) {
+                        console.warn('⚠️ Formulaire invalide, affichage des erreurs...');
+                        form.reportValidity();
+                        alert('Veuillez remplir tous les champs obligatoires');
+                        return;
+                    }
+                    
+                    console.log('✅ Formulaire valide, début de la sauvegarde...');
+                    
+                    // Désactiver le bouton pendant le traitement
+                    const originalText = buttonElement.textContent;
+                    buttonElement.disabled = true;
+                    buttonElement.textContent = 'Création en cours...';
+                    
+                    try {
                         const formData = new FormData(form);
                         const quoteData = {
-                            clientName: formData.get('clientName'),
-                            clientEmail: formData.get('clientEmail'),
-                            clientPhone: formData.get('clientPhone'),
-                            clientAddress: formData.get('clientAddress'),
-                            quoteDate: formData.get('quoteDate'),
-                            notes: formData.get('quoteNotes'),
-                            services: []
+                            clientName: formData.get('clientName') || 'Client non spécifié',
+                            clientEmail: formData.get('clientEmail') || '',
+                            clientPhone: formData.get('clientPhone') || '',
+                            clientAddress: formData.get('clientAddress') || '',
+                            quoteDate: formData.get('quoteDate') || new Date().toISOString().split('T')[0],
+                            notes: formData.get('quoteNotes') || '',
+                            services: [],
+                            createdAt: new Date().toISOString()
                         };
                         
-                        // Collecter les services
-                        const descriptions = formData.getAll('service_description[]');
-                        const quantities = formData.getAll('service_quantity[]');
-                        const prices = formData.getAll('service_price[]');
+                        // Collecter les services depuis les inputs
+                        console.log('📊 Collecte des services...');
+                        const serviceInputs = document.querySelectorAll('#servicesContainerFullPage > div');
+                        console.log('📊 Nombre de lignes de services trouvées:', serviceInputs.length);
                         
-                        for (let i = 0; i < descriptions.length; i++) {
-                            if (descriptions[i] && quantities[i] && prices[i]) {
+                        serviceInputs.forEach((serviceRow, index) => {
+                            const description = serviceRow.querySelector('textarea[name="service_description[]"]')?.value || serviceRow.querySelector('input[name="service_description[]"]')?.value;
+                            const quantity = parseFloat(serviceRow.querySelector('input[name="service_quantity[]"]')?.value) || 0;
+                            const unit = serviceRow.querySelector('select[name="service_unit[]"]')?.value || '';
+                            const price = parseFloat(serviceRow.querySelector('input[name="service_price[]"]')?.value) || 0;
+                            
+                            console.log(`📊 Service ${index + 1}:`, {
+                                description: description?.substring(0, 50) + '...',
+                                quantity,
+                                unit,
+                                price
+                            });
+                            
+                            if (description && description.trim() && quantity > 0 && price > 0) {
                                 quoteData.services.push({
-                                    description: descriptions[i],
-                                    quantity: parseInt(quantities[i]),
-                                    price: parseFloat(prices[i])
+                                    description: description.trim(),
+                                    quantity: quantity,
+                                    unit: unit,
+                                    price: price
                                 });
+                                console.log('✅ Service ajouté à la liste');
+                            } else {
+                                console.warn('⚠️ Service ignoré - données manquantes');
+                            }
+                        });
+                        
+                        console.log('📊 Nombre total de services valides:', quoteData.services.length);
+                        
+                        if (quoteData.services.length === 0) {
+                            throw new Error('Veuillez ajouter au moins une prestation valide');
+                        }
+                        
+                        // Calculer les totaux
+                        let totalHT = 0;
+                        quoteData.services.forEach(service => {
+                            totalHT += service.quantity * service.price;
+                        });
+                        
+                        const totalTVA = totalHT * 0.20; // TVA 20%
+                        const totalTTC = totalHT + totalTVA;
+                        
+                        quoteData.totalHT = totalHT;
+                        quoteData.totalTVA = totalTVA;
+                        quoteData.totalTTC = totalTTC;
+                        
+                        console.log('📄 Données du devis:', quoteData);
+                        
+                        // Sauvegarder en base de données
+                        if (window.dbService && typeof window.dbService.createQuote === 'function') {
+                            try {
+                                const dbResult = await window.dbService.createQuote(quoteData);
+                                console.log('✅ Devis sauvegardé en base de données:', dbResult);
+                            } catch (dbError) {
+                                console.warn('⚠️ Erreur base de données (continuons quand même):', dbError);
                             }
                         }
                         
-                        try {
-                            const result = await window.dbService.createQuote(quoteData);
-                            if (result) {
-                                console.log('✅ Devis créé avec succès');
-                                alert('Devis créé avec succès !');
-                                
-                                // FERMETURE ABSOLUE après sauvegarde
-                                console.log('� SAUVEGARDE TERMINÉE - FERMETURE ABSOLUE');
-                                closeNewQuoteViewCompletely();
-                            } else {
-                                alert('Erreur lors de la création du devis');
-                            }
-                        } catch (error) {
-                            console.error('❌ Erreur:', error);
-                            alert('Erreur lors de la création du devis: ' + error.message);
+                        // Générer et télécharger le PDF
+                        await generateAndDownloadPDF(quoteData);
+                        
+                        alert('✅ Devis créé et téléchargé avec succès !');
+                        
+                        // Fermer la vue après succès
+                        closeNewQuoteViewCompletely();
+                        
+                    } catch (error) {
+                        console.error('❌ Erreur lors de la création du devis:', error);
+                        alert('❌ Erreur: ' + error.message);
+                    } finally {
+                        // Réactiver le bouton
+                        buttonElement.disabled = false;
+                        buttonElement.textContent = originalText;
+                    }
+                };
+
+                // Configuration des événements pour les deux boutons
+                if (saveQuoteBtnFullPage) {
+                    console.log('✅ Configuration du bouton Enregistrer (header)...');
+                    saveQuoteBtnFullPage.addEventListener('click', () => window.handleSaveQuote(saveQuoteBtnFullPage));
+                }
+
+                if (saveQuoteBtnMain) {
+                    console.log('✅ Configuration du bouton Enregistrer principal (bas de page)...');
+                    saveQuoteBtnMain.addEventListener('click', () => window.handleSaveQuote(saveQuoteBtnMain));
+                } else {
+                    console.error('❌ Bouton principal d\'enregistrement non trouvé !');
+                }
+                
+                // Fonction pour générer et télécharger le PDF
+                async function generateAndDownloadPDF(quoteData) {
+                    try {
+                        console.log('🔄 Génération du PDF...');
+                        
+                        // Vérifier que jsPDF est disponible
+                        if (typeof window.jsPDF === 'undefined') {
+                            console.error('❌ jsPDF non disponible');
+                            throw new Error('jsPDF non disponible');
                         }
-                    });
+                        
+                        const { jsPDF } = window.jsPDF;
+                        const doc = new jsPDF();
+                        
+                        // Configuration
+                        const margin = 20;
+                        const pageWidth = doc.internal.pageSize.getWidth();
+                        let currentY = margin;
+                        
+                        // En-tête
+                        doc.setFontSize(20);
+                        doc.setFont(undefined, 'bold');
+                        doc.text('DEVIS', pageWidth / 2, currentY, { align: 'center' });
+                        currentY += 15;
+                        
+                        // Numéro de devis
+                        const quoteNumber = 'DEV-' + new Date().getFullYear() + '-' + String(Date.now()).slice(-6);
+                        doc.setFontSize(12);
+                        doc.setFont(undefined, 'normal');
+                        doc.text(`Numéro: ${quoteNumber}`, margin, currentY);
+                        doc.text(`Date: ${quoteData.quoteDate || new Date().toLocaleDateString('fr-FR')}`, pageWidth - margin, currentY, { align: 'right' });
+                        currentY += 20;
+                        
+                        // Informations client
+                        doc.setFont(undefined, 'bold');
+                        doc.text('CLIENT:', margin, currentY);
+                        doc.setFont(undefined, 'normal');
+                        currentY += 8;
+                        
+                        const clientInfo = [
+                            quoteData.clientName || 'Client non spécifié',
+                            quoteData.clientAddress || '',
+                            quoteData.clientPhone || '',
+                            quoteData.clientEmail || ''
+                        ].filter(line => line);
+                        
+                        clientInfo.forEach(line => {
+                            doc.text(line, margin, currentY);
+                            currentY += 6;
+                        });
+                        
+                        currentY += 10;
+                        
+                        // Tableau des prestations
+                        doc.setFontSize(12);
+                        doc.setFont(undefined, 'bold');
+                        doc.text('PRESTATIONS:', margin, currentY);
+                        currentY += 10;
+                        
+                        // En-têtes du tableau
+                        const colWidths = [70, 20, 25, 30, 40];
+                        const colPositions = [margin, margin + colWidths[0], margin + colWidths[0] + colWidths[1], margin + colWidths[0] + colWidths[1] + colWidths[2], margin + colWidths[0] + colWidths[1] + colWidths[2] + colWidths[3]];
+                        
+                        doc.setFont(undefined, 'bold');
+                        doc.text('Description', colPositions[0], currentY);
+                        doc.text('Qté', colPositions[1], currentY);
+                        doc.text('Unité', colPositions[2], currentY);
+                        doc.text('Prix HT', colPositions[3], currentY);
+                        doc.text('Total HT', colPositions[4], currentY);
+                        currentY += 8;
+                        
+                        // Ligne de séparation
+                        doc.line(margin, currentY, pageWidth - margin, currentY);
+                        currentY += 5;
+                        
+                        // Prestations
+                        doc.setFont(undefined, 'normal');
+                        quoteData.services.forEach(service => {
+                            const total = service.quantity * service.price;
+                            doc.text(service.description, colPositions[0], currentY);
+                            doc.text(service.quantity.toString(), colPositions[1], currentY);
+                            doc.text(service.unit || '', colPositions[2], currentY);
+                            doc.text(service.price.toFixed(2) + ' €', colPositions[3], currentY);
+                            doc.text(total.toFixed(2) + ' €', colPositions[4], currentY);
+                            currentY += 8;
+                        });
+                        
+                        // Ligne de séparation
+                        currentY += 5;
+                        doc.line(margin, currentY, pageWidth - margin, currentY);
+                        currentY += 10;
+                        
+                        // Totaux
+                        doc.setFont(undefined, 'bold');
+                        const totalsX = pageWidth - 80;
+                        doc.text(`Total HT: ${quoteData.totalHT.toFixed(2)} €`, totalsX, currentY);
+                        currentY += 8;
+                        doc.text(`TVA (20%): ${quoteData.totalTVA.toFixed(2)} €`, totalsX, currentY);
+                        currentY += 8;
+                        doc.setFontSize(14);
+                        doc.text(`Total TTC: ${quoteData.totalTTC.toFixed(2)} €`, totalsX, currentY);
+                        
+                        // Notes
+                        if (quoteData.notes && quoteData.notes.trim()) {
+                            currentY += 20;
+                            doc.setFontSize(12);
+                            doc.setFont(undefined, 'bold');
+                            doc.text('NOTES:', margin, currentY);
+                            currentY += 8;
+                            doc.setFont(undefined, 'normal');
+                            const noteLines = doc.splitTextToSize(quoteData.notes, pageWidth - 2 * margin);
+                            doc.text(noteLines, margin, currentY);
+                        }
+                        
+                        // Télécharger le PDF
+                        const filename = `devis-${quoteNumber}-${new Date().toISOString().split('T')[0]}.pdf`;
+                        doc.save(filename);
+                        
+                        console.log('✅ PDF généré et téléchargé:', filename);
+                        return { success: true, filename, quoteNumber };
+                        
+                    } catch (error) {
+                        console.error('❌ Erreur génération PDF:', error);
+                        throw new Error('Erreur lors de la génération du PDF: ' + error.message);
+                    }
                 }
                 
                 // Fonction pour mettre à jour le total
