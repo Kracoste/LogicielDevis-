@@ -26,6 +26,9 @@
   "dependencies": {
     "@supabase/supabase-js": "^2.38.4",
     "electron-store": "^8.1.0",
+    "html2canvas": "^1.4.1",
+    "jspdf": "^3.0.1",
+    "puppeteer-core": "^24.16.2",
     "uuid": "^9.0.1"
   },
   "build": {

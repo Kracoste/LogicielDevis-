@@ -266,6 +266,11 @@ class DatabaseService {
         }
     }
 
+    // Alias pour compatibilité
+    async getAllQuotes() {
+        return await this.getQuotes();
+    }
+
     // === STATISTIQUES ===
     async getStats() {
         if (!this.isRealDatabase()) {

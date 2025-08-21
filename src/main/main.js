@@ -109,8 +109,8 @@ class Application {
       show: false
     });
 
-    console.log('📄 Chargement du fichier index.html...');
-    this.mainWindow.loadFile(path.join(__dirname, '../renderer/index.html'));
+    console.log('📄 Chargement du fichier index.new.html...');
+    this.mainWindow.loadFile(path.join(__dirname, '../renderer/index.new.html'));
 
     if (isDev) {
       console.log('🔧 Ouverture des DevTools (mode développement)');

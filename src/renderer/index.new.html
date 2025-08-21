@@ -1,49 +1,103 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Logiciel de Devis</title>
-    <link rel="stylesheet" href="styles/output.css">
-    <style>
-        .drag-region {
-            -webkit-app-region: drag;
-        }
-        .no-drag {
-            -webkit-app-region: no-drag;
-        }
-        .sidebar-item {
-            display: flex;
-            align-items: center;
-            width: 100%;
-            padding: 12px 16px;
-            text-align: left;
-            color: #374151;
-            background: transparent;
-            border: none;
-            border-radius: 8px;
-            transition: all 0.2s;
-            cursor: pointer;
-        }
-        .sidebar-item:hover {
-            background-color: #f3f4f6;
-        }
-        .sidebar-item.active {
-            background-color: #eff6ff;
-            color: #2563eb;
-            border-right: 2px solid #2563eb;
-        }
-        .tab-content {
-            display: none;
-        }
-        .tab-content.active {
-            display: block;
-        }
-    </style>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Logiciel de Devis</title>
+	<link rel="stylesheet" href="styles/output.css">
+	<style>
+		.drag-region {
+			-webkit-app-region: drag;
+		}
+		.no-drag {
+			-webkit-app-region: no-drag;
+		}
+		.sidebar-item {
+			display: flex;
+			align-items: center;
+			width: 100%;
+			padding: 12px 16px;
+			text-align: left;
+			color: #374151;
+			background: transparent;
+			border: none;
+			border-radius: 8px;
+			transition: all 0.2s;
+			cursor: pointer;
+		}
+		.sidebar-item:hover {
+			background-color: #f3f4f6;
+		}
+		.sidebar-item.active {
+			background-color: #eff6ff;
+			color: #2563eb;
+			border-right: 2px solid #2563eb;
+		}
+		.tab-content {
+			display: none;
+		}
+		.tab-content.active {
+			display: block;
+		}
+		
+		/* CSS FORÇANT LA VUE NOUVEAU DEVIS À PRENDRE TOUT L'ÉCRAN */
+		#newQuoteView {
+			position: fixed !important;
+			top: 0 !important;
+			left: 0 !important;
+			right: 0 !important;
+			bottom: 0 !important;
+			width: 100vw !important;
+			height: 100vh !important;
+			margin: 0 !important;
+			padding: 0 !important;
+			z-index: 9999 !important;
+			background-color: #f3f4f6 !important;
+			overflow-y: auto !important;
+		}
+		
+		#newQuoteView .min-h-screen {
+			min-height: 100vh !important;
+			width: 100% !important;
+		}
+		
+		/* Bouton retour - STYLE SIMPLE SANS CARRÉ - ZONE CLIQUABLE AGRANDIE */
+		#backToQuotesBtn {
+			transition: all 0.2s ease !important;
+			cursor: pointer !important;
+			user-select: none !important;
+			-webkit-user-select: none !important;
+			-moz-user-select: none !important;
+			-ms-user-select: none !important;
+			color: #374151 !important;
+			font-weight: 600 !important;
+			font-size: 18px !important;
+			padding: 12px 16px !important;
+			border-radius: 6px !important;
+			display: flex !important;
+			align-items: center !important;
+			gap: 8px !important;
+			min-height: 44px !important;
+			min-width: 120px !important;
+			box-sizing: border-box !important;
+			position: relative !important;
+		}
+		
+		#backToQuotesBtn:hover {
+			color: #111827 !important;
+			background-color: rgba(243, 244, 246, 0.8) !important;
+			transform: translateX(-2px) !important;
+		}
+		
+		#backToQuotesBtn:active {
+			transform: translateX(0) !important;
+			background-color: rgba(229, 231, 235, 0.8) !important;
+		}
+	</style>
 </head>
 <body class="bg-gray-50 h-screen">
-    <!-- Barre de titre personnalisée -->
-    <div class="drag-region h-12 bg-white border-b border-gray-200 flex items-center justify-between px-4">
+	<!-- Barre de titre personnalisée -->
+	<div class="drag-region h-12 bg-white border-b border-gray-200 flex items-center justify-between px-4">
         <div class="flex items-center space-x-3">
             <div class="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
                 <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -113,14 +167,6 @@
                     </svg>
                     <span>Clients</span>
                     <span id="clientsCount" class="ml-auto px-2 py-1 text-xs bg-green-100 text-green-600 rounded-full">0</span>
-                </button>
-
-                <button class="sidebar-item" data-tab="suppliers">
-                    <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"></path>
-                    </svg>
-                    <span>Fournisseurs</span>
-                    <span id="suppliersCount" class="ml-auto px-2 py-1 text-xs bg-yellow-100 text-yellow-600 rounded-full">0</span>
                 </button>
 
                 <button class="sidebar-item" data-tab="settings">
@@ -211,26 +257,13 @@
                         </div>
                     </div>
                 </div>
-
-                <!-- Additional Stats -->
-                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                    <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
-                        <h3 class="text-lg font-semibold text-gray-900 mb-4">Charges URSSAF</h3>
-                        <p id="totalURSSAF" class="text-2xl font-semibold text-red-600">0 €</p>
-                    </div>
-                    
-                    <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
-                        <h3 class="text-lg font-semibold text-gray-900 mb-4">Coût des Fournitures</h3>
-                        <p id="totalFournitures" class="text-2xl font-semibold text-orange-600">0 €</p>
-                    </div>
-                </div>
             </div>
 
             <!-- Quotes Tab -->
             <div id="quotesTab" class="tab-content p-6">
                 <div class="flex items-center justify-between mb-6">
                     <h1 class="text-2xl font-bold text-gray-900">Devis</h1>
-                    <button id="createQuoteBtn" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium transition-colors flex items-center space-x-2">
+                    <button id="createQuoteBtn" class="bg-white hover:bg-gray-50 text-black border-2 border-gray-300 px-4 py-2 rounded-lg font-medium transition-colors flex items-center space-x-2">
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
                         </svg>
@@ -243,13 +276,8 @@
                     <div class="p-6">
                         <h3 class="text-lg font-semibold text-gray-900 mb-4">Liste des devis</h3>
                         <div id="quotesList" class="space-y-4">
-                            <!-- Quotes will be loaded here -->
                             <div class="text-center py-8 text-gray-500">
-                                <svg class="mx-auto h-12 w-12 text-gray-400" stroke="currentColor" fill="none" viewBox="0 0 48 48">
-                                    <path d="M34 40h10v-4a6 6 0 00-10.712-3.714M34 40H14m20 0v-4a9.971 9.971 0 00-.712-3.714M14 40H4v-4a6 6 0 0110.713-3.714M14 40v-4c0-1.313.253-2.566.713-3.714m0 0A10.003 10.003 0 0124 26c4.21 0 7.813 2.602 9.288 6.286M30 14a6 6 0 11-12 0 6 6 0 0112 0zm12 6a4 4 0 11-8 0 4 4 0 018 0zm-28 0a4 4 0 11-8 0 4 4 0 018 0z" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path>
-                                </svg>
-                                <h3 class="mt-2 text-sm font-medium text-gray-900">Aucun devis</h3>
-                                <p class="mt-1 text-sm text-gray-500">Commencez par créer votre premier devis.</p>
+                                <p>Aucun devis créé pour le moment.</p>
                             </div>
                         </div>
                     </div>
@@ -258,48 +286,10 @@
 
             <!-- Clients Tab -->
             <div id="clientsTab" class="tab-content p-6">
-                <div class="flex items-center justify-between mb-6">
-                    <h1 class="text-2xl font-bold text-gray-900">Clients</h1>
-                    <button id="createClientBtn" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg font-medium transition-colors flex items-center space-x-2">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
-                        </svg>
-                        <span>Nouveau Client</span>
-                    </button>
-                </div>
-
+                <h1 class="text-2xl font-bold text-gray-900 mb-6">Clients</h1>
                 <div class="bg-white rounded-xl shadow-sm border border-gray-200">
                     <div class="p-6">
-                        <h3 class="text-lg font-semibold text-gray-900 mb-4">Liste des clients</h3>
-                        <div id="clientsList" class="space-y-4">
-                            <div class="text-center py-8 text-gray-500">
-                                <p>Aucun client enregistré pour le moment.</p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Suppliers Tab -->
-            <div id="suppliersTab" class="tab-content p-6">
-                <div class="flex items-center justify-between mb-6">
-                    <h1 class="text-2xl font-bold text-gray-900">Fournisseurs</h1>
-                    <button id="createSupplierBtn" class="bg-yellow-600 hover:bg-yellow-700 text-white px-4 py-2 rounded-lg font-medium transition-colors flex items-center space-x-2">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
-                        </svg>
-                        <span>Nouveau Fournisseur</span>
-                    </button>
-                </div>
-
-                <div class="bg-white rounded-xl shadow-sm border border-gray-200">
-                    <div class="p-6">
-                        <h3 class="text-lg font-semibold text-gray-900 mb-4">Liste des fournisseurs</h3>
-                        <div id="suppliersList" class="space-y-4">
-                            <div class="text-center py-8 text-gray-500">
-                                <p>Aucun fournisseur enregistré pour le moment.</p>
-                            </div>
-                        </div>
+                        <p class="text-gray-500">Section clients en construction...</p>
                     </div>
                 </div>
             </div>
@@ -307,156 +297,131 @@
             <!-- Settings Tab -->
             <div id="settingsTab" class="tab-content p-6">
                 <h1 class="text-2xl font-bold text-gray-900 mb-6">Paramètres</h1>
-                
                 <div class="bg-white rounded-xl shadow-sm border border-gray-200">
                     <div class="p-6">
-                        <h3 class="text-lg font-semibold text-gray-900 mb-4">Informations de l'entreprise</h3>
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-2">Nom de l'entreprise</label>
-                                <input type="text" id="companyName" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="Mon Entreprise">
-                            </div>
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-2">SIRET</label>
-                                <input type="text" id="companySIRET" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="12345678901234">
-                            </div>
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-2">Adresse</label>
-                                <input type="text" id="companyAddress" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="123 Rue Example">
-                            </div>
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-2">Téléphone</label>
-                                <input type="tel" id="companyPhone" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="01 23 45 67 89">
-                            </div>
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-2">Email</label>
-                                <input type="email" id="companyEmail" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="contact@monentreprise.fr">
-                            </div>
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-2">Taux URSSAF (%)</label>
-                                <input type="number" id="urssafRate" step="0.1" min="0" max="100" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="22.0">
-                            </div>
-                        </div>
-                        <div class="mt-6">
-                            <button id="saveSettingsBtn" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium transition-colors">
-                                Enregistrer
-                            </button>
-                        </div>
+                        <p class="text-gray-500">Section paramètres en construction...</p>
                     </div>
                 </div>
             </div>
         </main>
     </div>
 
-    <!-- Modal de création de devis -->
-    <div id="quoteModal" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden flex items-center justify-center p-4">
-        <div class="bg-white rounded-xl shadow-xl w-full max-w-4xl max-h-[90vh] overflow-y-auto">
-            <div class="flex items-center justify-between p-6 border-b border-gray-200">
-                <h2 class="text-xl font-semibold text-gray-900">Nouveau Devis</h2>
-                <button id="closeQuoteModal" class="text-gray-400 hover:text-gray-600 transition-colors">
-                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-                    </svg>
+    <!-- Vue Création de Devis - LAYOUT ÉQUILIBRÉ -->
+    <div id="newQuoteView" class="hidden" style="position: fixed !important; top: 0 !important; left: 0 !important; right: 0 !important; bottom: 0 !important; width: 100vw !important; height: 100vh !important; background-color: #f8fafc !important; z-index: 9999 !important; overflow-y: auto !important;">
+        <div style="min-height: 100vh !important; width: 100% !important; padding: 1rem; max-width: 1100px; margin: 0 auto;">
+            <!-- Header équilibré -->
+            <div class="flex items-center justify-between mb-4 bg-white rounded-lg shadow-sm p-3 border">
+                <div class="flex items-center space-x-4">
+                    <div id="backToQuotesBtn">← Retour</div>
+                    <h1 class="text-xl font-bold text-gray-900">Nouveau Devis</h1>
+                </div>
+                <button id="saveQuoteBtn" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium transition-colors">
+                    Enregistrer
                 </button>
             </div>
-            
-            <div class="p-6">
-                <form id="quoteForm">
-                    <!-- Informations client -->
-                    <div class="mb-6">
-                        <h3 class="text-lg font-semibold text-gray-900 mb-4">Informations client</h3>
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-2">Nom du client *</label>
-                                <input type="text" id="clientName" required class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="Nom du client">
-                            </div>
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-2">Email</label>
-                                <input type="email" id="clientEmail" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="email@exemple.fr">
-                            </div>
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-2">Téléphone</label>
-                                <input type="tel" id="clientPhone" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="01 23 45 67 89">
-                            </div>
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-2">Adresse</label>
-                                <input type="text" id="clientAddress" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="123 Rue Example">
-                            </div>
-                        </div>
-                    </div>
 
-                    <!-- Prestations -->
-                    <div class="mb-6">
-                        <div class="flex items-center justify-between mb-4">
-                            <h3 class="text-lg font-semibold text-gray-900">Prestations</h3>
-                            <button type="button" id="addServiceBtn" class="bg-green-600 hover:bg-green-700 text-white px-3 py-1 rounded-lg text-sm font-medium transition-colors">
-                                + Ajouter une prestation
-                            </button>
+            <!-- Formulaire équilibré -->
+            <div class="bg-white rounded-lg shadow-sm border">
+                <div class="p-4">
+                    <form id="newQuoteForm" class="space-y-5">
+                        <!-- Informations client - Layout équilibré -->
+                        <div class="space-y-3">
+                            <div class="grid grid-cols-1 md:grid-cols-4 gap-3">
+                                <div>
+                                    <label for="clientName" class="block text-sm font-medium text-gray-700 mb-1">Client *</label>
+                                    <input type="text" id="clientName" name="clientName" required class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 text-sm">
+                                </div>
+                                <div>
+                                    <label for="clientEmail" class="block text-sm font-medium text-gray-700 mb-1">Email</label>
+                                    <input type="email" id="clientEmail" name="clientEmail" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 text-sm">
+                                </div>
+                                <div>
+                                    <label for="clientPhone" class="block text-sm font-medium text-gray-700 mb-1">Téléphone</label>
+                                    <input type="tel" id="clientPhone" name="clientPhone" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 text-sm">
+                                </div>
+                                <div>
+                                    <label for="quoteDate" class="block text-sm font-medium text-gray-700 mb-1">Date *</label>
+                                    <input type="date" id="quoteDate" name="quoteDate" required class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 text-sm">
+                                </div>
+                            </div>
+                            <div>
+                                <label for="clientAddress" class="block text-sm font-medium text-gray-700 mb-1">Adresse du client</label>
+                                <textarea id="clientAddress" name="clientAddress" rows="2" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 text-sm"></textarea>
+                            </div>
                         </div>
-                        
-                        <div id="servicesContainer">
-                            <div class="service-item bg-gray-50 p-4 rounded-lg mb-4">
-                                <div class="grid grid-cols-1 md:grid-cols-5 gap-4">
-                                    <div class="md:col-span-2">
-                                        <label class="block text-sm font-medium text-gray-700 mb-1">Description *</label>
-                                        <input type="text" class="service-description w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="Description de la prestation" required>
+
+                        <!-- Prestations équilibrées -->
+                        <div>
+                            <div class="flex items-center justify-between mb-3">
+                                <label class="text-sm font-medium text-gray-700">Prestations</label>
+                                <button type="button" id="addServiceBtn" class="bg-green-600 hover:bg-green-700 text-white w-8 h-8 rounded-full flex items-center justify-center text-lg font-bold transition-colors">
+                                    ✕
+                                </button>
+                            </div>
+                            <!-- Header des colonnes - SANS colonne Total -->
+                            <div class="grid grid-cols-10 gap-3 text-sm text-gray-500 font-medium mb-2 px-2">
+                                <div class="col-span-5">Description</div>
+                                <div class="col-span-2 text-center">Quantité</div>
+                                <div class="col-span-2 text-center">Prix HT</div>
+                                <div class="col-span-1"></div>
+                            </div>
+                            <div id="servicesContainerFullPage" class="space-y-2">
+                                <div class="grid grid-cols-10 gap-3 items-center p-3 bg-gray-50 rounded-lg border">
+                                    <div class="col-span-5">
+                                        <input type="text" name="service_description[]" placeholder="Description de la prestation" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 text-sm" required>
                                     </div>
-                                    <div>
-                                        <label class="block text-sm font-medium text-gray-700 mb-1">Quantité *</label>
-                                        <input type="number" class="service-quantity w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" value="1" min="1" required>
+                                    <div class="col-span-2">
+                                        <input type="number" name="service_quantity[]" min="1" value="1" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 text-sm text-center" required>
                                     </div>
-                                    <div>
-                                        <label class="block text-sm font-medium text-gray-700 mb-1">Prix unitaire HT *</label>
-                                        <input type="number" class="service-price w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" step="0.01" min="0" placeholder="0.00" required>
+                                    <div class="col-span-2">
+                                        <input type="number" name="service_price[]" step="0.01" min="0" placeholder="0.00" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 text-sm text-right" required>
                                     </div>
-                                    <div class="flex items-end">
-                                        <button type="button" class="remove-service-btn w-full bg-red-500 hover:bg-red-600 text-white px-3 py-2 rounded-lg font-medium transition-colors">
-                                            Supprimer
+                                    <div class="col-span-1 text-center">
+                                        <button type="button" class="text-red-600 hover:text-red-800 p-1 rounded" onclick="this.closest('.grid').remove(); updateTotal();">
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                                            </svg>
                                         </button>
                                     </div>
                                 </div>
                             </div>
                         </div>
-                    </div>
 
-                    <!-- Totaux -->
-                    <div class="mb-6 bg-gray-50 p-4 rounded-lg">
-                        <h3 class="text-lg font-semibold text-gray-900 mb-4">Récapitulatif</h3>
-                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
-                            <div class="flex justify-between">
-                                <span class="text-gray-600">Total HT:</span>
-                                <span id="totalHT" class="font-semibold">0,00 €</span>
+                        <!-- Layout 2 colonnes: Notes à gauche, Total à droite -->
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <!-- Notes -->
+                            <div>
+                                <label for="quoteNotes" class="block text-sm font-medium text-gray-700 mb-1">Notes et conditions</label>
+                                <textarea id="quoteNotes" name="quoteNotes" rows="4" class="w-full px-3 py-2 border border-gray-300 rounded focus:ring-1 focus:ring-blue-500 focus:border-blue-500 text-sm" placeholder="Conditions de paiement, délais, etc."></textarea>
                             </div>
-                            <div class="flex justify-between">
-                                <span class="text-gray-600">TVA (20%):</span>
-                                <span id="totalTVA" class="font-semibold">0,00 €</span>
-                            </div>
-                            <div class="flex justify-between">
-                                <span class="text-gray-900 font-semibold">Total TTC:</span>
-                                <span id="totalTTC" class="font-bold text-lg">0,00 €</span>
+
+                            <!-- Total - Compact -->
+                            <div class="bg-blue-50 p-3 rounded border">
+                                <h3 class="text-sm font-medium text-gray-700 mb-2">Récapitulatif</h3>
+                                <div class="space-y-1">
+                                    <div class="flex justify-between items-center">
+                                        <span class="text-sm text-gray-600">Total HT:</span>
+                                        <span id="totalAmount" class="text-lg font-bold text-blue-600">0.00 €</span>
+                                    </div>
+                                    <div class="flex justify-between items-center">
+                                        <span class="text-xs text-gray-500">TVA (20%):</span>
+                                        <span id="taxAmount" class="text-xs text-gray-500">0.00 €</span>
+                                    </div>
+                                    <div class="flex justify-between items-center pt-1 border-t border-blue-200">
+                                        <span class="text-sm font-medium text-gray-700">Total TTC:</span>
+                                        <span id="totalAmountTTC" class="text-xl font-bold text-blue-600">0.00 €</span>
+                                    </div>
+                                </div>
                             </div>
                         </div>
-                    </div>
-
-                    <!-- Notes -->
-                    <div class="mb-6">
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Notes / Conditions particulières</label>
-                        <textarea id="quoteNotes" rows="3" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="Conditions de paiement, délais, etc."></textarea>
-                    </div>
-
-                    <!-- Actions -->
-                    <div class="flex items-center justify-end space-x-3">
-                        <button type="button" id="cancelQuoteBtn" class="px-4 py-2 text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors">
-                            Annuler
-                        </button>
-                        <button type="submit" id="saveQuoteBtn" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium transition-colors">
-                            Créer et télécharger le PDF
-                        </button>
-                    </div>
-                </form>
+                    </form>
+                </div>
             </div>
         </div>
     </div>
+
+    <!-- ANCIENNE MODAL SUPPRIMÉE - UTILISATION UNIQUEMENT DE LA VUE PLEIN ÉCRAN -->
+    <!-- La modal quoteModal a été complètement supprimée pour éviter les conflits avec la vue plein écran -->
 
     <!-- Scripts -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
@@ -469,14 +434,99 @@
         document.addEventListener('DOMContentLoaded', function() {
             console.log('🚀 [MAIN WINDOW] Initialisation de la navigation...');
             
+            // ==========================================
+            // FONCTION DE FERMETURE ABSOLUE NOUVEAU DEVIS - VERSION RADICALE
+            // ==========================================
+            function closeNewQuoteViewCompletely() {
+                console.log('🚫 FERMETURE ABSOLUE - Nouveau Devis - VERSION RADICALE');
+                
+                // 1. Masquer la vue avec toutes les méthodes possibles
+                const newQuoteView = document.getElementById('newQuoteView');
+                if (newQuoteView) {
+                    newQuoteView.classList.add('hidden');
+                    newQuoteView.style.display = 'none !important';
+                    newQuoteView.style.visibility = 'hidden !important';
+                    newQuoteView.style.opacity = '0 !important';
+                    newQuoteView.style.zIndex = '-9999 !important';
+                    newQuoteView.style.position = 'absolute !important';
+                    newQuoteView.style.left = '-9999px !important';
+                    newQuoteView.style.top = '-9999px !important';
+                    newQuoteView.style.width = '0 !important';
+                    newQuoteView.style.height = '0 !important';
+                    newQuoteView.style.overflow = 'hidden !important';
+                    newQuoteView.style.pointerEvents = 'none !important';
+                    console.log('✅ Vue nouveau devis BRUTALEMENT masquée');
+                }
+                
+                // 2. FORCER la fermeture de tout onglet qui pourrait exister
+                try {
+                    // Fermer tous les onglets potentiels dans l'historique
+                    if (window.history && window.history.length > 1) {
+                        console.log('🔄 Nettoyage historique navigateur');
+                        window.history.back();
+                        setTimeout(() => {
+                            window.history.forward();
+                        }, 10);
+                    }
+                } catch(e) {
+                    console.log('⚠️ Pas d\'historique à nettoyer');
+                }
+                
+                // 3. Réinitialiser TOUS les onglets de l'application
+                document.querySelectorAll('.tab-content').forEach(tab => {
+                    tab.classList.remove('active');
+                });
+                
+                // 4. Désactiver TOUS les sidebar items
+                document.querySelectorAll('.sidebar-item').forEach(item => {
+                    item.classList.remove('active');
+                });
+                
+                // 5. FORCER l'activation de l'onglet DEVIS avec délai
+                setTimeout(() => {
+                    const quotesTab = document.getElementById('quotesTab');
+                    const quotesSidebarItem = document.querySelector('[data-tab="quotes"]');
+                    
+                    if (quotesTab) {
+                        quotesTab.classList.add('active');
+                        quotesTab.style.display = 'block !important';
+                        quotesTab.style.visibility = 'visible !important';
+                        quotesTab.style.opacity = '1 !important';
+                        console.log('✅ Onglet DEVIS FORCÉ');
+                    }
+                    
+                    if (quotesSidebarItem) {
+                        quotesSidebarItem.classList.add('active');
+                        console.log('✅ Sidebar DEVIS FORCÉ');
+                    }
+                }, 50);
+                
+                // 6. Empêcher tout événement sur newQuoteView
+                if (newQuoteView) {
+                    newQuoteView.onclick = null;
+                    newQuoteView.onmousedown = null;
+                    newQuoteView.onmouseup = null;
+                    newQuoteView.onmousemove = null;
+                }
+                
+                console.log('🎯 FERMETURE RADICALE TERMINÉE');
+            }
+
             // Tab switching functionality
             function switchTab(tabName) {
                 console.log(`🔄 [NAVIGATION] Switching to ${tabName} tab`);
                 
+                // FORCER LA FERMETURE de la vue nouveau devis si elle est ouverte
+                const newQuoteView = document.getElementById('newQuoteView');
+                if (newQuoteView && !newQuoteView.classList.contains('hidden')) {
+                    console.log('🚫 Fermeture forcée de la vue nouveau devis');
+                    closeNewQuoteViewCompletely();
+                    return; // Arrêter ici car closeNewQuoteViewCompletely fait tout
+                }
+                
                 // Hide all tabs
                 document.querySelectorAll('.tab-content').forEach(tab => {
                     tab.classList.remove('active');
-                    tab.classList.add('hidden');
                 });
                 
                 // Remove active from sidebar items
@@ -487,7 +537,6 @@
                 // Show selected tab
                 const targetTab = document.getElementById(tabName + 'Tab');
                 if (targetTab) {
-                    targetTab.classList.remove('hidden');
                     targetTab.classList.add('active');
                 }
                 
@@ -548,9 +597,228 @@
             
             console.log('✅ [MAIN WINDOW] Navigation initialisée');
             
-            // Setup quote creation functionality
+            // Configuration de la création de devis
             setupQuoteCreation();
+            
+            function setupQuoteCreation() {
+                console.log('🔄 Configuration de la création de devis...');
+                
+                // UNIQUEMENT LA VUE PLEIN ÉCRAN - ANCIENNE MODAL SUPPRIMÉE
+                const createQuoteBtn = document.getElementById('createQuoteBtn');
+                const addServiceBtn = document.getElementById('addServiceBtn');
+                
+                console.log('🔍 Éléments trouvés:', {
+                    createQuoteBtn: !!createQuoteBtn,
+                    addServiceBtn: !!addServiceBtn,
+                    quoteManager: !!window.quoteManager
+                });
+                
+                // Ouvrir la vue création de devis (pleine page)
+                if (createQuoteBtn) {
+                    console.log('✅ Ajout du listener sur le bouton Nouveau Devis');
+                    createQuoteBtn.addEventListener('click', () => {
+                        console.log('📝 Ouverture de la vue création de devis');
+                        
+                        // Afficher la vue création de devis en plein écran
+                        const newQuoteView = document.getElementById('newQuoteView');
+                        if (newQuoteView) {
+                            newQuoteView.classList.remove('hidden');
+                            
+                            // FORCER LES STYLES POUR PRENDRE TOUT L'ÉCRAN
+                            newQuoteView.style.position = 'fixed';
+                            newQuoteView.style.top = '0';
+                            newQuoteView.style.left = '0';
+                            newQuoteView.style.right = '0';
+                            newQuoteView.style.bottom = '0';
+                            newQuoteView.style.width = '100vw';
+                            newQuoteView.style.height = '100vh';
+                            newQuoteView.style.zIndex = '9999';
+                            newQuoteView.style.backgroundColor = '#f3f4f6';
+                            newQuoteView.style.overflowY = 'auto';
+                            newQuoteView.style.margin = '0';
+                            newQuoteView.style.padding = '0';
+                            
+                            console.log('🎯 Vue forcée en plein écran avec styles JavaScript');
+                            
+                            // Réinitialiser le formulaire
+                            const newQuoteForm = document.getElementById('newQuoteForm');
+                            if (newQuoteForm) newQuoteForm.reset();
+                            
+                            // Définir la date du jour
+                            const dateInput = document.getElementById('quoteDate');
+                            if (dateInput) {
+                                const today = new Date().toISOString().split('T')[0];
+                                dateInput.value = today;
+                            }
+                        }
+                    });
+                } else {
+                    console.error('❌ Bouton createQuoteBtn non trouvé !');
+                }
+                
+                // BOUTON RETOUR - VERSION ULTRA-SIMPLE
+                const backToQuotesBtn = document.getElementById('backToQuotesBtn');
+                if (backToQuotesBtn) {
+                    console.log('🔧 Configuration du bouton retour ultra-simple');
+                    
+                    // Supprimer tous les anciens event listeners
+                    const newBtn = backToQuotesBtn.cloneNode(true);
+                    backToQuotesBtn.parentNode.replaceChild(newBtn, backToQuotesBtn);
+                    
+                    // Fonction de fermeture simple
+                    function retourUltraSimple(e) {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        console.log('🔙 RETOUR ULTRA-SIMPLE - Fermeture vue devis');
+                        closeNewQuoteViewCompletely();
+                        return false;
+                    }
+                    
+                    // UN SEUL event listener
+                    newBtn.addEventListener('click', retourUltraSimple);
+                    
+                    // Forcer les styles de cliquabilité (au cas où)
+                    newBtn.style.pointerEvents = 'auto';
+                    
+                    console.log('✅ Bouton retour ultra-simple configuré');
+                }
+                
+                // Supprimer l'ancien event listener global redondant
+                
+                // AJOUT: Event listener pour la touche ESC pour fermer la vue
+                document.addEventListener('keydown', (e) => {
+                    if (e.key === 'Escape') {
+                        const newQuoteView = document.getElementById('newQuoteView');
+                        if (newQuoteView && !newQuoteView.classList.contains('hidden')) {
+                            e.preventDefault();
+                            console.log('⌨️ TOUCHE ESC - Fermeture vue Nouveau Devis');
+                            closeNewQuoteViewCompletely();
+                        }
+                    }
+                });
+                
+                // Bouton "Ajouter une prestation" - VERSION SANS colonne Total
+                const addServiceBtnFullPage = document.getElementById('addServiceBtn');
+                if (addServiceBtnFullPage) {
+                    addServiceBtnFullPage.addEventListener('click', () => {
+                        const container = document.getElementById('servicesContainerFullPage');
+                        if (container) {
+                            const newService = document.createElement('div');
+                            newService.className = 'grid grid-cols-10 gap-3 items-center p-3 bg-gray-50 rounded-lg border';
+                            newService.innerHTML = `
+                                <div class="col-span-5">
+                                    <input type="text" name="service_description[]" placeholder="Description de la prestation" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 text-sm" required>
+                                </div>
+                                <div class="col-span-2">
+                                    <input type="number" name="service_quantity[]" min="1" value="1" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 text-sm text-center" required>
+                                </div>
+                                <div class="col-span-2">
+                                    <input type="number" name="service_price[]" step="0.01" min="0" placeholder="0.00" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 text-sm text-right" required>
+                                </div>
+                                <div class="col-span-1 text-center">
+                                    <button type="button" class="text-red-600 hover:text-red-800 p-1 rounded" onclick="this.closest('.grid').remove(); updateTotal();">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                                        </svg>
+                                    </button>
+                                </div>
+                            `;
+                            container.appendChild(newService);
+                            
+                            // Ajouter les event listeners pour le calcul automatique
+                            newService.querySelectorAll('input[name="service_quantity[]"], input[name="service_price[]"]').forEach(input => {
+                                input.addEventListener('input', updateTotal);
+                            });
+                            
+                            updateTotal();
+                        }
+                    });
+                }
+                
+                // Bouton "Enregistrer le Devis" dans la vue pleine page
+                const saveQuoteBtnFullPage = document.getElementById('saveQuoteBtn');
+                if (saveQuoteBtnFullPage) {
+                    saveQuoteBtnFullPage.addEventListener('click', async () => {
+                        console.log('💾 Tentative de sauvegarde du devis...');
+                        
+                        const form = document.getElementById('newQuoteForm');
+                        if (!form.checkValidity()) {
+                            form.reportValidity();
+                            return;
+                        }
+                        
+                        const formData = new FormData(form);
+                        const quoteData = {
+                            clientName: formData.get('clientName'),
+                            clientEmail: formData.get('clientEmail'),
+                            clientPhone: formData.get('clientPhone'),
+                            clientAddress: formData.get('clientAddress'),
+                            quoteDate: formData.get('quoteDate'),
+                            notes: formData.get('quoteNotes'),
+                            services: []
+                        };
+                        
+                        // Collecter les services
+                        const descriptions = formData.getAll('service_description[]');
+                        const quantities = formData.getAll('service_quantity[]');
+                        const prices = formData.getAll('service_price[]');
+                        
+                        for (let i = 0; i < descriptions.length; i++) {
+                            if (descriptions[i] && quantities[i] && prices[i]) {
+                                quoteData.services.push({
+                                    description: descriptions[i],
+                                    quantity: parseInt(quantities[i]),
+                                    price: parseFloat(prices[i])
+                                });
+                            }
+                        }
+                        
+                        try {
+                            const result = await window.dbService.createQuote(quoteData);
+                            if (result) {
+                                console.log('✅ Devis créé avec succès');
+                                alert('Devis créé avec succès !');
+                                
+                                // FERMETURE ABSOLUE après sauvegarde
+                                console.log('� SAUVEGARDE TERMINÉE - FERMETURE ABSOLUE');
+                                closeNewQuoteViewCompletely();
+                            } else {
+                                alert('Erreur lors de la création du devis');
+                            }
+                        } catch (error) {
+                            console.error('❌ Erreur:', error);
+                            alert('Erreur lors de la création du devis: ' + error.message);
+                        }
+                    });
+                }
+                
+                // Fonction pour mettre à jour le total
+                window.updateTotal = function() {
+                    let totalHT = 0;
+                    
+                    document.querySelectorAll('#servicesContainerFullPage > div').forEach(serviceRow => {
+                        const quantity = parseFloat(serviceRow.querySelector('input[name="service_quantity[]"]')?.value) || 0;
+                        const price = parseFloat(serviceRow.querySelector('input[name="service_price[]"]')?.value) || 0;
+                        totalHT += quantity * price;
+                    });
+                    
+                    const tva = totalHT * 0.20;
+                    const totalTTC = totalHT + tva;
+                    
+                    document.getElementById('totalAmount').textContent = totalHT.toFixed(2) + ' €';
+                    document.getElementById('taxAmount').textContent = tva.toFixed(2) + ' €';
+                    document.getElementById('totalAmountTTC').textContent = totalTTC.toFixed(2) + ' €';
+                };
+                
+                // Ajouter les event listeners pour le calcul automatique sur les champs existants
+                document.querySelectorAll('#servicesContainerFullPage input[name="service_quantity[]"], #servicesContainerFullPage input[name="service_price[]"]').forEach(input => {
+                    input.addEventListener('input', updateTotal);
+                });
+            }
         });
+        
+        // FONCTION setupQuoteCreation DUPLIQUÉE SUPPRIMÉE
+        // Une seule version existe maintenant pour éviter les conflits
         
         // Classe QuoteManager pour gérer les devis
         class QuoteManager {
@@ -582,7 +850,6 @@
             // Ajouter une prestation
             addService() {
                 const container = document.getElementById('servicesContainer');
-                const serviceCount = container.children.length;
                 
                 const serviceHTML = `
                     <div class="service-item bg-gray-50 p-4 rounded-lg mb-4">
@@ -914,44 +1181,60 @@
         // Instance globale du QuoteManager
         window.quoteManager = new QuoteManager();
         
-        // Fonction pour configurer la création de devis
-        function setupQuoteCreation() {
-            console.log('🔄 Configuration de la création de devis...');
+        // Configuration de la création de devis - VERSION CORRIGÉE
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('🔄 Configuration finale de la création de devis...');
             
-            const quoteModal = document.getElementById('quoteModal');
+            // UNIQUEMENT LA VUE PLEIN ÉCRAN - ANCIENNE MODAL SUPPRIMÉE
             const createQuoteBtn = document.getElementById('createQuoteBtn');
-            const closeQuoteModal = document.getElementById('closeQuoteModal');
-            const cancelQuoteBtn = document.getElementById('cancelQuoteBtn');
             const addServiceBtn = document.getElementById('addServiceBtn');
-            const quoteForm = document.getElementById('quoteForm');
             
             console.log('🔍 Éléments trouvés:', {
-                quoteModal: !!quoteModal,
                 createQuoteBtn: !!createQuoteBtn,
-                closeQuoteModal: !!closeQuoteModal,
-                cancelQuoteBtn: !!cancelQuoteBtn,
                 addServiceBtn: !!addServiceBtn,
-                quoteForm: !!quoteForm,
                 quoteManager: !!window.quoteManager
             });
             
-            // Ouvrir la modal
+            // Configuration finale - s'assurer que seule la vue plein écran est utilisée
             if (createQuoteBtn) {
-                console.log('✅ Ajout du listener sur le bouton Nouveau Devis');
+                console.log('✅ Configuration finale du bouton Nouveau Devis');
                 createQuoteBtn.addEventListener('click', () => {
-                    console.log('📝 Ouverture de la modal de création de devis');
-                    if (quoteModal) {
-                        quoteModal.classList.remove('hidden');
+                    console.log('📝 Ouverture FINALE de la vue création de devis');
+                    
+                    // Masquer toute modal existante (si elle existait encore)
+                    const anyModal = document.getElementById('quoteModal');
+                    if (anyModal) anyModal.classList.add('hidden');
+                    
+                    // Afficher uniquement la vue création de devis en plein écran
+                    const newQuoteView = document.getElementById('newQuoteView');
+                    if (newQuoteView) {
+                        newQuoteView.classList.remove('hidden');
+                        
+                        // FORCER LES STYLES POUR PRENDRE TOUT L'ÉCRAN
+                        newQuoteView.style.position = 'fixed';
+                        newQuoteView.style.top = '0';
+                        newQuoteView.style.left = '0';
+                        newQuoteView.style.right = '0';
+                        newQuoteView.style.bottom = '0';
+                        newQuoteView.style.width = '100vw';
+                        newQuoteView.style.height = '100vh';
+                        newQuoteView.style.zIndex = '9999';
+                        newQuoteView.style.backgroundColor = '#f3f4f6';
+                        newQuoteView.style.overflowY = 'auto';
+                        newQuoteView.style.margin = '0';
+                        newQuoteView.style.padding = '0';
+                        
+                        console.log('🎯 Vue FINALE forcée en plein écran');
                         
                         // Réinitialiser le formulaire
-                        if (quoteForm) quoteForm.reset();
+                        const newQuoteForm = document.getElementById('newQuoteForm');
+                        if (newQuoteForm) newQuoteForm.reset();
                         
-                        // Réinitialiser les prestations (garder une seule ligne)
-                        const container = document.getElementById('servicesContainer');
-                        if (container && container.children.length > 1) {
-                            while (container.children.length > 1) {
-                                container.removeChild(container.lastChild);
-                            }
+                        // Définir la date du jour
+                        const dateInput = document.getElementById('quoteDate');
+                        if (dateInput) {
+                            const today = new Date().toISOString().split('T')[0];
+                            dateInput.value = today;
                         }
                         
                         // Configurer les event listeners
@@ -965,87 +1248,9 @@
                 console.error('❌ Bouton createQuoteBtn non trouvé !');
             }
             
-            // Fermer la modal
-            function closeModal() {
-                quoteModal.classList.add('hidden');
-            }
-            
-            if (closeQuoteModal) {
-                closeQuoteModal.addEventListener('click', closeModal);
-            }
-            
-            if (cancelQuoteBtn) {
-                cancelQuoteBtn.addEventListener('click', closeModal);
-            }
-            
-            // Fermer en cliquant à l'extérieur
-            quoteModal.addEventListener('click', (e) => {
-                if (e.target === quoteModal) {
-                    closeModal();
-                }
-            });
-            
-            // Ajouter une prestation
-            if (addServiceBtn) {
-                addServiceBtn.addEventListener('click', () => {
-                    window.quoteManager.addService();
-                });
-            }
-            
-            // Soumettre le formulaire
-            if (quoteForm) {
-                quoteForm.addEventListener('submit', async (e) => {
-                    e.preventDefault();
-                    
-                    const submitBtn = document.getElementById('saveQuoteBtn');
-                    const originalText = submitBtn.textContent;
-                    
-                    try {
-                        // Désactiver le bouton et afficher le chargement
-                        submitBtn.disabled = true;
-                        submitBtn.textContent = 'Création en cours...';
-                        
-                        const formData = new FormData(quoteForm);
-                        
-                        // Ajouter les données des prestations au FormData
-                        document.querySelectorAll('.service-item').forEach((item, index) => {
-                            formData.append(`service_${index}_description`, item.querySelector('.service-description').value);
-                            formData.append(`service_${index}_quantity`, item.querySelector('.service-quantity').value);
-                            formData.append(`service_${index}_price`, item.querySelector('.service-price').value);
-                        });
-                        
-                        formData.append('notes', document.getElementById('quoteNotes').value);
-                        
-                        const result = await window.quoteManager.createQuote(formData);
-                        
-                        if (result.success) {
-                            alert(result.message);
-                            closeModal();
-                            
-                            // Rafraîchir les statistiques si on est sur le dashboard
-                            if (window.appInstance && typeof window.appInstance.loadDashboardStats === 'function') {
-                                window.appInstance.loadDashboardStats();
-                            }
-                        } else {
-                            alert('Erreur: ' + result.message);
-                        }
-                        
-                    } catch (error) {
-                        console.error('❌ Erreur lors de la soumission:', error);
-                        alert('Erreur: ' + error.message);
-                    } finally {
-                        // Réactiver le bouton
-                        submitBtn.disabled = false;
-                        submitBtn.textContent = originalText;
-                    }
-                });
-            }
-            
-            // Configuration initiale
-            window.quoteManager.setupServiceEventListeners();
-            
-            console.log('✅ Configuration de la création de devis terminée');
-        }
+            // ANCIENNE LOGIQUE MODAL COMPLÈTEMENT SUPPRIMÉE
+            console.log('✅ Configuration FINALE terminée - uniquement vue plein écran');
+        });
     </script>
 </body>
 </html>
