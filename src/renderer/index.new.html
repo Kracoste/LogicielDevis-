@@ -358,26 +358,23 @@
                                     ✕
                                 </button>
                             </div>
-                            <!-- Header des colonnes - SANS colonne Total -->
-                            <div class="grid grid-cols-10 gap-3 text-sm text-gray-500 font-medium mb-2 px-2">
-                                <div class="col-span-5">Description</div>
-                                <div class="col-span-2 text-center">Quantité</div>
-                                <div class="col-span-2 text-center">Prix HT</div>
-                                <div class="col-span-1"></div>
-                            </div>
-                            <div id="servicesContainerFullPage" class="space-y-2">
-                                <div class="grid grid-cols-10 gap-3 items-center p-3 bg-gray-50 rounded-lg border">
-                                    <div class="col-span-5">
-                                        <input type="text" name="service_description[]" placeholder="Description de la prestation" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 text-sm" required>
+                            <!-- Section prestations avec design en ligne -->
+                            <div id="servicesContainerFullPage" class="space-y-3">
+                                <div class="flex items-center gap-3 p-3 bg-white rounded-lg border shadow-sm">
+                                    <div class="flex-1">
+                                        <label class="block text-xs font-medium text-gray-600 mb-1">Description de la prestation</label>
+                                        <input type="text" name="service_description[]" placeholder="Décrivez votre prestation..." class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm" required>
                                     </div>
-                                    <div class="col-span-2">
-                                        <input type="number" name="service_quantity[]" min="1" value="1" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 text-sm text-center" required>
+                                    <div class="w-16">
+                                        <label class="block text-xs font-medium text-gray-600 mb-1">Quantité</label>
+                                        <input type="number" name="service_quantity[]" min="1" value="1" class="w-full px-2 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm text-center" required>
                                     </div>
-                                    <div class="col-span-2">
-                                        <input type="number" name="service_price[]" step="0.01" min="0" placeholder="0.00" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 text-sm text-right" required>
+                                    <div class="w-28">
+                                        <label class="block text-xs font-medium text-gray-600 mb-1">Prix HT</label>
+                                        <input type="number" name="service_price[]" step="0.01" min="0" placeholder="0.00 €" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm text-right" required>
                                     </div>
-                                    <div class="col-span-1 text-center">
-                                        <button type="button" class="text-red-600 hover:text-red-800 p-1 rounded" onclick="this.closest('.grid').remove(); updateTotal();">
+                                    <div class="flex items-end">
+                                        <button type="button" class="text-red-500 hover:text-red-700 hover:bg-red-50 p-2 rounded-lg transition-colors" onclick="this.closest('.flex.items-center').remove(); updateTotal();" title="Supprimer cette prestation">
                                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
                                             </svg>
@@ -389,9 +386,15 @@
 
                         <!-- Layout 2 colonnes: Notes à gauche, Total à droite -->
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <!-- Notes -->
-                            <div>
-                                <label for="quoteNotes" class="block text-sm font-medium text-gray-700 mb-1">Notes et conditions</label>
+                            <!-- Notes avec bouton d'ajout de prestation -->
+                            <div class="relative">
+                                <div class="flex justify-between items-center mb-1">
+                                    <label for="quoteNotes" class="block text-sm font-medium text-gray-700">Notes et conditions</label>
+                                    <button type="button" id="addServiceBtnBottom" class="flex items-center gap-1 text-sm text-black hover:text-gray-600 transition-colors">
+                                        <span class="text-lg">+</span>
+                                        <span>Ajouter une prestation</span>
+                                    </button>
+                                </div>
                                 <textarea id="quoteNotes" name="quoteNotes" rows="4" class="w-full px-3 py-2 border border-gray-300 rounded focus:ring-1 focus:ring-blue-500 focus:border-blue-500 text-sm" placeholder="Conditions de paiement, délais, etc."></textarea>
                             </div>
 
@@ -704,23 +707,68 @@
                         const container = document.getElementById('servicesContainerFullPage');
                         if (container) {
                             const newService = document.createElement('div');
-                            newService.className = 'grid grid-cols-10 gap-3 items-center p-3 bg-gray-50 rounded-lg border';
+                            newService.className = 'flex items-center gap-3 p-3 bg-white rounded-lg border shadow-sm';
                             newService.innerHTML = `
-                                <div class="col-span-5">
-                                    <input type="text" name="service_description[]" placeholder="Description de la prestation" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 text-sm" required>
+                                <div class="flex-1">
+                                    <label class="block text-xs font-medium text-gray-600 mb-1">Description de la prestation</label>
+                                    <input type="text" name="service_description[]" placeholder="Décrivez votre prestation..." class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm" required>
                                 </div>
-                                <div class="col-span-2">
-                                    <input type="number" name="service_quantity[]" min="1" value="1" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 text-sm text-center" required>
+                                <div class="w-16">
+                                    <label class="block text-xs font-medium text-gray-600 mb-1">Quantité</label>
+                                    <input type="number" name="service_quantity[]" min="1" value="1" class="w-full px-2 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm text-center" required>
                                 </div>
-                                <div class="col-span-2">
-                                    <input type="number" name="service_price[]" step="0.01" min="0" placeholder="0.00" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 text-sm text-right" required>
+                                <div class="w-28">
+                                    <label class="block text-xs font-medium text-gray-600 mb-1">Prix HT</label>
+                                    <input type="number" name="service_price[]" step="0.01" min="0" placeholder="0.00 €" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm text-right" required>
                                 </div>
-                                <div class="col-span-1 text-center">
-                                    <button type="button" class="text-red-600 hover:text-red-800 p-1 rounded" onclick="this.closest('.grid').remove(); updateTotal();">
+                                <div class="flex items-end">
+                                    <button type="button" class="text-red-500 hover:text-red-700 hover:bg-red-50 p-2 rounded-lg transition-colors" onclick="this.closest('.flex.items-center').remove(); updateTotal();" title="Supprimer cette prestation">
                                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
                                         </svg>
                                     </button>
+                                </div>
+                            `;
+                            container.appendChild(newService);
+                            
+                            // Ajouter les event listeners pour le calcul automatique
+                            newService.querySelectorAll('input[name="service_quantity[]"], input[name="service_price[]"]').forEach(input => {
+                                input.addEventListener('input', updateTotal);
+                            });
+                            
+                            updateTotal();
+                        }
+                    });
+                }
+                
+                // Nouveau bouton "Ajouter une prestation" dans la section Notes
+                const addServiceBtnBottom = document.getElementById('addServiceBtnBottom');
+                if (addServiceBtnBottom) {
+                    addServiceBtnBottom.addEventListener('click', () => {
+                        const container = document.getElementById('servicesContainerFullPage');
+                        if (container) {
+                            const newService = document.createElement('div');
+                            newService.className = 'flex items-center gap-3 p-3 bg-white rounded-lg border shadow-sm';
+                            newService.innerHTML = `
+                                <div class="flex-1">
+                                    <label class="block text-xs font-medium text-gray-600 mb-1">Description de la prestation</label>
+                                    <input type="text" name="service_description[]" placeholder="Décrivez votre prestation..." class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm" required>
+                                </div>
+                                <div class="w-16">
+                                    <label class="block text-xs font-medium text-gray-600 mb-1">Quantité</label>
+                                    <input type="number" name="service_quantity[]" min="1" value="1" class="w-full px-2 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm text-center" required>
+                                </div>
+                                <div class="w-28">
+                                    <label class="block text-xs font-medium text-gray-600 mb-1">Prix HT</label>
+                                    <input type="number" name="service_price[]" step="0.01" min="0" placeholder="0.00 €" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm text-right" required>
+                                </div>
+                                <div class="flex items-end">
+                                    <button type="button" class="text-red-500 hover:text-red-700 hover:bg-red-50 p-2 rounded-lg transition-colors" onclick="this.closest('.flex.items-center').remove(); updateTotal();" title="Supprimer cette prestation">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                                        </svg>
+                                    </button>
+                                </div>
                                 </div>
                             `;
                             container.appendChild(newService);
