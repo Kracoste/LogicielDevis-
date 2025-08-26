@@ -366,7 +366,6 @@
                                     Ajouter une prestation
                                 </button>
                             </div>
-<<<<<<< HEAD
                             <!-- Section prestations avec design en ligne -->
                             <div id="servicesContainerFullPage" class="space-y-3">
                                 <div class="flex items-center gap-3 p-3 bg-white rounded-lg border shadow-sm">
@@ -384,45 +383,6 @@
                                     </div>
                                     <div class="flex items-end">
                                         <button type="button" class="text-red-500 hover:text-red-700 hover:bg-red-50 p-2 rounded-lg transition-colors" onclick="this.closest('.flex.items-center').remove(); updateTotal();" title="Supprimer cette prestation">
-=======
-                            
-                            <!-- Header des colonnes -->
-                            <div class="grid grid-cols-8 gap-3 text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2 px-3">
-                                <div class="col-span-4">Prestation</div>
-                                <div class="col-span-1 text-center">Qté</div>
-                                <div class="col-span-1 text-center">Unité</div>
-                                <div class="col-span-1 text-center">Prix HT</div>
-                                <div class="col-span-1 text-center">Action</div>
-                            </div>
-                            <div id="servicesContainerFullPage" class="space-y-2">
-                                <div class="grid grid-cols-8 gap-3 items-center p-3 bg-gradient-to-r from-gray-50 to-gray-100 rounded-xl border border-gray-200 hover:shadow-md transition-all duration-200">
-                                    <div class="col-span-4">
-                                        <textarea name="service_description[]" placeholder="Décrivez votre prestation..." rows="2" class="w-full px-3 py-2 border-2 border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm bg-white shadow-sm transition-all duration-200 hover:border-gray-300 resize-none" required></textarea>
-                                    </div>
-                                    <div class="col-span-1">
-                                        <input type="number" name="service_quantity[]" min="1" value="1" class="w-full px-2 py-2 border-2 border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm text-center bg-white font-medium shadow-sm transition-all duration-200 hover:border-gray-300" required>
-                                    </div>
-                                    <div class="col-span-1">
-                                        <select name="service_unit[]" class="w-full px-2 py-2 border-2 border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm bg-white shadow-sm transition-all duration-200 hover:border-gray-300">
-                                            <option value="">Unité</option>
-                                            <option value="heure">Heure</option>
-                                            <option value="jour">Jour</option>
-                                            <option value="piece">Pièce</option>
-                                            <option value="metre">Mètre</option>
-                                            <option value="m2">m²</option>
-                                            <option value="forfait">Forfait</option>
-                                            <option value="autre">Autre</option>
-                                        </select>
-                                    </div>
-                                    <div class="col-span-1">
-                                        <div class="relative">
-                                            <input type="number" name="service_price[]" step="0.01" min="0" placeholder="0.00" class="w-full px-2 py-2 pl-6 border-2 border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm text-right bg-white font-medium shadow-sm transition-all duration-200 hover:border-gray-300" required>
-                                            <span class="absolute left-2 top-1/2 transform -translate-y-1/2 text-gray-400 text-xs">€</span>
-                                        </div>
-                                    </div>
-                                    <div class="col-span-1 text-center">
-                                        <button type="button" class="text-red-500 hover:text-red-700 hover:bg-red-50 p-2 rounded-full transition-all duration-200 transform hover:scale-110" onclick="this.closest('.grid').remove(); updateTotal();" title="Supprimer cette prestation">
->>>>>>> 7267c96818821c72c143681c83ce567b3ab7849f
                                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
                                             </svg>
@@ -433,76 +393,77 @@
                         </div>
 
                         <!-- Layout 2 colonnes: Notes à gauche, Total à droite -->
-<<<<<<< HEAD
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <!-- Notes avec bouton d'ajout de prestation -->
-                            <div class="relative">
-                                <div class="flex justify-between items-center mb-1">
-                                    <label for="quoteNotes" class="block text-sm font-medium text-gray-700">Notes et conditions</label>
-                                    <button type="button" id="addServiceBtnBottom" class="flex items-center gap-1 text-sm text-black hover:text-gray-600 transition-colors">
-                                        <span class="text-lg">+</span>
-                                        <span>Ajouter une prestation</span>
-                                    </button>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <!-- Notes (colonne gauche) -->
+                            <div class="space-y-4">
+                                <div>
+                                    <div class="flex justify-between items-center mb-2">
+                                        <label class="block text-sm font-medium text-gray-700">Notes et conditions</label>
+                                        <button type="button" id="addServiceBtnNotes" class="inline-flex items-center px-3 py-1 text-sm text-black hover:text-gray-600 transition-colors">
+                                            <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+                                            </svg>
+                                            Ajouter une prestation
+                                        </button>
+                                    </div>
+                                    <textarea name="quote_notes" rows="4" placeholder="Ajouter des notes ou conditions particulières..." class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"></textarea>
                                 </div>
-                                <textarea id="quoteNotes" name="quoteNotes" rows="4" class="w-full px-3 py-2 border border-gray-300 rounded focus:ring-1 focus:ring-blue-500 focus:border-blue-500 text-sm" placeholder="Conditions de paiement, délais, etc."></textarea>
-=======
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-8">
-                            <!-- Notes -->
-                            <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-                                <h3 class="text-lg font-semibold text-gray-800 mb-4 flex items-center">
-                                    <svg class="w-5 h-5 mr-2 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
-                                    </svg>
-                                    Notes et conditions
-                                </h3>
-                                <textarea id="quoteNotes" name="quoteNotes" rows="4" class="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 text-sm shadow-sm transition-all duration-200 hover:border-gray-300" placeholder="Conditions de paiement, délais de livraison, garanties..."></textarea>
->>>>>>> 7267c96818821c72c143681c83ce567b3ab7849f
+                                <div class="grid grid-cols-2 gap-4">
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-2">Date d'échéance</label>
+                                        <input type="date" name="quote_due_date" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-2">Validité (jours)</label>
+                                        <input type="number" name="quote_validity" value="30" min="1" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                                    </div>
+                                </div>
                             </div>
 
-                            <!-- Total - Elegant -->
-                            <div class="bg-gradient-to-br from-blue-50 to-indigo-100 rounded-lg shadow-sm border border-blue-200 p-6">
-                                <h3 class="text-lg font-semibold text-gray-800 mb-4 flex items-center">
-                                    <svg class="w-5 h-5 mr-2 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z"></path>
-                                    </svg>
-                                    Récapitulatif
-                                </h3>
+                            <!-- Récapitulatif des totaux (colonne droite) -->
+                            <div class="bg-gray-50 p-6 rounded-lg border">
+                                <h3 class="text-lg font-semibold text-gray-700 mb-4">Récapitulatif</h3>
                                 <div class="space-y-3">
-                                    <div class="flex justify-between items-center py-2 border-b border-blue-200">
-                                        <span class="text-sm font-medium text-gray-700">Total HT:</span>
-                                        <span id="totalAmount" class="text-xl font-bold text-blue-600">0.00 €</span>
+                                    <div class="flex justify-between text-sm">
+                                        <span class="text-gray-600">Sous-total HT</span>
+                                        <span id="subtotalHT" class="font-medium">0,00 €</span>
                                     </div>
-                                    <div class="flex justify-between items-center py-2">
-                                        <span class="text-sm text-gray-600">TVA (20%):</span>
-                                        <span id="taxAmount" class="text-sm font-medium text-gray-600">0.00 €</span>
+                                    <div class="flex justify-between items-center text-sm">
+                                        <span class="text-gray-600">TVA</span>
+                                        <div class="flex items-center gap-2">
+                                            <select name="quote_tax_rate" id="taxRateSelect" class="px-2 py-1 text-xs border border-gray-300 rounded focus:ring-1 focus:ring-blue-500" onchange="updateTotal()">
+                                                <option value="20">20%</option>
+                                                <option value="10">10%</option>
+                                                <option value="5.5">5.5%</option>
+                                                <option value="0">0%</option>
+                                            </select>
+                                            <span id="taxAmount" class="font-medium">0,00 €</span>
+                                        </div>
                                     </div>
-                                    <div class="flex justify-between items-center py-3 bg-white rounded-lg px-4 shadow-sm border-2 border-blue-300">
-                                        <span class="text-lg font-bold text-gray-800">Total TTC:</span>
-                                        <span id="totalAmountTTC" class="text-2xl font-bold text-blue-600">0.00 €</span>
+                                    <div class="border-t pt-3">
+                                        <div class="flex justify-between text-lg font-semibold text-gray-900">
+                                            <span>Total TTC</span>
+                                            <span id="totalTTC" class="text-blue-600">0,00 €</span>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
                         </div>
 
-                        <!-- Bouton d'enregistrement principal -->
-                        <div class="mt-8 flex justify-center space-x-4">
-                            <button type="button" id="saveQuoteBtnMain" class="bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white px-8 py-4 rounded-xl font-bold text-lg shadow-lg transition-all duration-200 transform hover:scale-105 focus:ring-4 focus:ring-green-300">
-                                <svg class="w-6 h-6 inline-block mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        <!-- Boutons d'action -->
+                        <div class="flex justify-end items-center pt-6 border-t">
+                            <button type="button" id="saveQuoteBtnMain" class="inline-flex items-center px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors">
+                                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4"/>
                                 </svg>
-                                Enregistrer le Devis et Générer le PDF
-                            </button>
-                            
-                            <!-- Bouton de test simple -->
-                            <button type="button" onclick="testSaveFunction()" class="bg-red-500 hover:bg-red-600 text-white px-6 py-4 rounded-xl font-bold text-lg shadow-lg transition-all duration-200">
-                                TEST SAUVEGARDE
+                                Enregistrer et générer PDF
                             </button>
                         </div>
                     </form>
                 </div>
             </div>
         </div>
-    </div>
+    </div>>
 
     <!-- ANCIENNE MODAL SUPPRIMÉE - UTILISATION UNIQUEMENT DE LA VUE PLEIN ÉCRAN -->
     <!-- La modal quoteModal a été complètement supprimée pour éviter les conflits avec la vue plein écran -->
@@ -656,8 +617,15 @@
                 const newQuoteView = document.getElementById('newQuoteView');
                 if (newQuoteView && !newQuoteView.classList.contains('hidden')) {
                     console.log('🚫 Fermeture forcée de la vue nouveau devis');
-                    closeNewQuoteViewCompletely();
-                    return; // Arrêter ici car closeNewQuoteViewCompletely fait tout
+                    // Fermer la vue nouveau devis
+                    newQuoteView.classList.add('hidden');
+                    newQuoteView.style.display = 'none !important';
+                    newQuoteView.style.visibility = 'hidden !important';
+                    newQuoteView.style.opacity = '0 !important';
+                    newQuoteView.style.zIndex = '-9999 !important';
+                    newQuoteView.style.position = 'absolute !important';
+                    newQuoteView.style.left = '-9999px !important';
+                    newQuoteView.style.top = '-9999px !important';
                 }
                 
                 // Hide all tabs
@@ -674,12 +642,14 @@
                 const targetTab = document.getElementById(tabName + 'Tab');
                 if (targetTab) {
                     targetTab.classList.add('active');
+                    console.log(`✅ Onglet ${tabName} activé`);
                 }
                 
                 // Add active to clicked sidebar item
                 const sidebarItem = document.querySelector(`[data-tab="${tabName}"]`);
                 if (sidebarItem) {
                     sidebarItem.classList.add('active');
+                    console.log(`✅ Sidebar ${tabName} activé`);
                 }
             }
             
@@ -843,7 +813,6 @@
                         const container = document.getElementById('servicesContainerFullPage');
                         if (container) {
                             const newService = document.createElement('div');
-<<<<<<< HEAD
                             newService.className = 'flex items-center gap-3 p-3 bg-white rounded-lg border shadow-sm';
                             newService.innerHTML = `
                                 <div class="flex-1">
@@ -860,36 +829,6 @@
                                 </div>
                                 <div class="flex items-end">
                                     <button type="button" class="text-red-500 hover:text-red-700 hover:bg-red-50 p-2 rounded-lg transition-colors" onclick="this.closest('.flex.items-center').remove(); updateTotal();" title="Supprimer cette prestation">
-=======
-                            newService.className = 'grid grid-cols-8 gap-3 items-center p-3 bg-gradient-to-r from-gray-50 to-gray-100 rounded-xl border border-gray-200 hover:shadow-md transition-all duration-200';
-                            newService.innerHTML = `
-                                <div class="col-span-4">
-                                    <textarea name="service_description[]" placeholder="Décrivez votre prestation..." rows="2" class="w-full px-3 py-2 border-2 border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm bg-white shadow-sm transition-all duration-200 hover:border-gray-300 resize-none" required></textarea>
-                                </div>
-                                <div class="col-span-1">
-                                    <input type="number" name="service_quantity[]" min="1" value="1" class="w-full px-2 py-2 border-2 border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm text-center bg-white font-medium shadow-sm transition-all duration-200 hover:border-gray-300" required>
-                                </div>
-                                <div class="col-span-1">
-                                    <select name="service_unit[]" class="w-full px-2 py-2 border-2 border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm bg-white shadow-sm transition-all duration-200 hover:border-gray-300">
-                                        <option value="">Unité</option>
-                                        <option value="heure">Heure</option>
-                                        <option value="jour">Jour</option>
-                                        <option value="piece">Pièce</option>
-                                        <option value="metre">Mètre</option>
-                                        <option value="m2">m²</option>
-                                        <option value="forfait">Forfait</option>
-                                        <option value="autre">Autre</option>
-                                    </select>
-                                </div>
-                                <div class="col-span-1">
-                                    <div class="relative">
-                                        <input type="number" name="service_price[]" step="0.01" min="0" placeholder="0.00" class="w-full px-2 py-2 pl-6 border-2 border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm text-right bg-white font-medium shadow-sm transition-all duration-200 hover:border-gray-300" required>
-                                        <span class="absolute left-2 top-1/2 transform -translate-y-1/2 text-gray-400 text-xs">€</span>
-                                    </div>
-                                </div>
-                                <div class="col-span-1 text-center">
-                                    <button type="button" class="text-red-500 hover:text-red-700 hover:bg-red-50 p-2 rounded-full transition-all duration-200 transform hover:scale-110" onclick="this.closest('.grid').remove(); updateTotal();" title="Supprimer cette prestation">
->>>>>>> 7267c96818821c72c143681c83ce567b3ab7849f
                                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
                                         </svg>
@@ -936,6 +875,49 @@
                                         </svg>
                                     </button>
                                 </div>
+                                </div>
+                            `;
+                            container.appendChild(newService);
+                            
+                            // Ajouter les event listeners pour le calcul automatique
+                            newService.querySelectorAll('input[name="service_quantity[]"], input[name="service_price[]"]').forEach(input => {
+                                input.addEventListener('input', updateTotal);
+                            });
+                            
+                            updateTotal();
+                        }
+                    });
+                }
+                
+                // Nouveau bouton "Ajouter une prestation" dans la section Notes
+                const addServiceBtnNotes = document.getElementById('addServiceBtnNotes');
+                if (addServiceBtnNotes) {
+                    console.log('✅ Bouton Ajouter prestation (Notes) trouvé et configuré');
+                    addServiceBtnNotes.addEventListener('click', () => {
+                        console.log('🔄 Ajout d\'une nouvelle prestation depuis Notes...');
+                        const container = document.getElementById('servicesContainerFullPage');
+                        if (container) {
+                            const newService = document.createElement('div');
+                            newService.className = 'flex items-center gap-3 p-3 bg-white rounded-lg border shadow-sm';
+                            newService.innerHTML = `
+                                <div class="flex-1">
+                                    <label class="block text-xs font-medium text-gray-600 mb-1">Description de la prestation</label>
+                                    <input type="text" name="service_description[]" placeholder="Décrivez votre prestation..." class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm" required>
+                                </div>
+                                <div class="w-16">
+                                    <label class="block text-xs font-medium text-gray-600 mb-1">Quantité</label>
+                                    <input type="number" name="service_quantity[]" min="1" value="1" class="w-full px-2 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm text-center" required>
+                                </div>
+                                <div class="w-28">
+                                    <label class="block text-xs font-medium text-gray-600 mb-1">Prix HT</label>
+                                    <input type="number" name="service_price[]" step="0.01" min="0" placeholder="0.00 €" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm text-right" required>
+                                </div>
+                                <div class="flex items-end">
+                                    <button type="button" class="text-red-500 hover:text-red-700 hover:bg-red-50 p-2 rounded-lg transition-colors" onclick="this.closest('.flex.items-center').remove(); updateTotal();" title="Supprimer cette prestation">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                                        </svg>
+                                    </button>
                                 </div>
                             `;
                             container.appendChild(newService);
