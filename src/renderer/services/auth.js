@@ -69,6 +69,15 @@ class AuthService {
                 this.currentUser = session.user;
                 this.isAuthenticated = true;
                 console.log('✅ Utilisateur déjà connecté:', session.user.email);
+                
+                // Transmettre l'utilisateur au service de base de données
+                if (window.dbService && typeof window.dbService.setCurrentUser === 'function') {
+                    window.dbService.setCurrentUser(session.user);
+                    console.log('👤 Utilisateur transmis au service de base de données');
+                } else {
+                    console.warn('⚠️ Service de base de données non disponible pour setCurrentUser');
+                }
+                
                 return true;
             }
 
@@ -145,6 +154,14 @@ class AuthService {
 
             this.currentUser = data.user;
             this.isAuthenticated = true;
+
+            // Transmettre l'utilisateur au service de base de données
+            if (window.dbService && typeof window.dbService.setCurrentUser === 'function') {
+                window.dbService.setCurrentUser(data.user);
+                console.log('👤 Utilisateur transmis au service de base de données lors de la connexion');
+            } else {
+                console.warn('⚠️ Service de base de données non disponible pour setCurrentUser lors de la connexion');
+            }
 
             console.log('✅ Connexion réussie:', data.user.email);
             return {

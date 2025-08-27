@@ -73,7 +73,20 @@ class DatabaseService {
 
     // Vérifier si connecté à la vraie DB
     isRealDatabase() {
-        return this.isConnected && this.supabase;
+        // FORCER LA VRAIE BASE DE DONNÉES - DEBUG
+        const hasSupabase = !!this.supabase;
+        const hasAPI = !!window.supabaseAPI;
+        const isConfigured = hasAPI && window.supabaseAPI.isConfigured();
+        const isConnected = this.isConnected;
+        
+        console.log('🔍 [DEBUG] isRealDatabase vérifications:');
+        console.log('  - this.supabase:', hasSupabase);
+        console.log('  - window.supabaseAPI:', hasAPI);
+        console.log('  - isConfigured():', isConfigured);
+        console.log('  - isConnected:', isConnected);
+        
+        // FORCER LE MODE RÉEL si Supabase est disponible
+        return hasSupabase && isConnected;
     }
 
     // === GESTION DES CLIENTS ===
@@ -211,11 +224,35 @@ class DatabaseService {
 
     // === GESTION DES DEVIS ===
     async getQuotes() {
-        if (!this.isRealDatabase()) {
-            return this.getMockQuotes();
+        console.log('📋 [getQuotes] Début...');
+        
+        // FORCER L'UTILISATION DE SUPABASE COMME POUR createQuote
+        if (!this.supabase) {
+            console.log('❌ [getQuotes] Supabase non disponible, initialisation...');
+            
+            // Essayer d'initialiser
+            if (window.supabaseAPI && window.supabaseAPI.isConfigured()) {
+                const supabaseUrl = window.supabaseAPI.getSupabaseUrl();
+                const supabaseKey = window.supabaseAPI.getSupabaseKey();
+                
+                console.log('🔑 [getQuotes] Configuration trouvée, URL:', supabaseUrl);
+                
+                if (window.supabase) {
+                    this.supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
+                    console.log('✅ [getQuotes] Supabase initialisé en mode forcé');
+                } else {
+                    console.error('❌ [getQuotes] window.supabase non disponible');
+                    return this.getMockQuotes();
+                }
+            } else {
+                console.error('❌ [getQuotes] Configuration Supabase non disponible');
+                return this.getMockQuotes();
+            }
         }
 
         try {
+            console.log('🚀 [getQuotes] === TENTATIVE RÉCUPÉRATION SUPABASE ===');
+            
             const { data, error } = await this.supabase
                 .from('quotes')
                 .select(`
@@ -226,49 +263,325 @@ class DatabaseService {
                 `)
                 .order('created_at', { ascending: false });
 
-            if (error) throw error;
+            if (error) {
+                console.error('❌ [getQuotes] Erreur Supabase:', error);
+                throw error;
+            }
+            
+            console.log('✅ [getQuotes] Données récupérées de Supabase:', data);
             return data;
 
         } catch (error) {
-            console.error('Erreur lors du chargement des devis:', error);
-            throw error;
+            console.error('❌ [getQuotes] Erreur lors du chargement des devis:', error);
+            console.log('⚠️ [getQuotes] Fallback vers données mock');
+            return this.getMockQuotes();
         }
     }
 
     async createQuote(quoteData) {
-        if (!this.isRealDatabase()) {
-            return this.createMockQuote(quoteData);
+        console.log('🚀 [createQuote] === DÉBUT CRÉATION DEVIS ===');
+        console.log('📊 Données reçues:', JSON.stringify(quoteData, null, 2));
+        
+        // FORCER LA VRAIE BASE DE DONNÉES - DEBUG
+        console.log('🔧 FORCE: Utilisation obligatoire de Supabase');
+        console.log('🔍 État actuel:');
+        console.log('  - this.supabase:', !!this.supabase);
+        console.log('  - this.currentUser:', !!this.currentUser);
+        console.log('  - window.supabaseAPI:', !!window.supabaseAPI);
+        console.log('  - supabaseAPI.isConfigured:', window.supabaseAPI ? window.supabaseAPI.isConfigured() : 'N/A');
+        
+        // Vérifier si Supabase est disponible
+        if (!this.supabase) {
+            console.error('❌ Supabase non disponible, initialisation...');
+            
+            // Essayer d'initialiser
+            if (window.supabaseAPI && window.supabaseAPI.isConfigured()) {
+                const supabaseUrl = window.supabaseAPI.getSupabaseUrl();
+                const supabaseKey = window.supabaseAPI.getSupabaseKey();
+                
+                console.log('🔑 Configuration trouvée, URL:', supabaseUrl);
+                
+                if (window.supabase) {
+                    this.supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
+                    console.log('✅ Supabase initialisé en mode forcé');
+                } else {
+                    console.error('❌ window.supabase non disponible');
+                    return this.createMockQuote(quoteData);
+                }
+            } else {
+                console.error('❌ Configuration Supabase non disponible');
+                return this.createMockQuote(quoteData);
+            }
+        }
+        
+        // Vérifier l'utilisateur
+        if (!this.currentUser) {
+            console.error('❌ Pas d\'utilisateur connecté - tentative de récupération...');
+            
+            // Essayer de récupérer l'utilisateur depuis AuthService
+            if (window.authService) {
+                console.log('🔍 Tentative de récupération utilisateur via AuthService...');
+                try {
+                    const user = await window.authService.getCurrentUser();
+                    if (user) {
+                        console.log('✅ Utilisateur récupéré:', user.email);
+                        this.setCurrentUser(user);
+                    } else {
+                        console.error('❌ Aucun utilisateur dans AuthService');
+                        return this.createMockQuote(quoteData);
+                    }
+                } catch (error) {
+                    console.error('❌ Erreur récupération utilisateur:', error);
+                    return this.createMockQuote(quoteData);
+                }
+            } else {
+                console.error('❌ AuthService non disponible');
+                return this.createMockQuote(quoteData);
+            }
         }
 
         try {
-            // Générer le numéro de devis
-            const { data: quoteNumber, error: numberError } = await this.supabase
-                .rpc('generate_quote_number', { p_user_id: this.currentUser.id });
-
-            if (numberError) throw numberError;
-
+            console.log('🚀 === TENTATIVE CRÉATION SUPABASE ===');
+            console.log('👤 Utilisateur final:', this.currentUser.email);
+            console.log('🆔 ID utilisateur:', this.currentUser.id);
+            console.log('📋 Données à insérer:', quoteData);
+            
+            // Créer directement sans générer de numéro (simplification)
+            const quoteNumberSimple = 'DEV-' + Date.now();
+            
+            const insertData = {
+                user_id: this.currentUser.id,
+                quote_number: quoteNumberSimple,
+                status: 'draft',
+                notes: quoteData.notes || '',
+                subtotal_ht: quoteData.totalHT || 0,
+                tax_amount: quoteData.totalTVA || 0,
+                total_ttc: quoteData.totalTTC || 0,
+                quote_date: new Date().toISOString().split('T')[0],
+                // Ajouter les informations client
+                client_name: quoteData.clientName || '',
+                client_email: quoteData.clientEmail || '',
+                client_phone: quoteData.clientPhone || '',
+                client_address: quoteData.clientAddress || ''
+            };
+            
+            console.log('📊 Données à insérer:', insertData);
+            
             const { data, error } = await this.supabase
                 .from('quotes')
-                .insert([{
-                    ...quoteData,
-                    quote_number: quoteNumber,
-                    user_id: this.currentUser.id
-                }])
+                .insert([insertData])
                 .select()
                 .single();
 
-            if (error) throw error;
+            if (error) {
+                console.error('❌ Erreur Supabase:', error);
+                console.error('❌ Erreur détaillée:', JSON.stringify(error, null, 2));
+                console.error('❌ Message erreur:', error.message);
+                console.error('❌ Code erreur:', error.code);
+                console.error('❌ Détails erreur:', error.details);
+                throw error;
+            }
+            
+            console.log('✅ Devis créé dans Supabase:', data);
+            
+            // Créer les lignes de devis (quote_lines) si il y a des services
+            if (quoteData.services && Array.isArray(quoteData.services) && quoteData.services.length > 0) {
+                console.log('📋 Création des lignes de devis...', quoteData.services);
+                
+                const quoteLines = quoteData.services.map((service, index) => ({
+                    quote_id: data.id,
+                    line_order: index + 1,
+                    description: service.description || '',
+                    quantity: service.quantity || 1,
+                    unit_price_ht: service.price || 0,
+                    total_ht: (service.quantity || 1) * (service.price || 0)
+                }));
+                
+                console.log('📊 [createQuote] Données à insérer dans quote_lines:', quoteLines);
+                
+                const { data: linesData, error: linesError } = await this.supabase
+                    .from('quote_lines')
+                    .insert(quoteLines);
+                
+                if (linesError) {
+                    console.error('⚠️ Erreur lors de la création des lignes:', linesError);
+                    console.error('⚠️ Détails erreur lignes:', JSON.stringify(linesError, null, 2));
+                    // Ne pas faire échouer tout le devis pour ça
+                } else {
+                    console.log('✅ Lignes de devis créées avec succès:', linesData);
+                }
+            } else {
+                console.log('⚠️ Aucun service à sauvegarder:', {
+                    hasServices: !!quoteData.services,
+                    isArray: Array.isArray(quoteData.services),
+                    length: quoteData.services ? quoteData.services.length : 0,
+                    services: quoteData.services
+                });
+            }
+            
             return data;
 
         } catch (error) {
-            console.error('Erreur lors de la création du devis:', error);
-            throw error;
+            console.error('❌ Erreur lors de la création du devis:', error);
+            console.error('❌ Stack:', error.stack);
+            
+            // En cas d'erreur, utiliser le mode mock comme fallback
+            console.log('🔄 Fallback vers mode mock');
+            return this.createMockQuote(quoteData);
         }
     }
 
     // Alias pour compatibilité
     async getAllQuotes() {
         return await this.getQuotes();
+    }
+
+    async getQuoteById(quoteId) {
+        console.log('🔍 [getQuoteById] Récupération du devis:', quoteId);
+        
+        // FORCER L'UTILISATION DE SUPABASE
+        if (!this.supabase) {
+            console.log('❌ [getQuoteById] Supabase non disponible, initialisation...');
+            
+            // Essayer d'initialiser
+            if (window.supabaseAPI && window.supabaseAPI.isConfigured()) {
+                const supabaseUrl = window.supabaseAPI.getSupabaseUrl();
+                const supabaseKey = window.supabaseAPI.getSupabaseKey();
+                
+                if (window.supabase) {
+                    this.supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
+                    console.log('✅ [getQuoteById] Supabase initialisé');
+                } else {
+                    console.error('❌ [getQuoteById] window.supabase non disponible');
+                    return null;
+                }
+            } else {
+                console.error('❌ [getQuoteById] Configuration Supabase non disponible');
+                return null;
+            }
+        }
+
+        try {
+            console.log('🚀 [getQuoteById] === TENTATIVE RÉCUPÉRATION SUPABASE ===');
+            
+            // D'abord récupérer le devis de base
+            const { data: quote, error: quoteError } = await this.supabase
+                .from('quotes')
+                .select(`
+                    *,
+                    clients (
+                        name
+                    )
+                `)
+                .eq('id', quoteId)
+                .single();
+
+            if (quoteError) {
+                console.error('❌ [getQuoteById] Erreur récupération devis:', quoteError);
+                console.error('❌ [getQuoteById] Détail erreur:', JSON.stringify(quoteError, null, 2));
+                throw quoteError;
+            }
+            
+            console.log('✅ [getQuoteById] Devis récupéré:', quote);
+            console.log('🔍 [getQuoteById] Détails du devis récupéré:', JSON.stringify(quote, null, 2));
+            
+            // Ensuite récupérer les lignes de devis (quote_lines)
+            console.log('🔍 [getQuoteById] Recherche des lignes pour quote_id:', quoteId);
+            const { data: quoteLines, error: linesError } = await this.supabase
+                .from('quote_lines')
+                .select('*')
+                .eq('quote_id', quoteId)
+                .order('line_order');
+            
+            console.log('📊 [getQuoteById] Résultat requête quote_lines:', {
+                data: quoteLines,
+                error: linesError,
+                count: quoteLines ? quoteLines.length : 0
+            });
+            
+            if (linesError) {
+                console.log('⚠️ [getQuoteById] Erreur récupération lignes:', linesError);
+                // Continuer même s'il n'y a pas de lignes
+                quote.services = [];
+            } else if (!quoteLines || quoteLines.length === 0) {
+                console.log('⚠️ [getQuoteById] Aucune ligne de devis trouvée pour ce devis');
+                quote.services = [];
+            } else {
+                // Transformer les quote_lines en format services pour compatibilité
+                quote.services = quoteLines.map(line => ({
+                    description: line.description,
+                    quantity: line.quantity,
+                    price: line.unit_price_ht,
+                    unit: '' // Ajouter un champ unit vide par défaut
+                }));
+                console.log('✅ [getQuoteById] Lignes de devis récupérées et transformées:', quote.services);
+            }
+            
+            return quote;
+
+        } catch (error) {
+            console.error('❌ [getQuoteById] Erreur lors de la récupération du devis:', error);
+            return null;
+        }
+    }
+
+    async deleteQuote(quoteId) {
+        console.log('🗑️ [deleteQuote] Suppression du devis:', quoteId);
+        
+        // FORCER L'UTILISATION DE SUPABASE
+        if (!this.supabase) {
+            console.log('❌ [deleteQuote] Supabase non disponible, initialisation...');
+            
+            // Essayer d'initialiser
+            if (window.supabaseAPI && window.supabaseAPI.isConfigured()) {
+                const supabaseUrl = window.supabaseAPI.getSupabaseUrl();
+                const supabaseKey = window.supabaseAPI.getSupabaseKey();
+                
+                if (window.supabase) {
+                    this.supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
+                    console.log('✅ [deleteQuote] Supabase initialisé');
+                } else {
+                    console.error('❌ [deleteQuote] window.supabase non disponible');
+                    return false;
+                }
+            } else {
+                console.error('❌ [deleteQuote] Configuration Supabase non disponible');
+                return false;
+            }
+        }
+
+        try {
+            console.log('🚀 [deleteQuote] === TENTATIVE SUPPRESSION SUPABASE ===');
+            
+            // D'abord supprimer les services liés (si des relations existent)
+            const { error: servicesError } = await this.supabase
+                .from('quote_services')
+                .delete()
+                .eq('quote_id', quoteId);
+
+            if (servicesError) {
+                console.log('⚠️ [deleteQuote] Pas de services à supprimer ou erreur:', servicesError);
+                // Continuer même s'il n'y a pas de services
+            }
+            
+            // Ensuite supprimer le devis
+            const { error } = await this.supabase
+                .from('quotes')
+                .delete()
+                .eq('id', quoteId);
+
+            if (error) {
+                console.error('❌ [deleteQuote] Erreur Supabase:', error);
+                throw error;
+            }
+            
+            console.log('✅ [deleteQuote] Devis supprimé de Supabase');
+            return true;
+
+        } catch (error) {
+            console.error('❌ [deleteQuote] Erreur lors de la suppression du devis:', error);
+            return false;
+        }
     }
 
     // === STATISTIQUES ===

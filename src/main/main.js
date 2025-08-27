@@ -122,6 +122,20 @@ class Application {
       this.mainWindow.show();
       this.mainWindow.focus();
     });
+    
+    // Diagnostic : écouter les messages de console de la fenêtre principale
+    this.mainWindow.webContents.on('console-message', (event, level, message) => {
+      console.log(`[MAIN WINDOW CONSOLE]: ${message}`);
+    });
+    
+    // Diagnostic : confirmer le chargement du DOM
+    this.mainWindow.webContents.on('dom-ready', () => {
+      console.log('🎯 [MAIN WINDOW] DOM chargé - scripts devraient s\'exécuter maintenant');
+    });
+    
+    this.mainWindow.webContents.on('did-finish-load', () => {
+      console.log('🎯 [MAIN WINDOW] Page complètement chargée');
+    });
 
     this.mainWindow.on('closed', () => {
       this.mainWindow = null;

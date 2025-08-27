@@ -452,7 +452,7 @@
 
                         <!-- Boutons d'action -->
                         <div class="flex justify-end items-center pt-6 border-t">
-                            <button type="button" id="saveQuoteBtnMain" class="inline-flex items-center px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors">
+                            <button type="button" id="saveQuoteBtnMain" class="inline-flex items-center px-6 py-2 bg-white hover:bg-gray-50 text-black text-sm font-medium rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors shadow-sm">
                                 <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4"/>
                                 </svg>
@@ -469,23 +469,326 @@
     <!-- La modal quoteModal a été complètement supprimée pour éviter les conflits avec la vue plein écran -->
 
     <!-- Scripts -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <!-- Scripts -->
+    
+    <!-- Premier test de log IMMÉDIAT AVANT TOUT -->
+    <script>
+        console.log('🔥🔥🔥🔥🔥 PREMIER SCRIPT DIRECT CHARGÉ DANS LA FENÊTRE PRINCIPALE 🔥🔥🔥🔥🔥');
+        
+        // Tests de base
+        console.log('window.location:', window.location.href);
+        console.log('document.title:', document.title);
+        console.log('Heure:', new Date().toISOString());
+        
+        // Alerter pour être sûr que quelque chose s'exécute
+        setTimeout(() => {
+            console.log('🚨 SCRIPT DIRECT TOUJOURS EN VIE APRÈS 1 SECONDE');
+        }, 1000);
+    </script>
+    
+    <script src="js/jspdf.min.js"></script>
+    <script>
+        // Vérification immédiate de jsPDF après chargement
+        window.addEventListener('load', function() {
+            console.log('🔍 Vérification jsPDF après chargement de la page...');
+            if (window.jspdf && window.jspdf.jsPDF) {
+                console.log('✅ jsPDF disponible via window.jspdf.jsPDF');
+                window.jsPDFReady = true;
+            } else if (window.jsPDF) {
+                console.log('✅ jsPDF disponible via window.jsPDF');
+                window.jsPDFReady = true;
+            } else {
+                console.error('❌ jsPDF non chargé correctement');
+                window.jsPDFReady = false;
+            }
+        });
+    </script>
     <script src="js/supabase.min.js"></script>
+    <script src="services/auth.js"></script>
+    <script src="services/database.js"></script>
     <script src="js/init.js"></script>
     <script src="js/app.js"></script>
+    
+    <script>
+        // DEBUG: Vérifier l'état des services au chargement
+        console.log('🔥🔥🔥 [MAIN WINDOW] SCRIPT EXÉCUTÉ - DÉBUT VÉRIFICATIONS 🔥🔥🔥');
+        
+        // Fonction d'attente pour les services
+        async function waitForServices() {
+            console.log('⏰ [MAIN WINDOW] Attente des services...');
+            
+            // Attendre que les services soient disponibles
+            let attempts = 0;
+            const maxAttempts = 50;
+            
+            while (attempts < maxAttempts) {
+                if (window.dbService && window.authService) {
+                    console.log('✅ [MAIN WINDOW] Services trouvés!');
+                    console.log('🔍 window.dbService:', !!window.dbService);
+                    console.log('🔍 window.dbService type:', typeof window.dbService);
+                    if (window.dbService) {
+                        console.log('🔍 dbService.createQuote existe:', typeof window.dbService.createQuote);
+                        console.log('🔍 dbService methods:', Object.getOwnPropertyNames(Object.getPrototypeOf(window.dbService)));
+                    }
+                    console.log('🔍 window.authService existe:', !!window.authService);
+                    console.log('🔍 window.authService type:', typeof window.authService);
+                    return true;
+                }
+                
+                console.log(`⏰ [MAIN WINDOW] Tentative ${attempts + 1}/${maxAttempts} - Services non disponibles`);
+                attempts++;
+                await new Promise(resolve => setTimeout(resolve, 100));
+            }
+            
+            console.error('❌ [MAIN WINDOW] Échec de l\\\'attente des services');
+            return false;
+        }
+        
+        // === FONCTIONS GLOBALES POUR LES ACTIONS SUR LES DEVIS - DÉFINIES TRÈS TÔT ===
+        
+        console.log('🔥 [DEBUG] Définition des fonctions globales...');
+        
+        // Fonction pour afficher la vue création/modification de devis
+        window.showNewQuoteView = function() {
+            console.log('📝 Ouverture de la vue création de devis');
+            
+            // Afficher la vue création de devis en plein écran
+            const newQuoteView = document.getElementById('newQuoteView');
+            if (newQuoteView) {
+                console.log('✅ Vue newQuoteView trouvée, ouverture...');
+                newQuoteView.classList.remove('hidden');
+                
+                // FORCER LES STYLES POUR PRENDRE TOUT L'ÉCRAN
+                newQuoteView.style.position = 'fixed';
+                newQuoteView.style.top = '0';
+                newQuoteView.style.left = '0';
+                newQuoteView.style.right = '0';
+                newQuoteView.style.bottom = '0';
+                newQuoteView.style.width = '100vw';
+                newQuoteView.style.height = '100vh';
+                newQuoteView.style.zIndex = '9999';
+                newQuoteView.style.backgroundColor = '#f3f4f6';
+                newQuoteView.style.display = 'block !important';
+                console.log('🔧 Vue forcée en plein écran avec styles JavaScript');
+            } else {
+                console.error('❌ Vue newQuoteView non trouvée !');
+            }
+        };
+        
+        window.editQuote = async function(quoteId) {
+            console.log('✏️ [QUOTES] Modification du devis:', quoteId);
+            
+            try {
+                if (!window.dbService) {
+                    console.error('❌ Service de base de données non disponible');
+                    alert('Erreur - Service de base de données non disponible');
+                    return;
+                }
+                
+                // Récupérer les données du devis
+                const quote = await window.dbService.getQuoteById(quoteId);
+                if (!quote) {
+                    alert('Devis non trouvé');
+                    return;
+                }
+                
+                console.log('📋 Chargement du devis pour modification:', quote);
+                
+                // Charger les données dans le formulaire
+                loadQuoteInForm(quote);
+                
+                // Basculer vers la vue de création/modification 
+                showNewQuoteView();
+                
+            } catch (error) {
+                console.error('❌ [QUOTES] Erreur lors de la modification:', error);
+                alert('Erreur lors du chargement du devis pour modification');
+            }
+        }
+
+        window.generateQuotePDF = async function(quoteId) {
+            console.log('📄 [QUOTES] Génération PDF pour le devis:', quoteId);
+            
+            try {
+                if (!window.dbService) {
+                    console.error('❌ Service de base de données non disponible');
+                    alert('Erreur - Service de base de données non disponible');
+                    return;
+                }
+                
+                // Récupérer les détails du devis
+                const quote = await window.dbService.getQuoteById(quoteId);
+                if (!quote) {
+                    alert('Devis non trouvé');
+                    return;
+                }
+                
+                console.log('📄 [PDF] Génération PDF à partir du devis:', quote);
+                
+                // Appeler la même fonction de génération PDF que pour les nouveaux devis
+                await generateAndDownloadPDF({
+                    clientName: quote.client_name || '',
+                    clientEmail: quote.client_email || '',
+                    clientPhone: quote.client_phone || '',
+                    clientAddress: quote.client_address || '',
+                    quoteDate: quote.quote_date || new Date().toISOString().split('T')[0],
+                    notes: quote.notes || '',
+                    services: quote.services || [],
+                    totalHT: quote.total_ht || 0,
+                    totalTVA: quote.total_tva || 0,
+                    totalTTC: quote.total_ttc || 0,
+                    quoteNumber: quote.quote_number || `DEV-${Date.now()}`
+                });
+                
+            } catch (error) {
+                console.error('❌ [QUOTES] Erreur lors de la génération PDF:', error);
+                alert('Erreur lors de la génération du PDF');
+            }
+        }
+
+        window.deleteQuote = async function(quoteId) {
+            console.log('🗑️ [QUOTES] Suppression du devis:', quoteId);
+            
+            if (!confirm('Êtes-vous sûr de vouloir supprimer ce devis ?')) {
+                return;
+            }
+            
+            try {
+                if (!window.dbService) {
+                    console.error('❌ Service de base de données non disponible');
+                    alert('Erreur - Service de base de données non disponible');
+                    return;
+                }
+                
+                // Supprimer le devis
+                await window.dbService.deleteQuote(quoteId);
+                
+                alert('Devis supprimé avec succès');
+                
+                // Recharger la liste
+                if (typeof window.loadQuotesList === 'function') {
+                    window.loadQuotesList();
+                } else {
+                    // Recharger la page si la fonction n'est pas disponible
+                    location.reload();
+                }
+                
+            } catch (error) {
+                console.error('❌ [QUOTES] Erreur lors de la suppression:', error);
+                alert('Erreur lors de la suppression du devis');
+            }
+        }
+
+        window.loadQuotesList = async function() {
+            console.log('📋 [QUOTES] Chargement de la liste des devis...');
+            
+            try {
+                if (!window.dbService) {
+                    console.error('❌ [QUOTES] Service de base de données non disponible');
+                    return;
+                }
+                
+                const quotes = await window.dbService.getQuotes();
+                console.log('📋 [QUOTES] Devis récupérés:', quotes);
+                
+                const container = document.getElementById('quotes-container');
+                if (!container) {
+                    console.error('❌ [QUOTES] Container non trouvé');
+                    return;
+                }
+                
+                if (!quotes || quotes.length === 0) {
+                    container.innerHTML = `
+                        <div class="text-center py-8">
+                            <p class="text-gray-500">Aucun devis trouvé</p>
+                        </div>
+                    `;
+                    return;
+                }
+                
+                container.innerHTML = quotes.map(quote => `
+                    <div class="bg-white rounded-lg shadow-md p-6 border border-gray-200">
+                        <div class="flex justify-between items-start mb-4">
+                            <div>
+                                <h3 class="text-lg font-semibold text-gray-900">${quote.quote_number || 'N/A'}</h3>
+                                <p class="text-gray-600">${quote.client_name || 'N/A'}</p>
+                            </div>
+                            <div class="text-right">
+                                <p class="text-lg font-semibold text-gray-900">${(quote.total_ttc || 0).toFixed(2)} €</p>
+                                <p class="text-sm text-gray-500">${quote.quote_date || 'N/A'}</p>
+                            </div>
+                        </div>
+                        
+                        <div class="flex justify-end space-x-2 pt-4 border-t border-gray-100">
+                            <button onclick="editQuote('${quote.id}')" class="px-3 py-1 text-sm text-blue-600 hover:text-blue-800 hover:bg-blue-50 rounded">
+                                Modifier
+                            </button>
+                            <button onclick="deleteQuote('${quote.id}')" class="px-3 py-1 text-sm text-red-600 hover:text-red-800 hover:bg-red-50 rounded">
+                                Supprimer
+                            </button>
+                            <button onclick="generateQuotePDF('${quote.id}')" class="px-3 py-1 text-sm text-green-600 hover:text-green-800 hover:bg-green-50 rounded">
+                                PDF
+                            </button>
+                        </div>
+                    </div>
+                `).join('');
+                
+                console.log(`✅ [QUOTES] ${quotes.length} devis affichés`);
+                
+            } catch (error) {
+                console.error('❌ [QUOTES] Erreur lors du chargement des devis:', error);
+                const container = document.getElementById('quotes-container');
+                if (container) {
+                    container.innerHTML = `
+                        <div class="text-center py-8">
+                            <p class="text-red-500">Erreur lors du chargement des devis</p>
+                        </div>
+                    `;
+                }
+            }
+        }
+        
+        // === FIN DÉFINITIONS FONCTIONS GLOBALES ===
+        
+        document.addEventListener('DOMContentLoaded', async function() {
+            console.log('📝 [MAIN WINDOW] DOM CHARGÉ - Attente services...');
+            
+            const servicesReady = await waitForServices();
+            if (servicesReady) {
+                console.log('🎉 [MAIN WINDOW] Services prêts - Initialisation application');
+                
+                // Charger les données initiales
+                setTimeout(async () => {
+                    console.log('🔄 [INIT] Chargement des données initiales...');
+                    
+                    // Si l'onglet devis est visible (ou sera visible bientôt), charger les devis
+                    // Attendre un peu que tout soit initialisé
+                    try {
+                        await window.loadQuotesList();
+                        console.log('✅ [INIT] Données des devis chargées');
+                    } catch (error) {
+                        console.error('❌ [INIT] Erreur lors du chargement initial des devis:', error);
+                    }
+                }, 1000);
+                
+            } else {
+                console.error('💥 [MAIN WINDOW] Services non disponibles - Mode dégradé');
+            }
+        });
+    </script>
     
     <script>
         // ==========================================
         // FONCTION DE TEST SIMPLE (disponible immédiatement)
         // ==========================================
         window.testSaveFunction = function() {
-            alert('🔥 TEST: La fonction JavaScript fonctionne !');
+            alert('🔥 TEST - La fonction JavaScript fonctionne !');
             console.log('🔥 TEST: Bouton de test cliqué !');
             
             // Test de collecte des données du formulaire
             const form = document.getElementById('newQuoteForm');
             if (!form) {
-                alert('❌ ERREUR: Formulaire non trouvé');
+                alert('❌ ERREUR - Formulaire non trouvé');
                 return;
             }
             
@@ -496,7 +799,7 @@
             console.log('📊 Services trouvés:', services.length);
             
             if (services.length === 0) {
-                alert('⚠️ Aucune ligne de service trouvée. Ajoutez une prestation d\'abord !');
+                alert('⚠️ Aucune ligne de service trouvée. Ajoutez une prestation d\\\'abord !');
                 return;
             }
             
@@ -566,7 +869,7 @@
                         }, 10);
                     }
                 } catch(e) {
-                    console.log('⚠️ Pas d\'historique à nettoyer');
+                    console.log('⚠️ Pas d\\\'historique à nettoyer');
                 }
                 
                 // 3. Réinitialiser TOUS les onglets de l'application
@@ -607,6 +910,399 @@
                 }
                 
                 console.log('🎯 FERMETURE RADICALE TERMINÉE');
+            }
+
+            // Fonction pour charger les devis
+            async function loadQuotesList() {
+                console.log('📋 [QUOTES] Chargement de la liste des devis...');
+                
+                try {
+                    if (!window.dbService) {
+                        console.error('❌ [QUOTES] Service de base de données non disponible');
+                        return;
+                    }
+                    
+                    const quotes = await window.dbService.getQuotes();
+                    console.log('📋 [QUOTES] Devis récupérés:', quotes);
+                    
+                    const quotesListContainer = document.getElementById('quotesList');
+                    if (!quotesListContainer) {
+                        console.error('❌ [QUOTES] Container quotesList non trouvé');
+                        return;
+                    }
+                    
+                    if (!quotes || quotes.length === 0) {
+                        quotesListContainer.innerHTML = `
+                            <div class="text-center py-8 text-gray-500">
+                                <p>Aucun devis créé pour le moment.</p>
+                            </div>
+                        `;
+                        return;
+                    }
+                    
+                    // Générer le HTML des devis
+                    const quotesHTML = quotes.map(quote => {
+                        const date = new Date(quote.quote_date || quote.created_at).toLocaleDateString('fr-FR');
+                        const status = quote.status || 'draft';
+                        const statusColor = status === 'sent' ? 'bg-blue-100 text-blue-800' : 
+                                          status === 'accepted' ? 'bg-green-100 text-green-800' : 
+                                          status === 'rejected' ? 'bg-red-100 text-red-800' :
+                                          'bg-gray-100 text-gray-800';
+                        
+                        return `
+                            <div class="border border-gray-200 rounded-lg p-4 hover:bg-gray-50 transition-colors">
+                                <div class="flex items-center justify-between">
+                                    <div class="flex-1">
+                                        <div class="flex items-center gap-3">
+                                            <h4 class="font-medium text-gray-900">${quote.quote_number || 'N/A'}</h4>
+                                            <span class="px-2 py-1 text-xs font-medium rounded-full ${statusColor}">
+                                                ${status === 'draft' ? 'Brouillon' : status === 'sent' ? 'Envoyé' : status === 'accepted' ? 'Accepté' : status === 'rejected' ? 'Refusé' : status}
+                                            </span>
+                                        </div>
+                                        <div class="text-sm text-gray-500 mt-1">
+                                            ${date} • ${quote.total_ttc || quote.subtotal_ht || 0}€ TTC
+                                        </div>
+                                        ${quote.notes ? `<div class="text-sm text-gray-600 mt-2">${quote.notes}</div>` : ''}
+                                    </div>
+                                    <div class="flex items-center gap-2">
+                                        <button onclick="editQuote('${quote.id}')" class="px-3 py-1 text-sm text-blue-600 hover:text-blue-800 hover:bg-blue-50 rounded">
+                                            Modifier
+                                        </button>
+                                        <button onclick="generateQuotePDF('${quote.id}')" class="px-3 py-1 text-sm text-green-600 hover:text-green-800 hover:bg-green-50 rounded">
+                                            PDF
+                                        </button>
+                                        <button onclick="deleteQuote('${quote.id}')" class="px-3 py-1 text-sm text-red-600 hover:text-red-800 hover:bg-red-50 rounded">
+                                            Supprimer
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        `;
+                    }).join('');
+                    
+                    quotesListContainer.innerHTML = quotesHTML;
+                    console.log(`✅ [QUOTES] ${quotes.length} devis affichés`);
+                    
+                } catch (error) {
+                    console.error('❌ [QUOTES] Erreur lors du chargement des devis:', error);
+                    const quotesListContainer = document.getElementById('quotesList');
+                    if (quotesListContainer) {
+                        quotesListContainer.innerHTML = `
+                            <div class="text-center py-8 text-red-500">
+                                <p>Erreur lors du chargement des devis.</p>
+                            </div>
+                        `;
+                    }
+                }
+            }
+
+            // Fonction pour ajouter une prestation dans le formulaire
+            function addService(description = '', quantity = 1, unitPrice = 0) {
+                console.log('➕ [FORM] Ajout d\\\'une prestation:', { description, quantity, unitPrice });
+                
+                const container = document.getElementById('servicesContainerFullPage');
+                if (!container) {
+                    console.error('❌ Container servicesContainerFullPage non trouvé');
+                    return;
+                }
+                
+                // Créer le HTML de la nouvelle prestation
+                const serviceHTML = `
+                    <div class="flex items-center gap-3 p-3 bg-white rounded-lg border shadow-sm">
+                        <div class="flex-1">
+                            <label class="block text-xs font-medium text-gray-600 mb-1">Description de la prestation</label>
+                            <input type="text" name="service_description[]" value="${description}" placeholder="Décrivez votre prestation..." class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm" required>
+                        </div>
+                        <div class="w-16">
+                            <label class="block text-xs font-medium text-gray-600 mb-1">Quantité</label>
+                            <input type="number" name="service_quantity[]" value="${quantity}" min="1" class="w-full px-2 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm text-center" required>
+                        </div>
+                        <div class="w-28">
+                            <label class="block text-xs font-medium text-gray-600 mb-1">Prix HT</label>
+                            <input type="number" name="service_price[]" value="${unitPrice}" step="0.01" min="0" placeholder="0.00 €" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm text-right" required>
+                        </div>
+                        <div class="flex items-end">
+                            <button type="button" class="text-red-500 hover:text-red-700 hover:bg-red-50 p-2 rounded-lg transition-colors" onclick="this.closest('.flex.items-center').remove(); updateTotal();" title="Supprimer cette prestation">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+                `;
+                
+                // Ajouter la prestation au container
+                container.insertAdjacentHTML('beforeend', serviceHTML);
+                
+                console.log('✅ [FORM] Prestation ajoutée');
+                
+                // Mettre à jour le total (si la fonction existe)
+                if (typeof updateTotal === 'function') {
+                    updateTotal();
+                }
+            }
+
+            // Fonction pour charger un devis dans le formulaire
+            window.loadQuoteInForm = async function loadQuoteInForm(quote) {
+                console.log('📋 [FORM] Chargement du devis dans le formulaire:', quote);
+                
+                try {
+                    // Remplir les champs de base
+                    const form = document.getElementById('newQuoteForm');
+                    if (!form) {
+                        console.error('❌ [FORM] Formulaire newQuoteForm non trouvé');
+                        return;
+                    }
+                    
+                    // Informations client - DEBUG des valeurs
+                    console.log('📋 [FORM] Valeurs client à charger:', {
+                        client_name: quote.client_name,
+                        client_email: quote.client_email,
+                        client_phone: quote.client_phone,
+                        client_address: quote.client_address
+                    });
+                    
+                    const clientName = form.querySelector('#clientName') || form.querySelector('input[name="clientName"]');
+                    if (clientName) {
+                        clientName.value = quote.client_name || '';
+                        console.log('📋 [FORM] Client name défini:', clientName.value);
+                    } else {
+                        console.warn('⚠️ [FORM] Champ clientName non trouvé');
+                    }
+                    
+                    const clientEmail = form.querySelector('#clientEmail') || form.querySelector('input[name="clientEmail"]');
+                    if (clientEmail) {
+                        clientEmail.value = quote.client_email || '';
+                        console.log('📋 [FORM] Client email défini:', clientEmail.value);
+                    } else {
+                        console.warn('⚠️ [FORM] Champ clientEmail non trouvé');
+                    }
+                    
+                    const clientPhone = form.querySelector('#clientPhone') || form.querySelector('input[name="clientPhone"]');
+                    if (clientPhone) {
+                        clientPhone.value = quote.client_phone || '';
+                        console.log('📋 [FORM] Client phone défini:', clientPhone.value);
+                    } else {
+                        console.warn('⚠️ [FORM] Champ clientPhone non trouvé');
+                    }
+                    
+                    const clientAddress = form.querySelector('#clientAddress') || form.querySelector('textarea[name="clientAddress"]');
+                    if (clientAddress) {
+                        clientAddress.value = quote.client_address || '';
+                        console.log('📋 [FORM] Client address défini:', clientAddress.value);
+                    } else {
+                        console.warn('⚠️ [FORM] Champ clientAddress non trouvé');
+                    }
+                    
+                    // Date
+                    const quoteDate = form.querySelector('#quoteDate') || form.querySelector('input[name="quoteDate"]');
+                    if (quoteDate && quote.quote_date) {
+                        const date = new Date(quote.quote_date);
+                        quoteDate.value = date.toISOString().split('T')[0];
+                        console.log('📋 [FORM] Date définie:', quoteDate.value);
+                    }
+                    
+                    // Notes - CORRECTION du sélecteur
+                    const notes = form.querySelector('#quoteNotes') || form.querySelector('textarea[name="quoteNotes"]');
+                    if (notes) {
+                        notes.value = quote.notes || '';
+                        console.log('📋 [FORM] Notes définies:', notes.value);
+                    } else {
+                        console.warn('⚠️ [FORM] Champ notes non trouvé');
+                    }
+                    
+                    // Charger les prestations si disponibles - CORRECTION du sélecteur
+                    if (quote.services && Array.isArray(quote.services) && quote.services.length > 0) {
+                        console.log('📋 [FORM] Chargement de', quote.services.length, 'prestations');
+                        
+                        const servicesContainer = document.getElementById('servicesContainerFullPage');
+                        if (servicesContainer) {
+                            // Vider les prestations existantes sauf la première (template)
+                            const services = servicesContainer.querySelectorAll('> div');
+                            services.forEach((service, index) => {
+                                if (index > 0) service.remove();
+                            });
+                            
+                            // Remplir la première prestation et ajouter les autres
+                            quote.services.forEach((service, index) => {
+                                if (index === 0) {
+                                    // Modifier la première prestation existante
+                                    const firstService = servicesContainer.querySelector('> div');
+                                    if (firstService) {
+                                        const desc = firstService.querySelector('input[name="service_description[]"]');
+                                        const qty = firstService.querySelector('input[name="service_quantity[]"]');
+                                        const price = firstService.querySelector('input[name="service_price[]"]');
+                                        
+                                        if (desc) desc.value = service.description || '';
+                                        if (qty) qty.value = service.quantity || 1;
+                                        if (price) price.value = service.price || 0;
+                                    }
+                                } else {
+                                    // Ajouter une nouvelle prestation
+                                    addService(service.description || '', service.quantity || 1, service.price || 0);
+                                }
+                            });
+                            
+                            console.log('✅ [FORM] Prestations chargées');
+                        } else {
+                            console.error('❌ [FORM] Container servicesContainerFullPage non trouvé');
+                        }
+                    } else {
+                        console.log('ℹ️ [FORM] Aucune prestation à charger');
+                    }
+                    
+                    console.log('✅ [FORM] Devis chargé dans le formulaire');
+                    
+                } catch (error) {
+                    console.error('❌ [FORM] Erreur lors du chargement du devis:', error);
+                }
+            }
+
+            // Fonction pour générer un PDF à partir d'un devis existant
+            async function generatePDFFromQuote(quote) {
+                console.log('📄 [PDF] Génération PDF à partir du devis:', quote);
+                
+                try {
+                    if (!window.jsPDF) {
+                        console.error('❌ jsPDF non disponible');
+                        alert('Erreur - jsPDF non disponible');
+                        return;
+                    }
+                    
+                    const { jsPDF } = window.jsPDF;
+                    const doc = new jsPDF();
+                    
+                    // Configuration
+                    const margin = 20;
+                    const pageWidth = doc.internal.pageSize.getWidth();
+                    const pageHeight = doc.internal.pageSize.getHeight();
+                    
+                    // Titre
+                    doc.setFontSize(20);
+                    doc.setFont(undefined, 'bold');
+                    doc.text('DEVIS', pageWidth / 2, margin, { align: 'center' });
+                    
+                    // Numéro de devis et date
+                    doc.setFontSize(10);
+                    doc.setFont(undefined, 'normal');
+                    let yPosition = margin + 15;
+                    
+                    if (quote.quote_number) {
+                        doc.text(`Numéro: ${quote.quote_number}`, margin, yPosition);
+                        yPosition += 5;
+                    }
+                    
+                    if (quote.quote_date) {
+                        const date = new Date(quote.quote_date).toLocaleDateString('fr-FR');
+                        doc.text(`Date: ${date}`, margin, yPosition);
+                        yPosition += 10;
+                    }
+                    
+                    // Informations client
+                    if (quote.client_name) {
+                        doc.setFontSize(12);
+                        doc.setFont(undefined, 'bold');
+                        doc.text('Client:', margin, yPosition);
+                        yPosition += 7;
+                        
+                        doc.setFontSize(10);
+                        doc.setFont(undefined, 'normal');
+                        doc.text(quote.client_name, margin, yPosition);
+                        yPosition += 5;
+                        
+                        if (quote.client_email) {
+                            doc.text(quote.client_email, margin, yPosition);
+                            yPosition += 5;
+                        }
+                        
+                        if (quote.client_phone) {
+                            doc.text(quote.client_phone, margin, yPosition);
+                            yPosition += 5;
+                        }
+                        
+                        if (quote.client_address) {
+                            const addressLines = doc.splitTextToSize(quote.client_address, pageWidth - 2 * margin);
+                            doc.text(addressLines, margin, yPosition);
+                            yPosition += addressLines.length * 5;
+                        }
+                        
+                        yPosition += 10;
+                    }
+                    
+                    // Prestations
+                    if (quote.services && Array.isArray(quote.services) && quote.services.length > 0) {
+                        doc.setFontSize(12);
+                        doc.setFont(undefined, 'bold');
+                        doc.text('Prestations:', margin, yPosition);
+                        yPosition += 10;
+                        
+                        // En-têtes du tableau
+                        doc.setFontSize(10);
+                        doc.text('Description', margin, yPosition);
+                        doc.text('Qté', pageWidth - 100, yPosition);
+                        doc.text('P.U.', pageWidth - 70, yPosition);
+                        doc.text('Total', pageWidth - 40, yPosition);
+                        yPosition += 7;
+                        
+                        // Ligne de séparation
+                        doc.line(margin, yPosition, pageWidth - margin, yPosition);
+                        yPosition += 5;
+                        
+                        // Prestations
+                        doc.setFont(undefined, 'normal');
+                        quote.services.forEach(service => {
+                            const description = service.description || 'Service';
+                            const quantity = service.quantity || 1;
+                            const unitPrice = service.unit_price || 0;
+                            const total = quantity * unitPrice;
+                            
+                            doc.text(description.substring(0, 40), margin, yPosition);
+                            doc.text(quantity.toString(), pageWidth - 100, yPosition);
+                            doc.text(`${unitPrice.toFixed(2)}€`, pageWidth - 70, yPosition);
+                            doc.text(`${total.toFixed(2)}€`, pageWidth - 40, yPosition);
+                            yPosition += 7;
+                        });
+                        
+                        yPosition += 10;
+                    }
+                    
+                    // Totaux
+                    if (quote.subtotal_ht || quote.total_ttc) {
+                        doc.setFontSize(12);
+                        doc.setFont(undefined, 'bold');
+                        
+                        if (quote.subtotal_ht) {
+                            doc.text(`Sous-total HT: ${parseFloat(quote.subtotal_ht).toFixed(2)}€`, pageWidth - 80, yPosition, { align: 'right' });
+                            yPosition += 7;
+                        }
+                        
+                        if (quote.total_ttc) {
+                            doc.text(`Total TTC: ${parseFloat(quote.total_ttc).toFixed(2)}€`, pageWidth - 80, yPosition, { align: 'right' });
+                            yPosition += 10;
+                        }
+                    }
+                    
+                    // Notes
+                    if (quote.notes) {
+                        doc.setFontSize(10);
+                        doc.setFont(undefined, 'normal');
+                        doc.text('Notes:', margin, yPosition);
+                        yPosition += 7;
+                        
+                        const notesLines = doc.splitTextToSize(quote.notes, pageWidth - 2 * margin);
+                        doc.text(notesLines, margin, yPosition);
+                    }
+                    
+                    // Sauvegarder le PDF
+                    const fileName = `devis_${quote.quote_number || quote.id || 'export'}_${Date.now()}.pdf`;
+                    doc.save(fileName);
+                    
+                    console.log('✅ [PDF] PDF généré avec succès:', fileName);
+                    
+                } catch (error) {
+                    console.error('❌ [PDF] Erreur lors de la génération PDF:', error);
+                    alert('Erreur lors de la génération du PDF');
+                }
             }
 
             // Tab switching functionality
@@ -650,6 +1346,11 @@
                 if (sidebarItem) {
                     sidebarItem.classList.add('active');
                     console.log(`✅ Sidebar ${tabName} activé`);
+                }
+                
+                // Charger les données spécifiques à l'onglet
+                if (tabName === 'quotes') {
+                    loadQuotesList();
                 }
             }
             
@@ -809,7 +1510,7 @@
                 if (addServiceBtnFullPage) {
                     console.log('✅ Bouton Ajouter une prestation trouvé et configuré');
                     addServiceBtnFullPage.addEventListener('click', () => {
-                        console.log('🔄 Ajout d\'une nouvelle prestation...');
+                        console.log('🔄 Ajout d\\\'une nouvelle prestation...');
                         const container = document.getElementById('servicesContainerFullPage');
                         if (container) {
                             const newService = document.createElement('div');
@@ -894,7 +1595,7 @@
                 if (addServiceBtnNotes) {
                     console.log('✅ Bouton Ajouter prestation (Notes) trouvé et configuré');
                     addServiceBtnNotes.addEventListener('click', () => {
-                        console.log('🔄 Ajout d\'une nouvelle prestation depuis Notes...');
+                        console.log('🔄 Ajout d\\\'une nouvelle prestation depuis Notes...');
                         const container = document.getElementById('servicesContainerFullPage');
                         if (container) {
                             const newService = document.createElement('div');
@@ -937,6 +1638,65 @@
                 const saveQuoteBtnMain = document.getElementById('saveQuoteBtnMain');
                 console.log('🔍 Boutons Enregistrer trouvés:', {saveQuoteBtnFullPage, saveQuoteBtnMain});
                 
+                // Fonction utilitaire pour attendre que jsPDF soit chargé (version simplifiée)
+                function waitForJsPDF(maxRetries = 5, delay = 200) {
+                    return new Promise((resolve, reject) => {
+                        let retries = 0;
+                        
+                        function checkJsPDF() {
+                            console.log(`🔍 Vérification jsPDF tentative ${retries + 1}/${maxRetries}...`);
+                            
+                            // Essayer d'instancier jsPDF directement
+                            try {
+                                // Méthode 1: window.jspdf.jsPDF (version moderne)
+                                if (window.jspdf && typeof window.jspdf.jsPDF === 'function') {
+                                    const testDoc = new window.jspdf.jsPDF();
+                                    if (testDoc) {
+                                        console.log('✅ jsPDF fonctionne via window.jspdf.jsPDF');
+                                        resolve(window.jspdf.jsPDF);
+                                        return;
+                                    }
+                                }
+                                
+                                // Méthode 2: window.jsPDF directement
+                                if (window.jsPDF && typeof window.jsPDF === 'function') {
+                                    const testDoc = new window.jsPDF();
+                                    if (testDoc) {
+                                        console.log('✅ jsPDF fonctionne via window.jsPDF');
+                                        resolve(window.jsPDF);
+                                        return;
+                                    }
+                                }
+                                
+                                // Méthode 3: window.jsPDF.jsPDF
+                                if (window.jsPDF && window.jsPDF.jsPDF && typeof window.jsPDF.jsPDF === 'function') {
+                                    const testDoc = new window.jsPDF.jsPDF();
+                                    if (testDoc) {
+                                        console.log('✅ jsPDF fonctionne via window.jsPDF.jsPDF');
+                                        resolve(window.jsPDF.jsPDF);
+                                        return;
+                                    }
+                                }
+                                
+                            } catch (testError) {
+                                console.warn('⚠️ Erreur lors du test jsPDF:', testError);
+                            }
+                            
+                            retries++;
+                            if (retries >= maxRetries) {
+                                console.error('❌ jsPDF non disponible après', maxRetries, 'tentatives');
+                                reject(new Error('jsPDF n\\\'a pas pu être chargé. Vérifiez votre connexion internet ou rechargez la page.'));
+                                return;
+                            }
+                            
+                            console.log('⏳ Nouvelle tentative dans', delay + 'ms...');
+                            setTimeout(checkJsPDF, delay);
+                        }
+                        
+                        checkJsPDF();
+                    });
+                }
+                
                 // Fonction de sauvegarde commune
                 window.handleSaveQuote = async (buttonElement) => {
                     console.log('💾 Clic sur le bouton Enregistrer détecté !');
@@ -946,7 +1706,7 @@
                     
                     if (!form) {
                         console.error('❌ Formulaire non trouvé !');
-                        alert('❌ Erreur: Formulaire non trouvé');
+                        alert('❌ Erreur - Formulaire non trouvé');
                         return;
                     }
                     
@@ -963,10 +1723,13 @@
                     
                     console.log('✅ Formulaire valide, début de la sauvegarde...');
                     
-                    // Désactiver le bouton pendant le traitement
-                    const originalText = buttonElement.textContent;
-                    buttonElement.disabled = true;
-                    buttonElement.textContent = 'Création en cours...';
+                    // Désactiver le bouton pendant le traitement (avec vérification)
+                    let originalText = '';
+                    if (buttonElement && buttonElement.textContent) {
+                        originalText = buttonElement.textContent;
+                        buttonElement.disabled = true;
+                        buttonElement.textContent = 'Création en cours...';
+                    }
                     
                     try {
                         const formData = new FormData(form);
@@ -981,12 +1744,25 @@
                             createdAt: new Date().toISOString()
                         };
                         
-                        // Collecter les services depuis les inputs
                         console.log('📊 Collecte des services...');
                         const serviceInputs = document.querySelectorAll('#servicesContainerFullPage > div');
                         console.log('📊 Nombre de lignes de services trouvées:', serviceInputs.length);
+                        console.log('📊 Container selector:', '#servicesContainerFullPage > div');
+                        console.log('📊 Container existant:', !!document.querySelector('#servicesContainerFullPage'));
+                        
+                        if (serviceInputs.length === 0) {
+                            console.warn('⚠️ AUCUNE ligne de service trouvée - vérification alternative...');
+                            // Vérifier avec d'autres sélecteurs possibles
+                            const altServices1 = document.querySelectorAll('.service-row');
+                            const altServices2 = document.querySelectorAll('[id*="service"]');
+                            const allInputs = document.querySelectorAll('input[name*="service"], textarea[name*="service"], select[name*="service"]');
+                            console.log('📊 Alternative 1 (.service-row):', altServices1.length);
+                            console.log('📊 Alternative 2 ([id*="service"]):', altServices2.length);
+                            console.log('📊 All service inputs:', allInputs.length);
+                        }
                         
                         serviceInputs.forEach((serviceRow, index) => {
+                            console.log(`📊 Analyse ligne ${index + 1}:`, serviceRow);
                             const description = serviceRow.querySelector('textarea[name="service_description[]"]')?.value || serviceRow.querySelector('input[name="service_description[]"]')?.value;
                             const quantity = parseFloat(serviceRow.querySelector('input[name="service_quantity[]"]')?.value) || 0;
                             const unit = serviceRow.querySelector('select[name="service_unit[]"]')?.value || '';
@@ -996,7 +1772,10 @@
                                 description: description?.substring(0, 50) + '...',
                                 quantity,
                                 unit,
-                                price
+                                price,
+                                validDescription: !!(description && description.trim()),
+                                validQuantity: quantity > 0,
+                                validPrice: price > 0
                             });
                             
                             if (description && description.trim() && quantity > 0 && price > 0) {
@@ -1008,7 +1787,7 @@
                                 });
                                 console.log('✅ Service ajouté à la liste');
                             } else {
-                                console.warn('⚠️ Service ignoré - données manquantes');
+                                console.warn('⚠️ Service ignoré - données manquantes ou invalides');
                             }
                         });
                         
@@ -1033,31 +1812,138 @@
                         
                         console.log('📄 Données du devis:', quoteData);
                         
-                        // Sauvegarder en base de données
-                        if (window.dbService && typeof window.dbService.createQuote === 'function') {
-                            try {
-                                const dbResult = await window.dbService.createQuote(quoteData);
-                                console.log('✅ Devis sauvegardé en base de données:', dbResult);
-                            } catch (dbError) {
-                                console.warn('⚠️ Erreur base de données (continuons quand même):', dbError);
+                        // Sauvegarder en base de données OBLIGATOIREMENT
+                        if (buttonElement && buttonElement.textContent) {
+                            buttonElement.textContent = 'Sauvegarde en cours...';
+                        }
+                        console.log('💾 Sauvegarde en base de données...');
+                        
+                        // DEBUG: Vérifier l'état des services
+                        console.log('🔍 DEBUG - État des services:', {
+                            'window.dbService existe': !!window.dbService,
+                            'window.dbService type': typeof window.dbService,
+                            'dbService.createQuote existe': window.dbService && typeof window.dbService.createQuote,
+                            'window.authService existe': !!window.authService,
+                            'window.authService type': typeof window.authService
+                        });
+                        
+                        // Vérifier si l'utilisateur est authentifié
+                        if (window.authService) {
+                            console.log('🔍 Vérification utilisateur authentifié...');
+                            
+                            // Vérification double : état d'authentification ET utilisateur actuel
+                            const isAuthenticated = window.authService.isUserAuthenticated();
+                            const currentUser = await window.authService.getCurrentUser();
+                            
+                            console.log('👤 État d\\\'authentification:', isAuthenticated);
+                            console.log('👤 Utilisateur actuel:', currentUser ? { id: currentUser.id, email: currentUser.email } : 'Aucun');
+                            
+                            if (!isAuthenticated || !currentUser) {
+                                console.error('❌ Utilisateur non authentifié dans AuthService');
+                                
+                                // Essayer de réinitialiser l'AuthService pour récupérer la session
+                                console.log('🔄 Tentative de récupération de session...');
+                                try {
+                                    const initialized = await window.authService.initialize();
+                                    if (initialized) {
+                                        const recoveredUser = window.authService.getCurrentUser();
+                                        console.log('🔄 Session récupérée:', recoveredUser ? recoveredUser.email : 'Aucune');
+                                        
+                                        if (recoveredUser) {
+                                            // Transmettre l'utilisateur au service de base de données
+                                            if (window.dbService && typeof window.dbService.setCurrentUser === 'function') {
+                                                window.dbService.setCurrentUser(recoveredUser);
+                                                console.log('👤 Utilisateur retransmis au service de base de données');
+                                            }
+                                        } else {
+                                            throw new Error('Impossible de récupérer la session utilisateur.');
+                                        }
+                                    } else {
+                                        throw new Error('Échec de réinitialisation de l\'authentification.');
+                                    }
+                                } catch (recoveryError) {
+                                    console.error('❌ Échec de récupération de session:', recoveryError);
+                                    throw new Error('Utilisateur non authentifié. Veuillez vous reconnecter.');
+                                }
+                            } else {
+                                // Utilisateur authentifié, s'assurer qu'il est bien transmis au service de base de données
+                                if (window.dbService && typeof window.dbService.setCurrentUser === 'function') {
+                                    window.dbService.setCurrentUser(currentUser);
+                                    console.log('👤 Utilisateur confirmé dans le service de base de données');
+                                }
                             }
+                        } else {
+                            console.error('❌ AuthService non disponible');
+                            throw new Error('Service d\'authentification non disponible.');
                         }
                         
-                        // Générer et télécharger le PDF
-                        await generateAndDownloadPDF(quoteData);
+                        if (window.dbService && typeof window.dbService.createQuote === 'function') {
+                            try {
+                                console.log('💾 Appel createQuote avec les données:', {
+                                    clientName: quoteData.clientName,
+                                    servicesCount: quoteData.services.length,
+                                    totalTTC: quoteData.totalTTC
+                                });
+                                
+                                const dbResult = await window.dbService.createQuote(quoteData);
+                                console.log('✅ Devis sauvegardé en base de données:', dbResult);
+                                
+                                if (dbResult && dbResult.id) {
+                                    quoteData.id = dbResult.id; // Garder l'ID pour référence
+                                    console.log('✅ ID du devis créé:', dbResult.id);
+                                } else {
+                                    console.warn('⚠️ Aucun ID retourné par createQuote:', dbResult);
+                                }
+                                
+                            } catch (dbError) {
+                                console.error('❌ Erreur critique base de données:', dbError);
+                                console.error('❌ Stack trace:', dbError.stack);
+                                throw new Error('Impossible de sauvegarder en base de données: ' + dbError.message);
+                            }
+                        } else {
+                            console.error('❌ Service de base de données non disponible');
+                            console.error('❌ window.dbService:', window.dbService);
+                            console.error('❌ createQuote type:', window.dbService ? typeof window.dbService.createQuote : 'N/A');
+                            throw new Error('Service de base de données non disponible');
+                        }
                         
-                        alert('✅ Devis créé et téléchargé avec succès !');
+                        // Essayer de générer le PDF (optionnel, ne bloque pas si ça échoue)
+                        if (buttonElement && buttonElement.textContent) {
+                            buttonElement.textContent = 'Génération PDF...';
+                        }
+                        let pdfGenerated = false;
+                        
+                        try {
+                            console.log('🔄 Tentative de génération PDF...');
+                            await generateAndDownloadPDF(quoteData);
+                            pdfGenerated = true;
+                            console.log('✅ PDF généré avec succès');
+                        } catch (pdfError) {
+                            console.warn('⚠️ Erreur PDF (devis sauvegardé quand même):', pdfError);
+                            // Le PDF a échoué, mais on continue car le devis est sauvegardé
+                        }
+                        
+                        // Message de succès adapté
+                        if (pdfGenerated) {
+                            alert('✅ Devis créé et sauvegardé avec succès ! Le PDF a été téléchargé.');
+                        } else {
+                            alert('✅ Devis sauvegardé avec succès !\\n⚠️ Le PDF n\\\'a pas pu être généré, mais vous pouvez le regénérer depuis la liste des devis.');
+                        }
                         
                         // Fermer la vue après succès
                         closeNewQuoteViewCompletely();
                         
                     } catch (error) {
                         console.error('❌ Erreur lors de la création du devis:', error);
-                        alert('❌ Erreur: ' + error.message);
+                        alert('❌ Erreur - ' + error.message);
                     } finally {
                         // Réactiver le bouton
-                        buttonElement.disabled = false;
-                        buttonElement.textContent = originalText;
+                        if (buttonElement) {
+                            buttonElement.disabled = false;
+                            if (originalText) {
+                                buttonElement.textContent = originalText;
+                            }
+                        }
                     }
                 };
 
@@ -1071,133 +1957,88 @@
                     console.log('✅ Configuration du bouton Enregistrer principal (bas de page)...');
                     saveQuoteBtnMain.addEventListener('click', () => window.handleSaveQuote(saveQuoteBtnMain));
                 } else {
-                    console.error('❌ Bouton principal d\'enregistrement non trouvé !');
+                    console.error('❌ Bouton principal d\\\'enregistrement non trouvé !');
                 }
                 
-                // Fonction pour générer et télécharger le PDF
+                // Fonction pour générer et télécharger le PDF (version simplifiée et robuste)
                 async function generateAndDownloadPDF(quoteData) {
                     try {
-                        console.log('🔄 Génération du PDF...');
+                        console.log('🔄 Début génération PDF...');
                         
-                        // Vérifier que jsPDF est disponible
-                        if (typeof window.jsPDF === 'undefined') {
-                            console.error('❌ jsPDF non disponible');
-                            throw new Error('jsPDF non disponible');
-                        }
+                        // Attendre que jsPDF soit chargé avec délai réduit
+                        const jsPDFClass = await waitForJsPDF();
+                        console.log('✅ jsPDF disponible, création du document...');
                         
-                        const { jsPDF } = window.jsPDF;
-                        const doc = new jsPDF();
+                        const doc = new jsPDFClass();
                         
-                        // Configuration
+                        // Configuration de base
                         const margin = 20;
                         const pageWidth = doc.internal.pageSize.getWidth();
-                        let currentY = margin;
+                        let y = margin;
                         
-                        // En-tête
-                        doc.setFontSize(20);
-                        doc.setFont(undefined, 'bold');
-                        doc.text('DEVIS', pageWidth / 2, currentY, { align: 'center' });
-                        currentY += 15;
+                        // En-tête simple
+                        doc.setFontSize(18);
+                        doc.text('DEVIS', pageWidth / 2, y, { align: 'center' });
+                        y += 15;
                         
-                        // Numéro de devis
-                        const quoteNumber = 'DEV-' + new Date().getFullYear() + '-' + String(Date.now()).slice(-6);
-                        doc.setFontSize(12);
-                        doc.setFont(undefined, 'normal');
-                        doc.text(`Numéro: ${quoteNumber}`, margin, currentY);
-                        doc.text(`Date: ${quoteData.quoteDate || new Date().toLocaleDateString('fr-FR')}`, pageWidth - margin, currentY, { align: 'right' });
-                        currentY += 20;
+                        // Numéro et date
+                        doc.setFontSize(10);
+                        const quoteNumber = 'DEV-' + Date.now().toString().slice(-6);
+                        doc.text(`N° ${quoteNumber}`, margin, y);
+                        doc.text(`Date: ${new Date().toLocaleDateString('fr-FR')}`, pageWidth - margin, y, { align: 'right' });
+                        y += 15;
                         
-                        // Informations client
-                        doc.setFont(undefined, 'bold');
-                        doc.text('CLIENT:', margin, currentY);
-                        doc.setFont(undefined, 'normal');
-                        currentY += 8;
+                        // Client
+                        doc.text('CLIENT:', margin, y);
+                        y += 8;
+                        doc.text(quoteData.clientName || 'Client non spécifié', margin, y);
+                        if (quoteData.clientEmail) {
+                            y += 6;
+                            doc.text(quoteData.clientEmail, margin, y);
+                        }
+                        y += 15;
                         
-                        const clientInfo = [
-                            quoteData.clientName || 'Client non spécifié',
-                            quoteData.clientAddress || '',
-                            quoteData.clientPhone || '',
-                            quoteData.clientEmail || ''
-                        ].filter(line => line);
+                        // Services
+                        doc.text('PRESTATIONS:', margin, y);
+                        y += 10;
                         
-                        clientInfo.forEach(line => {
-                            doc.text(line, margin, currentY);
-                            currentY += 6;
-                        });
-                        
-                        currentY += 10;
-                        
-                        // Tableau des prestations
-                        doc.setFontSize(12);
-                        doc.setFont(undefined, 'bold');
-                        doc.text('PRESTATIONS:', margin, currentY);
-                        currentY += 10;
-                        
-                        // En-têtes du tableau
-                        const colWidths = [70, 20, 25, 30, 40];
-                        const colPositions = [margin, margin + colWidths[0], margin + colWidths[0] + colWidths[1], margin + colWidths[0] + colWidths[1] + colWidths[2], margin + colWidths[0] + colWidths[1] + colWidths[2] + colWidths[3]];
-                        
-                        doc.setFont(undefined, 'bold');
-                        doc.text('Description', colPositions[0], currentY);
-                        doc.text('Qté', colPositions[1], currentY);
-                        doc.text('Unité', colPositions[2], currentY);
-                        doc.text('Prix HT', colPositions[3], currentY);
-                        doc.text('Total HT', colPositions[4], currentY);
-                        currentY += 8;
-                        
-                        // Ligne de séparation
-                        doc.line(margin, currentY, pageWidth - margin, currentY);
-                        currentY += 5;
-                        
-                        // Prestations
-                        doc.setFont(undefined, 'normal');
-                        quoteData.services.forEach(service => {
+                        quoteData.services.forEach((service, index) => {
                             const total = service.quantity * service.price;
-                            doc.text(service.description, colPositions[0], currentY);
-                            doc.text(service.quantity.toString(), colPositions[1], currentY);
-                            doc.text(service.unit || '', colPositions[2], currentY);
-                            doc.text(service.price.toFixed(2) + ' €', colPositions[3], currentY);
-                            doc.text(total.toFixed(2) + ' €', colPositions[4], currentY);
-                            currentY += 8;
+                            doc.text(`${index + 1}. ${service.description}`, margin, y);
+                            y += 6;
+                            doc.text(`   Qté: ${service.quantity} | Prix: ${service.price.toFixed(2)}€ | Total: ${total.toFixed(2)}€`, margin, y);
+                            y += 8;
                         });
-                        
-                        // Ligne de séparation
-                        currentY += 5;
-                        doc.line(margin, currentY, pageWidth - margin, currentY);
-                        currentY += 10;
                         
                         // Totaux
-                        doc.setFont(undefined, 'bold');
-                        const totalsX = pageWidth - 80;
-                        doc.text(`Total HT: ${quoteData.totalHT.toFixed(2)} €`, totalsX, currentY);
-                        currentY += 8;
-                        doc.text(`TVA (20%): ${quoteData.totalTVA.toFixed(2)} €`, totalsX, currentY);
-                        currentY += 8;
-                        doc.setFontSize(14);
-                        doc.text(`Total TTC: ${quoteData.totalTTC.toFixed(2)} €`, totalsX, currentY);
+                        y += 10;
+                        doc.text(`Total HT: ${quoteData.totalHT.toFixed(2)} €`, margin, y);
+                        y += 6;
+                        doc.text(`TVA 20%: ${quoteData.totalTVA.toFixed(2)} €`, margin, y);
+                        y += 6;
+                        doc.setFontSize(12);
+                        doc.text(`TOTAL TTC: ${quoteData.totalTTC.toFixed(2)} €`, margin, y);
                         
-                        // Notes
+                        // Notes si présentes
                         if (quoteData.notes && quoteData.notes.trim()) {
-                            currentY += 20;
-                            doc.setFontSize(12);
-                            doc.setFont(undefined, 'bold');
-                            doc.text('NOTES:', margin, currentY);
-                            currentY += 8;
-                            doc.setFont(undefined, 'normal');
-                            const noteLines = doc.splitTextToSize(quoteData.notes, pageWidth - 2 * margin);
-                            doc.text(noteLines, margin, currentY);
+                            y += 15;
+                            doc.setFontSize(10);
+                            doc.text('Notes:', margin, y);
+                            y += 6;
+                            const lines = doc.splitTextToSize(quoteData.notes, pageWidth - 2 * margin);
+                            doc.text(lines, margin, y);
                         }
                         
-                        // Télécharger le PDF
+                        // Télécharger
                         const filename = `devis-${quoteNumber}-${new Date().toISOString().split('T')[0]}.pdf`;
+                        console.log('💾 Téléchargement du PDF:', filename);
                         doc.save(filename);
                         
-                        console.log('✅ PDF généré et téléchargé:', filename);
-                        return { success: true, filename, quoteNumber };
+                        console.log('✅ PDF généré et téléchargé avec succès');
                         
                     } catch (error) {
-                        console.error('❌ Erreur génération PDF:', error);
-                        throw new Error('Erreur lors de la génération du PDF: ' + error.message);
+                        console.error('❌ Erreur lors de la génération du PDF:', error);
+                        throw new Error(`Erreur lors de la génération du PDF: ${error.message}`);
                     }
                 }
                 
@@ -1214,9 +2055,19 @@
                     const tva = totalHT * 0.20;
                     const totalTTC = totalHT + tva;
                     
-                    document.getElementById('totalAmount').textContent = totalHT.toFixed(2) + ' €';
-                    document.getElementById('taxAmount').textContent = tva.toFixed(2) + ' €';
-                    document.getElementById('totalAmountTTC').textContent = totalTTC.toFixed(2) + ' €';
+                // Mettre à jour l'affichage des totaux avec vérification null
+                function updateTotalsDisplay() {
+                    const totalAmount = document.getElementById('totalAmount');
+                    const taxAmount = document.getElementById('taxAmount');
+                    const totalAmountTTC = document.getElementById('totalAmountTTC');
+                    const totalHT = document.getElementById('totalHT');
+                    const totalTVA = document.getElementById('totalTVA');
+                    const totalTTC = document.getElementById('totalTTC');
+                    
+                    if (totalAmount) totalAmount.textContent = totalHT.toFixed(2) + ' €';
+                    if (taxAmount) taxAmount.textContent = tva.toFixed(2) + ' €';
+                    if (totalAmountTTC) totalAmountTTC.textContent = totalTTC.toFixed(2) + ' €';
+                }
                 };
                 
                 // Ajouter les event listeners pour le calcul automatique sur les champs existants
@@ -1249,9 +2100,20 @@
                 const totalTVA = totalHT * 0.20; // TVA 20%
                 const totalTTC = totalHT + totalTVA;
                 
-                document.getElementById('totalHT').textContent = totalHT.toLocaleString('fr-FR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' €';
-                document.getElementById('totalTVA').textContent = totalTVA.toLocaleString('fr-FR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' €';
-                document.getElementById('totalTTC').textContent = totalTTC.toLocaleString('fr-FR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' €';
+                // Mise à jour des totaux avec vérification null
+                const totalHTElement = document.getElementById('totalHT');
+                const totalTVAElement = document.getElementById('totalTVA');
+                const totalTTCElement = document.getElementById('totalTTC');
+                
+                if (totalHTElement) {
+                    totalHTElement.textContent = totalHT.toLocaleString('fr-FR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' €';
+                }
+                if (totalTVAElement) {
+                    totalTVAElement.textContent = totalTVA.toLocaleString('fr-FR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' €';
+                }
+                if (totalTTCElement) {
+                    totalTTCElement.textContent = totalTTC.toLocaleString('fr-FR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' €';
+                }
                 
                 return { totalHT, totalTVA, totalTTC };
             }
@@ -1325,7 +2187,7 @@
                 // Vérifier que jsPDF est disponible
                 if (typeof window.jsPDF === 'undefined') {
                     console.error('❌ jsPDF non disponible');
-                    alert('Erreur: La bibliothèque de génération PDF n\'est pas disponible.');
+                    alert('Erreur - La bibliothèque de génération PDF n\\\'est pas disponible.');
                     return;
                 }
                 
@@ -1590,76 +2452,8 @@
         // Instance globale du QuoteManager
         window.quoteManager = new QuoteManager();
         
-        // Configuration de la création de devis - VERSION CORRIGÉE
-        document.addEventListener('DOMContentLoaded', function() {
-            console.log('🔄 Configuration finale de la création de devis...');
-            
-            // UNIQUEMENT LA VUE PLEIN ÉCRAN - ANCIENNE MODAL SUPPRIMÉE
-            const createQuoteBtn = document.getElementById('createQuoteBtn');
-            const addServiceBtn = document.getElementById('addServiceBtn');
-            
-            console.log('🔍 Éléments trouvés:', {
-                createQuoteBtn: !!createQuoteBtn,
-                addServiceBtn: !!addServiceBtn,
-                quoteManager: !!window.quoteManager
-            });
-            
-            // Configuration finale - s'assurer que seule la vue plein écran est utilisée
-            if (createQuoteBtn) {
-                console.log('✅ Configuration finale du bouton Nouveau Devis');
-                createQuoteBtn.addEventListener('click', () => {
-                    console.log('📝 Ouverture FINALE de la vue création de devis');
-                    
-                    // Masquer toute modal existante (si elle existait encore)
-                    const anyModal = document.getElementById('quoteModal');
-                    if (anyModal) anyModal.classList.add('hidden');
-                    
-                    // Afficher uniquement la vue création de devis en plein écran
-                    const newQuoteView = document.getElementById('newQuoteView');
-                    if (newQuoteView) {
-                        newQuoteView.classList.remove('hidden');
-                        
-                        // FORCER LES STYLES POUR PRENDRE TOUT L'ÉCRAN
-                        newQuoteView.style.position = 'fixed';
-                        newQuoteView.style.top = '0';
-                        newQuoteView.style.left = '0';
-                        newQuoteView.style.right = '0';
-                        newQuoteView.style.bottom = '0';
-                        newQuoteView.style.width = '100vw';
-                        newQuoteView.style.height = '100vh';
-                        newQuoteView.style.zIndex = '9999';
-                        newQuoteView.style.backgroundColor = '#f3f4f6';
-                        newQuoteView.style.overflowY = 'auto';
-                        newQuoteView.style.margin = '0';
-                        newQuoteView.style.padding = '0';
-                        
-                        console.log('🎯 Vue FINALE forcée en plein écran');
-                        
-                        // Réinitialiser le formulaire
-                        const newQuoteForm = document.getElementById('newQuoteForm');
-                        if (newQuoteForm) newQuoteForm.reset();
-                        
-                        // Définir la date du jour
-                        const dateInput = document.getElementById('quoteDate');
-                        if (dateInput) {
-                            const today = new Date().toISOString().split('T')[0];
-                            dateInput.value = today;
-                        }
-                        
-                        // Configurer les event listeners
-                        if (window.quoteManager) {
-                            window.quoteManager.setupServiceEventListeners();
-                            window.quoteManager.calculateTotals();
-                        }
-                    }
-                });
-            } else {
-                console.error('❌ Bouton createQuoteBtn non trouvé !');
-            }
-            
-            // ANCIENNE LOGIQUE MODAL COMPLÈTEMENT SUPPRIMÉE
-            console.log('✅ Configuration FINALE terminée - uniquement vue plein écran');
-        });
+        // Configuration finale terminée, listeners définis dans setupQuoteCreation()
+        console.log('✅ Configuration FINALE terminée - uniquement vue plein écran');
     </script>
 </body>
 </html>
