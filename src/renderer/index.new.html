@@ -909,7 +909,7 @@
                 newQuoteView.style.display = 'block !important';
                 console.log('🔧 Vue NOUVEAU devis forcée en plein écran');
                 
-                // FORCER LA VÉRIFICATION DES PRESTATIONS après ouverture
+                // FORCER LA VÉRIFICATION DES PRESTATIONS après ouverture (délai réduit)
                 setTimeout(() => {
                     const servicesContainer = document.getElementById('servicesContainerFullPage');
                     if (servicesContainer) {
@@ -930,9 +930,9 @@
                             field.removeAttribute('disabled');
                             field.removeAttribute('readonly');
                         });
-                        console.log('✅ [NOUVEAU] Tous les champs prestations garantis éditables');
+                        console.log('✅ [NOUVEAU] Tous les champs prestations garantis éditables - MODE RAPIDE');
                     }
-                }, 200);
+                }, 50);
             } else {
                 console.error('❌ Vue newQuoteView non trouvée !');
             }
@@ -943,14 +943,7 @@
             console.log('✏️ Ouverture de la vue MODIFICATION devis:', quoteId);
             
             // IMMÉDIATEMENT nettoyer le formulaire pour éviter le "flash" des données précédentes
-            console.log('🧹 [EDIT] Nettoyage préventif immédiat...');
-            
-            // MASQUER temporairement le formulaire pendant le changement
-            const form = document.getElementById('newQuoteForm');
-            if (form) {
-                form.style.visibility = 'hidden';
-                console.log('👻 [EDIT] Formulaire temporairement masqué');
-            }
+            console.log('🧹 [EDIT] Nettoyage préventif immédiat - MODE RAPIDE...');
             
             clearQuoteForm();
             
@@ -1003,11 +996,11 @@
                 // D'ABORD basculer vers la vue de modification (cela va nettoyer ET préparer l'interface)
                 showEditQuoteView(quoteId);
                 
-                // ENSUITE charger les données dans le formulaire (délai plus long pour garantir le nettoyage complet)
+                // ENSUITE charger les données dans le formulaire (délai réduit pour vitesse maximale)
                 setTimeout(() => {
                     console.log('📋 [EDIT] Début du chargement des données du devis...');
                     loadQuoteInForm(quote);
-                }, 200);
+                }, 50);
                 
             } catch (error) {
                 console.error('❌ [QUOTES] Erreur lors de la modification:', error);
@@ -1620,39 +1613,9 @@
                         console.warn('⚠️ [FORM] Champ notes non trouvé');
                     }
                     
-                    // NOUVEAU - Récupérer les prestations depuis la base de données si pas disponibles
+                    // OPTIMISATION - Utiliser directement les prestations déjà récupérées (pas de double récupération)
                     let servicesToLoad = quote.services || [];
-                    
-                    // DIAGNOSTIC ULTRA-DÉTAILLÉ des prestations
-                    console.log('🔍 [FORM] DIAGNOSTIC PRESTATIONS ULTRA-DÉTAILLÉ:');
-                    console.log('  - Quote ID:', window.currentEditingQuoteId);
-                    console.log('  - Quote services:', quote.services);
-                    console.log('  - Services type:', typeof quote.services);
-                    console.log('  - Services isArray:', Array.isArray(quote.services));
-                    console.log('  - Services length:', quote.services ? quote.services.length : 'N/A');
-                    console.log('  - Services JSON:', JSON.stringify(quote.services, null, 2));
-                    
-                    // FORCE LA RÉCUPÉRATION depuis la DB dans TOUS les cas pour s'assurer d'avoir les prestations
-                    if (window.currentEditingQuoteId) {
-                        console.log('🔍 [FORM] FORCE récupération prestations depuis la DB pour sécurité...');
-                        try {
-                            const fullQuote = await window.dbService.getQuoteById(window.currentEditingQuoteId);
-                            console.log('📋 [FORM] FullQuote récupéré:', fullQuote);
-                            console.log('📋 [FORM] FullQuote.services:', fullQuote ? fullQuote.services : 'N/A');
-                            
-                            if (fullQuote && fullQuote.services && Array.isArray(fullQuote.services)) {
-                                servicesToLoad = fullQuote.services;
-                                console.log('✅ [FORM] FORCE - Prestations chargées depuis la DB:', servicesToLoad.length, 'prestations');
-                                console.log('📋 [FORM] FORCE - Prestations détail:', JSON.stringify(servicesToLoad, null, 2));
-                            } else {
-                                console.warn('⚠️ [FORM] FORCE - Aucune prestation trouvée dans fullQuote');
-                            }
-                        } catch (error) {
-                            console.error('❌ [FORM] FORCE - Erreur récupération prestations:', error);
-                        }
-                    } else {
-                        console.warn('⚠️ [FORM] FORCE - currentEditingQuoteId non défini');
-                    }
+                    console.log('🚀 [FORM] MODE RAPIDE - Utilisation des prestations déjà chargées:', servicesToLoad.length, 'prestations');
                     
                     // Charger les prestations si disponibles
                     if (servicesToLoad && Array.isArray(servicesToLoad) && servicesToLoad.length > 0) {
@@ -1733,7 +1696,7 @@
                                     }
                                 }
                                 
-                                // FORCER la réactivation de tous les champs
+                                // FORCER la réactivation de tous les champs (délai réduit)
                                 setTimeout(() => {
                                     const serviceFields = servicesContainer.querySelectorAll('input, textarea, select');
                                     serviceFields.forEach(field => {
@@ -1742,8 +1705,8 @@
                                         field.removeAttribute('disabled');
                                         field.removeAttribute('readonly');
                                     });
-                                    console.log('✅ [FORM] Tous les champs garantis éditables');
-                                }, 100);
+                                    console.log('✅ [FORM] Tous les champs garantis éditables - MODE RAPIDE');
+                                }, 20);
                                 
                                 console.log('✅ [FORM] Prestations chargées avec succès');
                                 
@@ -1781,22 +1744,8 @@
                     
                     console.log('✅ [FORM] Devis chargé dans le formulaire');
                     
-                    // RÉAFFICHER le formulaire maintenant que tout est chargé correctement
-                    const formElement = document.getElementById('newQuoteForm');
-                    if (formElement) {
-                        formElement.style.visibility = 'visible';
-                        console.log('👁️ [FORM] Formulaire rendu visible - chargement terminé');
-                    }
-                    
                 } catch (error) {
                     console.error('❌ [FORM] Erreur lors du chargement du devis:', error);
-                    
-                    // En cas d'erreur, réafficher quand même le formulaire
-                    const formElement = document.getElementById('newQuoteForm');
-                    if (formElement) {
-                        formElement.style.visibility = 'visible';
-                        console.log('👁️ [FORM] Formulaire rendu visible - malgré l\'erreur');
-                    }
                 }
             }
 
