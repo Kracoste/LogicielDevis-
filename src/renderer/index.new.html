@@ -1067,12 +1067,15 @@
                 
                 alert('Devis supprimé avec succès');
                 
-                // Recharger la liste
+                // ✨ Mise à jour immédiate du compteur AVANT le rechargement de la liste
+                console.log('🔄 [DELETE] Mise à jour immédiate du compteur...');
+                await window.updateQuotesCount();
+                
+                // Recharger la liste (avec await pour s'assurer que c'est terminé)
                 if (typeof window.loadQuotesList === 'function') {
-                    window.loadQuotesList();
+                    await window.loadQuotesList();
                 } else {
-                    // Recharger la page si la fonction n'est pas disponible
-                    location.reload();
+                    console.warn('⚠️ [DELETE] loadQuotesList non disponible');
                 }
                 
             } catch (error) {
@@ -1080,6 +1083,37 @@
                 alert('Erreur lors de la suppression du devis');
             }
         }
+
+        // ✨ FONCTION MISE À JOUR COMPTEUR DEVIS
+        window.updateQuotesCount = async function() {
+            try {
+                if (!window.dbService) {
+                    console.error('❌ [COUNT] Service de base de données non disponible');
+                    return;
+                }
+                
+                const quotes = await window.dbService.getQuotes();
+                const count = quotes ? quotes.length : 0;
+                
+                // Mettre à jour le compteur dans l'onglet Devis (sidebar)
+                const quotesCountElement = document.getElementById('quotesCount');
+                if (quotesCountElement) {
+                    quotesCountElement.textContent = count;
+                    console.log(`📊 [COUNT] Compteur onglet Devis mis à jour: ${count}`);
+                }
+                
+                // ✨ Mettre à jour le compteur dans le tableau de bord
+                const totalQuotesElement = document.getElementById('totalQuotes');
+                if (totalQuotesElement) {
+                    totalQuotesElement.textContent = count;
+                    console.log(`📊 [COUNT] Compteur tableau de bord mis à jour: ${count}`);
+                }
+                
+                console.log(`📊 [COUNT] Compteurs mis à jour: ${count} devis`);
+            } catch (error) {
+                console.error('❌ [COUNT] Erreur mise à jour compteur:', error);
+            }
+        };
 
         window.loadQuotesList = async function() {
             console.log('📋 [QUOTES] Chargement de la liste des devis...');
@@ -1137,6 +1171,9 @@
                 
                 console.log(`✅ [QUOTES] ${quotes.length} devis affichés`);
                 
+                // ✨ Mise à jour du compteur
+                await window.updateQuotesCount();
+                
             } catch (error) {
                 console.error('❌ [QUOTES] Erreur lors du chargement des devis:', error);
                 const container = document.getElementById('quotes-container');
@@ -1162,6 +1199,14 @@
                 // Charger les données initiales
                 setTimeout(async () => {
                     console.log('🔄 [INIT] Chargement des données initiales...');
+                    
+                    // Initialiser le compteur dès que possible
+                    try {
+                        await window.updateQuotesCount();
+                        console.log('✅ [INIT] Compteur initialisé');
+                    } catch (countError) {
+                        console.warn('⚠️ [INIT] Erreur initialisation compteur:', countError);
+                    }
                     
                     // Si l'onglet devis est visible (ou sera visible bientôt), charger les devis
                     // Attendre un peu que tout soit initialisé
@@ -3062,6 +3107,14 @@
                             alert('✅ Devis créé et sauvegardé avec succès ! Le PDF a été téléchargé.');
                         } else {
                             alert('✅ Devis sauvegardé avec succès !\\n⚠️ Le PDF n\\\'a pas pu être généré, mais vous pouvez le regénérer depuis la liste des devis.');
+                        }
+                        
+                        // ✨ Mise à jour du compteur après création/sauvegarde
+                        console.log('🔄 [COUNT] Mise à jour du compteur après création devis...');
+                        try {
+                            await window.updateQuotesCount();
+                        } catch (countError) {
+                            console.warn('⚠️ [COUNT] Erreur mise à jour compteur:', countError);
                         }
                         
                         // Fermer la vue après succès
