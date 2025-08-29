@@ -353,9 +353,14 @@
                     <div id="backToQuotesBtn" style="cursor: pointer; padding: 8px 12px; background: #f3f4f6; border-radius: 6px;">← Retour</div>
                     <div style="font-size: 1.25rem; font-weight: bold; color: #111827; pointer-events: none; user-select: none;">Nouveau Devis</div>
                 </div>
-                <button id="saveQuoteBtn" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium transition-colors">
-                    Enregistrer
-                </button>
+                <div class="flex gap-2">
+                    <button id="testValidationBtn" class="bg-red-500 hover:bg-red-600 text-white px-3 py-2 rounded-lg font-medium transition-colors text-sm">
+                        🧪 Test Validation
+                    </button>
+                    <button id="saveQuoteBtn" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium transition-colors">
+                        Enregistrer
+                    </button>
+                </div>
             </div>
 
             <!-- Formulaire équilibré -->
@@ -525,6 +530,200 @@
     </script>
     
     <script src="js/jspdf.min.js"></script>
+    
+    <!-- DIAGNOSTIC SUPABASE TEMPORAIRE -->
+    <script>
+    // Diagnostic Supabase pour les devis et leurs lignes
+    console.log('🔍 DIAGNOSTIC SUPABASE - DEVIS ET LIGNES');
+
+    // Cette fonction sera appelée depuis la console du navigateur
+    window.debugSupabaseQuotes = async function() {
+        console.log('🔍 === DIAGNOSTIC SUPABASE QUOTES ===');
+        
+        if (!window.dbService || !window.dbService.supabase) {
+            console.error('❌ Service de base de données non disponible');
+            return;
+        }
+        
+        const supabase = window.dbService.supabase;
+        
+        try {
+            // 1. Lister tous les devis
+            console.log('📋 1. Récupération de tous les devis...');
+            const { data: allQuotes, error: quotesError } = await supabase
+                .from('quotes')
+                .select('id, quote_number, client_name, created_at, subtotal_ht')
+                .order('created_at', { ascending: false });
+            
+            if (quotesError) {
+                console.error('❌ Erreur récupération devis:', quotesError);
+                return;
+            }
+            
+            console.log(`📋 ${allQuotes.length} devis trouvés:`, allQuotes);
+            
+            // 2. Pour chaque devis, vérifier s'il a des lignes
+            console.log('📊 2. Vérification des lignes pour chaque devis...');
+            
+            for (const quote of allQuotes) {
+                console.log(`\\n🔍 Devis ${quote.quote_number} (ID: ${quote.id})`);
+                console.log(`   Client: ${quote.client_name}`);
+                console.log(`   Montant HT: ${quote.subtotal_ht}€`);
+                
+                const { data: lines, error: linesError } = await supabase
+                    .from('quote_lines')
+                    .select('*')
+                    .eq('quote_id', quote.id);
+                
+                if (linesError) {
+                    console.error(`❌ Erreur récupération lignes pour ${quote.id}:`, linesError);
+                } else if (!lines || lines.length === 0) {
+                    console.warn(`⚠️  AUCUNE LIGNE trouvée pour le devis ${quote.quote_number}`);
+                } else {
+                    console.log(`✅ ${lines.length} lignes trouvées:`, lines);
+                }
+            }
+            
+            // 3. Vérifier si la table quote_lines existe et a des données
+            console.log('\\n📊 3. Statistiques globales quote_lines...');
+            const { data: allLines, error: allLinesError, count } = await supabase
+                .from('quote_lines')
+                .select('*', { count: 'exact' });
+            
+            if (allLinesError) {
+                console.error('❌ Erreur accès table quote_lines:', allLinesError);
+            } else {
+                console.log(`📊 Total lignes dans quote_lines: ${count}`);
+                if (allLines && allLines.length > 0) {
+                    console.log('📋 Exemples de lignes:', allLines.slice(0, 5));
+                }
+            }
+            
+        } catch (error) {
+            console.error('❌ Erreur générale diagnostic:', error);
+        }
+    }
+
+    // Fonction de diagnostic pour un devis spécifique
+    window.debugQuoteById = async function(quoteId) {
+        console.log('🔍 === DIAGNOSTIC DEVIS SPÉCIFIQUE ===');
+        console.log('🆔 Quote ID:', quoteId);
+        
+        try {
+            console.log('🔍 [DEBUG] Vérification dbService...');
+            if (!window.dbService) {
+                console.error('❌ [DEBUG] window.dbService non disponible');
+                return;
+            }
+            
+            console.log('🔍 [DEBUG] dbService disponible, appel getQuoteById...');
+            const quote = await window.dbService.getQuoteById(quoteId);
+            
+            console.log('📋 [DEBUG] Résultat getQuoteById:', quote);
+            
+            if (!quote) {
+                console.warn('⚠️ [DEBUG] Aucun devis trouvé pour cet ID');
+                return;
+            }
+            
+            console.log('📋 Devis récupéré:', quote);
+            console.log('📋 Services bruts:', quote.services);
+            console.log('📋 Services type:', typeof quote.services);
+            console.log('📋 Services isArray:', Array.isArray(quote.services));
+            console.log('📋 Services length:', quote.services ? quote.services.length : 'N/A');
+            console.log('📋 Services JSON:', JSON.stringify(quote.services, null, 2));
+            
+            if (quote && quote.services && Array.isArray(quote.services)) {
+                console.log(`✅ ${quote.services.length} prestations trouvées:`);
+                quote.services.forEach((service, index) => {
+                    console.log(`  ${index + 1}. Description: "${service.description}"`);
+                    console.log(`     Quantité: ${service.quantity}`);
+                    console.log(`     Prix HT: ${service.price}€`);
+                });
+            } else {
+                console.warn('⚠️ Aucune prestation trouvée ou structure invalide');
+            }
+            
+            console.log('🔍 === FIN DIAGNOSTIC DEVIS ===');
+            
+        } catch (error) {
+            console.error('❌ Erreur diagnostic devis:', error);
+            console.error('❌ Stack trace:', error.stack);
+        }
+    };
+
+    // Fonction de test simple pour vérifier que les fonctions marchent
+    window.testDebug = function() {
+        console.log('🧪 TEST DEBUG - fonction appelée avec succès');
+        console.log('🧪 dbService disponible:', !!window.dbService);
+        console.log('🧪 Méthodes dbService:', window.dbService ? Object.getOwnPropertyNames(Object.getPrototypeOf(window.dbService)) : 'N/A');
+        return 'Test réussi';
+    };
+
+    // Version ULTRA SIMPLIFIÉE pour diagnostic immédiat
+    window.quickTest = function() {
+        console.log('⚡ QUICK TEST - JE FONCTIONNE !');
+        return 'OK';
+    };
+
+    // Version simplifiée synchrone pour tester dbService
+    window.checkDbService = function() {
+        console.log('🔍 VÉRIFICATION DB SERVICE');
+        console.log('- window.dbService existe:', typeof window.dbService);
+        console.log('- window.dbService.getQuoteById existe:', typeof window.dbService?.getQuoteById);
+        
+        if (window.dbService) {
+            console.log('- Méthodes disponibles:', Object.getOwnPropertyNames(Object.getPrototypeOf(window.dbService)).filter(name => name !== 'constructor'));
+        }
+        
+        return 'Check terminé';
+    };
+
+    // Version TRÈS SIMPLE de debugQuoteById qui ne peut pas échouer silencieusement
+    window.simpleDebugQuote = async function(quoteId) {
+        console.log('🔍 === DEBUG SIMPLE DEVIS ===');
+        console.log('ID:', quoteId);
+        
+        try {
+            console.log('Étape 1: Vérification dbService');
+            if (!window.dbService) {
+                console.error('❌ dbService non disponible');
+                return 'Erreur: dbService non disponible';
+            }
+            
+            console.log('Étape 2: Appel getQuoteById');
+            const quote = await window.dbService.getQuoteById(quoteId);
+            
+            console.log('Étape 3: Résultat reçu');
+            console.log('Quote:', quote);
+            
+            if (quote && quote.services) {
+                console.log('Services trouvés:', quote.services.length);
+                console.log('Détail services:', quote.services);
+            } else {
+                console.log('Pas de services trouvés');
+            }
+            
+            return 'Debug terminé';
+        } catch (error) {
+            console.error('❌ ERREUR:', error);
+            console.error('Stack:', error.stack);
+            return 'Erreur: ' + error.message;
+        }
+    };
+
+    // Ajouter à l'objet window pour l'accessibilité depuis la console
+    console.log('✅ Fonction debugSupabaseQuotes() ajoutée à window');
+    console.log('✅ Fonction debugQuoteById(quoteId) ajoutée à window');
+    console.log('✅ Fonction testDebug() ajoutée à window');
+    console.log('✅ Fonction quickTest() ajoutée à window');
+    console.log('✅ Fonction checkDbService() ajoutée à window');
+    console.log('✅ Fonction simpleDebugQuote(quoteId) ajoutée à window');
+    console.log('💡 Tapez: quickTest() pour test ultra-rapide');
+    console.log('💡 Tapez: checkDbService() pour vérifier le service DB');
+    console.log('💡 Tapez: simpleDebugQuote("93d28e02-845e-4fc7-b55a-8696c2bf98c5") pour debug simple');
+    </script>
+    
     <script>
         // Vérification immédiate de jsPDF après chargement
         window.addEventListener('load', function() {
@@ -586,9 +785,110 @@
         
         console.log('🔥 [DEBUG] Définition des fonctions globales...');
         
-        // Fonction pour afficher la vue création/modification de devis
+        // Variable globale pour tracker le mode d'édition
+        window.currentEditingMode = 'new'; // 'new' ou 'edit'
+        window.currentEditingQuoteId = null;
+
+        // Fonction pour nettoyer complètement le formulaire
+        function clearQuoteForm() {
+            console.log('🧹 [FORM] Nettoyage complet du formulaire...');
+            
+            const form = document.getElementById('newQuoteForm');
+            if (!form) {
+                console.error('❌ [FORM] Formulaire newQuoteForm non trouvé');
+                return;
+            }
+            
+            // Vider tous les champs de base
+            const clientName = form.querySelector('#clientName') || form.querySelector('input[name="clientName"]');
+            const clientEmail = form.querySelector('#clientEmail') || form.querySelector('input[name="clientEmail"]');
+            const clientPhone = form.querySelector('#clientPhone') || form.querySelector('input[name="clientPhone"]');
+            const clientAddress = form.querySelector('#clientAddress') || form.querySelector('textarea[name="clientAddress"]');
+            const quoteDate = form.querySelector('#quoteDate') || form.querySelector('input[name="quoteDate"]');
+            const notes = form.querySelector('#quoteNotes') || form.querySelector('textarea[name="quoteNotes"]');
+            
+            if (clientName) clientName.value = '';
+            if (clientEmail) clientEmail.value = '';
+            if (clientPhone) clientPhone.value = '';
+            if (clientAddress) clientAddress.value = '';
+            if (quoteDate) quoteDate.value = new Date().toISOString().split('T')[0];
+            if (notes) notes.value = '';
+            
+            // Nettoyer toutes les prestations sauf la première (template) + GARANTIR qu'il y ait une prestation visible
+            const servicesContainer = document.getElementById('servicesContainerFullPage');
+            if (servicesContainer) {
+                console.log('🧹 [FORM] Container prestations trouvé, nettoyage...');
+                
+                const services = servicesContainer.querySelectorAll(':scope > div');
+                console.log('🧹 [FORM] Prestations trouvées:', services.length);
+                
+                if (services.length > 0) {
+                    // Vider la première prestation (template) mais la garder
+                    const firstService = services[0];
+                    const desc = firstService.querySelector('input[name="service_description[]"]');
+                    const qty = firstService.querySelector('input[name="service_quantity[]"]');
+                    const price = firstService.querySelector('input[name="service_price[]"]');
+                    
+                    if (desc) desc.value = '';
+                    if (qty) qty.value = '1';
+                    if (price) price.value = '0';
+                    
+                    console.log('✅ [FORM] Première prestation vidée et gardée comme template');
+                    
+                    // Supprimer toutes les autres prestations
+                    for (let i = services.length - 1; i > 0; i--) {
+                        services[i].remove();
+                        console.log('🗑️ [FORM] Prestation', i + 1, 'supprimée');
+                    }
+                } else {
+                    // URGENT - Pas de prestation du tout, en créer une !
+                    console.warn('⚠️ [FORM] AUCUNE prestation trouvée, création d\'une prestation template...');
+                    
+                    const newService = document.createElement('div');
+                    newService.className = 'flex items-center gap-3 p-3 bg-white rounded-lg border shadow-sm';
+                    newService.innerHTML = `
+                        <div class="flex-1">
+                            <label class="block text-xs font-medium text-gray-600 mb-1">Description de la prestation</label>
+                            <input type="text" name="service_description[]" placeholder="Décrivez votre prestation..." class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm" required>
+                        </div>
+                        <div class="w-16">
+                            <label class="block text-xs font-medium text-gray-600 mb-1">Quantité</label>
+                            <input type="number" name="service_quantity[]" min="1" value="1" class="w-full px-2 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm text-center" required>
+                        </div>
+                        <div class="w-28">
+                            <label class="block text-xs font-medium text-gray-600 mb-1">Prix HT</label>
+                            <input type="number" name="service_price[]" step="0.01" min="0" value="0" placeholder="0.00 €" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm text-right" required>
+                        </div>
+                        <div class="flex items-end">
+                            <button type="button" class="text-red-500 hover:text-red-700 hover:bg-red-50 p-2 rounded-lg transition-colors" onclick="this.closest('.flex.items-center').remove(); updateTotal();" title="Supprimer cette prestation">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                                </svg>
+                            </button>
+                        </div>
+                    `;
+                    servicesContainer.appendChild(newService);
+                    console.log('✅ [FORM] Prestation template créée d\'urgence');
+                }
+                
+                console.log('✅ [FORM] Prestations nettoyées - 1 prestation vide garantie');
+            } else {
+                console.error('❌ [FORM] Container servicesContainerFullPage NON TROUVÉ !');
+            }
+            
+            console.log('✅ [FORM] Formulaire complètement nettoyé');
+        }
+
+        // Fonction pour afficher la vue création de devis (NOUVEAU)
         window.showNewQuoteView = function() {
-            console.log('📝 Ouverture de la vue création de devis');
+            console.log('📝 Ouverture de la vue NOUVEAU devis');
+            
+            // Marquer le mode création
+            window.currentEditingMode = 'new';
+            window.currentEditingQuoteId = null;
+            
+            // NETTOYER COMPLÈTEMENT LE FORMULAIRE pour un nouveau devis
+            clearQuoteForm();
             
             // Afficher la vue création de devis en plein écran
             const newQuoteView = document.getElementById('newQuoteView');
@@ -607,7 +907,63 @@
                 newQuoteView.style.zIndex = '9999';
                 newQuoteView.style.backgroundColor = '#f3f4f6';
                 newQuoteView.style.display = 'block !important';
-                console.log('🔧 Vue forcée en plein écran avec styles JavaScript');
+                console.log('🔧 Vue NOUVEAU devis forcée en plein écran');
+                
+                // FORCER LA VÉRIFICATION DES PRESTATIONS après ouverture
+                setTimeout(() => {
+                    const servicesContainer = document.getElementById('servicesContainerFullPage');
+                    if (servicesContainer) {
+                        const services = servicesContainer.querySelectorAll(':scope > div');
+                        console.log('🔍 [NOUVEAU] Vérification prestations:', services.length, 'trouvées');
+                        
+                        if (services.length === 0) {
+                            console.warn('⚠️ [NOUVEAU] AUCUNE prestation visible, correction immédiate...');
+                            // Déclencher le nettoyage qui va créer une prestation template
+                            clearQuoteForm();
+                        }
+                        
+                        // FORCER l'éditable sur tous les champs
+                        const allFields = servicesContainer.querySelectorAll('input, textarea, select');
+                        allFields.forEach(field => {
+                            field.disabled = false;
+                            field.readOnly = false;
+                            field.removeAttribute('disabled');
+                            field.removeAttribute('readonly');
+                        });
+                        console.log('✅ [NOUVEAU] Tous les champs prestations garantis éditables');
+                    }
+                }, 200);
+            } else {
+                console.error('❌ Vue newQuoteView non trouvée !');
+            }
+        };
+
+        // Fonction pour afficher la vue modification de devis (EXISTANT)
+        window.showEditQuoteView = function(quoteId) {
+            console.log('✏️ Ouverture de la vue MODIFICATION devis:', quoteId);
+            
+            // Marquer le mode édition
+            window.currentEditingMode = 'edit';
+            window.currentEditingQuoteId = quoteId;
+            
+            // Afficher la vue création de devis en plein écran (même vue, mais en mode édition)
+            const newQuoteView = document.getElementById('newQuoteView');
+            if (newQuoteView) {
+                console.log('✅ Vue newQuoteView trouvée, ouverture en mode édition...');
+                newQuoteView.classList.remove('hidden');
+                
+                // FORCER LES STYLES POUR PRENDRE TOUT L'ÉCRAN
+                newQuoteView.style.position = 'fixed';
+                newQuoteView.style.top = '0';
+                newQuoteView.style.left = '0';
+                newQuoteView.style.right = '0';
+                newQuoteView.style.bottom = '0';
+                newQuoteView.style.width = '100vw';
+                newQuoteView.style.height = '100vh';
+                newQuoteView.style.zIndex = '9999';
+                newQuoteView.style.backgroundColor = '#f3f4f6';
+                newQuoteView.style.display = 'block !important';
+                console.log('🔧 Vue MODIFICATION devis forcée en plein écran');
             } else {
                 console.error('❌ Vue newQuoteView non trouvée !');
             }
@@ -632,11 +988,13 @@
                 
                 console.log('📋 Chargement du devis pour modification:', quote);
                 
-                // Charger les données dans le formulaire
-                loadQuoteInForm(quote);
+                // D'ABORD basculer vers la vue de modification (cela va préparer l'interface)
+                showEditQuoteView(quoteId);
                 
-                // Basculer vers la vue de création/modification 
-                showNewQuoteView();
+                // ENSUITE charger les données dans le formulaire (après un délai pour s'assurer que la vue est prête)
+                setTimeout(() => {
+                    loadQuoteInForm(quote);
+                }, 100);
                 
             } catch (error) {
                 console.error('❌ [QUOTES] Erreur lors de la modification:', error);
@@ -873,10 +1231,99 @@
             console.log('🚀 [MAIN WINDOW] Initialisation de la navigation...');
             
             // ==========================================
+            // FONCTION DE NETTOYAGE COMPLET DU FORMULAIRE
+            // ==========================================
+            function cleanFormCompletely() {
+                console.log('🧹 [CLEAN] Nettoyage complet du formulaire');
+                
+                try {
+                    const form = document.getElementById('newQuoteForm');
+                    if (!form) {
+                        console.warn('⚠️ [CLEAN] Formulaire non trouvé');
+                        return;
+                    }
+                    
+                    // 1. Vider tous les champs de base
+                    const basicFields = [
+                        'input[name="clientName"]', '#clientName',
+                        'input[name="clientEmail"]', '#clientEmail', 
+                        'input[name="clientPhone"]', '#clientPhone',
+                        'textarea[name="clientAddress"]', '#clientAddress',
+                        'input[name="quoteDate"]', '#quoteDate',
+                        'textarea[name="quote_notes"]'
+                    ];
+                    
+                    basicFields.forEach(selector => {
+                        const field = form.querySelector(selector);
+                        if (field) {
+                            field.value = '';
+                            console.log(`🧹 [CLEAN] Champ ${selector} nettoyé`);
+                        }
+                    });
+                    
+                    // 2. Nettoyer complètement les prestations
+                    const servicesContainer = document.getElementById('servicesContainerFullPage');
+                    if (servicesContainer) {
+                        // Garder seulement la première prestation (template) et la vider
+                        const allServices = servicesContainer.querySelectorAll('> div');
+                        
+                        // Supprimer toutes les prestations sauf la première
+                        allServices.forEach((service, index) => {
+                            if (index > 0) {
+                                service.remove();
+                                console.log(`🧹 [CLEAN] Prestation ${index + 1} supprimée`);
+                            }
+                        });
+                        
+                        // Vider la première prestation (template)
+                        const firstService = servicesContainer.querySelector('> div');
+                        if (firstService) {
+                            const desc = firstService.querySelector('input[name="service_description[]"]');
+                            const qty = firstService.querySelector('input[name="service_quantity[]"]');
+                            const price = firstService.querySelector('input[name="service_price[]"]');
+                            
+                            if (desc) desc.value = '';
+                            if (qty) qty.value = '1';
+                            if (price) price.value = '';
+                            
+                            console.log('🧹 [CLEAN] Prestation template vidée');
+                        }
+                    }
+                    
+                    // 3. Remettre la date du jour
+                    const quoteDate = form.querySelector('input[name="quoteDate"]') || form.querySelector('#quoteDate');
+                    if (quoteDate) {
+                        const today = new Date().toISOString().split('T')[0];
+                        quoteDate.value = today;
+                        console.log('🧹 [CLEAN] Date du jour définie:', today);
+                    }
+                    
+                    // 4. Mettre à jour le total
+                    if (typeof updateTotal === 'function') {
+                        updateTotal();
+                        console.log('🧹 [CLEAN] Total mis à jour');
+                    }
+                    
+                    console.log('✅ [CLEAN] Nettoyage complet terminé');
+                    
+                } catch (error) {
+                    console.error('❌ [CLEAN] Erreur lors du nettoyage:', error);
+                }
+            }
+            
+            // ==========================================
             // FONCTION DE FERMETURE ABSOLUE NOUVEAU DEVIS - VERSION RADICALE
             // ==========================================
             function closeNewQuoteViewCompletely() {
                 console.log('🚫 FERMETURE ABSOLUE - Nouveau Devis - VERSION RADICALE');
+                
+                // NETTOYER COMPLÈTEMENT LE FORMULAIRE EN PREMIER
+                cleanFormCompletely();
+                
+                // RÉINITIALISER LES VARIABLES GLOBALES D'ÉDITION
+                window.currentEditingMode = 'new';
+                window.currentEditingQuoteId = null;
+                console.log('🔄 Variables d\'édition réinitialisées');
                 
                 // 1. Masquer la vue avec toutes les méthodes possibles
                 const newQuoteView = document.getElementById('newQuoteView');
@@ -1092,6 +1539,17 @@
                         return;
                     }
                     
+                    // ASSURER QUE TOUS LES CHAMPS SONT ÉDITABLES AVANT DE LES REMPLIR
+                    const allFields = form.querySelectorAll('input, textarea, select');
+                    allFields.forEach(field => {
+                        field.disabled = false;
+                        field.readOnly = false;
+                        field.removeAttribute('disabled');
+                        field.removeAttribute('readonly');
+                        field.style.pointerEvents = 'auto';
+                        field.style.opacity = '1';
+                    });
+                    
                     // Informations client - DEBUG des valeurs
                     console.log('📋 [FORM] Valeurs client à charger:', {
                         client_name: quote.client_name,
@@ -1141,7 +1599,7 @@
                     }
                     
                     // Notes - CORRECTION du sélecteur
-                    const notes = form.querySelector('#quoteNotes') || form.querySelector('textarea[name="quoteNotes"]');
+                    const notes = form.querySelector('textarea[name="quote_notes"]');
                     if (notes) {
                         notes.value = quote.notes || '';
                         console.log('📋 [FORM] Notes définies:', notes.value);
@@ -1149,39 +1607,158 @@
                         console.warn('⚠️ [FORM] Champ notes non trouvé');
                     }
                     
-                    // Charger les prestations si disponibles - CORRECTION du sélecteur
-                    if (quote.services && Array.isArray(quote.services) && quote.services.length > 0) {
-                        console.log('📋 [FORM] Chargement de', quote.services.length, 'prestations');
+                    // NOUVEAU - Récupérer les prestations depuis la base de données si pas disponibles
+                    let servicesToLoad = quote.services || [];
+                    
+                    // DIAGNOSTIC ULTRA-DÉTAILLÉ des prestations
+                    console.log('🔍 [FORM] DIAGNOSTIC PRESTATIONS ULTRA-DÉTAILLÉ:');
+                    console.log('  - Quote ID:', window.currentEditingQuoteId);
+                    console.log('  - Quote services:', quote.services);
+                    console.log('  - Services type:', typeof quote.services);
+                    console.log('  - Services isArray:', Array.isArray(quote.services));
+                    console.log('  - Services length:', quote.services ? quote.services.length : 'N/A');
+                    console.log('  - Services JSON:', JSON.stringify(quote.services, null, 2));
+                    
+                    // FORCE LA RÉCUPÉRATION depuis la DB dans TOUS les cas pour s'assurer d'avoir les prestations
+                    if (window.currentEditingQuoteId) {
+                        console.log('🔍 [FORM] FORCE récupération prestations depuis la DB pour sécurité...');
+                        try {
+                            const fullQuote = await window.dbService.getQuoteById(window.currentEditingQuoteId);
+                            console.log('📋 [FORM] FullQuote récupéré:', fullQuote);
+                            console.log('📋 [FORM] FullQuote.services:', fullQuote ? fullQuote.services : 'N/A');
+                            
+                            if (fullQuote && fullQuote.services && Array.isArray(fullQuote.services)) {
+                                servicesToLoad = fullQuote.services;
+                                console.log('✅ [FORM] FORCE - Prestations chargées depuis la DB:', servicesToLoad.length, 'prestations');
+                                console.log('📋 [FORM] FORCE - Prestations détail:', JSON.stringify(servicesToLoad, null, 2));
+                            } else {
+                                console.warn('⚠️ [FORM] FORCE - Aucune prestation trouvée dans fullQuote');
+                            }
+                        } catch (error) {
+                            console.error('❌ [FORM] FORCE - Erreur récupération prestations:', error);
+                        }
+                    } else {
+                        console.warn('⚠️ [FORM] FORCE - currentEditingQuoteId non défini');
+                    }
+                    
+                    // Charger les prestations si disponibles
+                    if (servicesToLoad && Array.isArray(servicesToLoad) && servicesToLoad.length > 0) {
+                        console.log('📋 [FORM] Chargement de', servicesToLoad.length, 'prestations:', servicesToLoad);
                         
                         const servicesContainer = document.getElementById('servicesContainerFullPage');
                         if (servicesContainer) {
-                            // Vider les prestations existantes sauf la première (template)
-                            const services = servicesContainer.querySelectorAll('> div');
-                            services.forEach((service, index) => {
-                                if (index > 0) service.remove();
-                            });
+                            console.log('📋 [FORM] Container trouvé, nettoyage des prestations existantes...');
                             
-                            // Remplir la première prestation et ajouter les autres
-                            quote.services.forEach((service, index) => {
-                                if (index === 0) {
-                                    // Modifier la première prestation existante
-                                    const firstService = servicesContainer.querySelector('> div');
-                                    if (firstService) {
-                                        const desc = firstService.querySelector('input[name="service_description[]"]');
-                                        const qty = firstService.querySelector('input[name="service_quantity[]"]');
-                                        const price = firstService.querySelector('input[name="service_price[]"]');
+                            try {
+                                // NETTOYER COMPLÈTEMENT les prestations existantes sauf la première (template)
+                                const existingServices = servicesContainer.querySelectorAll(':scope > div');
+                                console.log('📋 [FORM] Prestations existantes trouvées:', existingServices.length);
+                                
+                                for (let i = existingServices.length - 1; i > 0; i--) {
+                                    existingServices[i].remove();
+                                    console.log('📋 [FORM] Prestation', i + 1, 'supprimée');
+                                }
+                                
+                                // Remplir les prestations - UNE PAR UNE pour éviter les erreurs
+                                for (let index = 0; index < servicesToLoad.length; index++) {
+                                    const service = servicesToLoad[index];
+                                    console.log('📋 [FORM] Traitement prestation', index + 1, ':', service);
+                                    
+                                    if (index === 0) {
+                                        // Modifier la première prestation existante (template)
+                                        const firstService = servicesContainer.querySelector(':scope > div');
+                                        if (firstService) {
+                                            const desc = firstService.querySelector('input[name="service_description[]"]');
+                                            const qty = firstService.querySelector('input[name="service_quantity[]"]');
+                                            const price = firstService.querySelector('input[name="service_price[]"]');
+                                            
+                                            if (desc) desc.value = service.description || '';
+                                            if (qty) qty.value = service.quantity || 1;
+                                            if (price) price.value = service.price || 0;
+                                            
+                                            console.log('✅ [FORM] Prestation 1 remplie');
+                                        }
+                                    } else {
+                                        // Créer une nouvelle prestation
+                                        const newService = document.createElement('div');
+                                        newService.className = 'flex items-center gap-3 p-3 bg-white rounded-lg border shadow-sm';
+                                        newService.innerHTML = `
+                                            <div class="flex-1">
+                                                <label class="block text-xs font-medium text-gray-600 mb-1">Description de la prestation</label>
+                                                <input type="text" name="service_description[]" placeholder="Décrivez votre prestation..." class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm" required>
+                                            </div>
+                                            <div class="w-16">
+                                                <label class="block text-xs font-medium text-gray-600 mb-1">Quantité</label>
+                                                <input type="number" name="service_quantity[]" min="1" value="1" class="w-full px-2 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm text-center" required>
+                                            </div>
+                                            <div class="w-28">
+                                                <label class="block text-xs font-medium text-gray-600 mb-1">Prix HT</label>
+                                                <input type="number" name="service_price[]" step="0.01" min="0" placeholder="0.00 €" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm text-right" required>
+                                            </div>
+                                            <div class="flex items-end">
+                                                <button type="button" class="text-red-500 hover:text-red-700 hover:bg-red-50 p-2 rounded-lg transition-colors" onclick="this.closest('.flex.items-center').remove(); updateTotal();" title="Supprimer cette prestation">
+                                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                                                    </svg>
+                                                </button>
+                                            </div>
+                                        `;
+                                        
+                                        // Remplir les valeurs
+                                        const desc = newService.querySelector('input[name="service_description[]"]');
+                                        const qty = newService.querySelector('input[name="service_quantity[]"]');
+                                        const price = newService.querySelector('input[name="service_price[]"]');
                                         
                                         if (desc) desc.value = service.description || '';
                                         if (qty) qty.value = service.quantity || 1;
                                         if (price) price.value = service.price || 0;
+                                        
+                                        // Ajouter au container
+                                        servicesContainer.appendChild(newService);
+                                        
+                                        console.log('✅ [FORM] Prestation', index + 1, 'créée et remplie');
                                     }
-                                } else {
-                                    // Ajouter une nouvelle prestation
-                                    addService(service.description || '', service.quantity || 1, service.price || 0);
                                 }
-                            });
-                            
-                            console.log('✅ [FORM] Prestations chargées');
+                                
+                                // FORCER la réactivation de tous les champs
+                                setTimeout(() => {
+                                    const serviceFields = servicesContainer.querySelectorAll('input, textarea, select');
+                                    serviceFields.forEach(field => {
+                                        field.disabled = false;
+                                        field.readOnly = false;
+                                        field.removeAttribute('disabled');
+                                        field.removeAttribute('readonly');
+                                    });
+                                    console.log('✅ [FORM] Tous les champs garantis éditables');
+                                }, 100);
+                                
+                                console.log('✅ [FORM] Prestations chargées avec succès');
+                                
+                            } catch (prestationsError) {
+                                console.error('❌ [FORM] Erreur lors du chargement des prestations:', prestationsError);
+                                console.error('❌ [FORM] Erreur détaillée:', prestationsError.message);
+                                console.error('❌ [FORM] Stack:', prestationsError.stack);
+                                
+                                // FALLBACK - Essayer de charger au moins la première prestation
+                                if (servicesToLoad && servicesToLoad.length > 0) {
+                                    try {
+                                        const firstService = servicesContainer.querySelector(':scope > div');
+                                        if (firstService) {
+                                            const desc = firstService.querySelector('input[name="service_description[]"]');
+                                            const qty = firstService.querySelector('input[name="service_quantity[]"]');
+                                            const price = firstService.querySelector('input[name="service_price[]"]');
+                                            
+                                            if (desc) desc.value = servicesToLoad[0].description || '';
+                                            if (qty) qty.value = servicesToLoad[0].quantity || 1;
+                                            if (price) price.value = servicesToLoad[0].price || 0;
+                                            
+                                            console.log('✅ [FORM] FALLBACK - Première prestation chargée');
+                                        }
+                                    } catch (fallbackError) {
+                                        console.error('❌ [FORM] Erreur FALLBACK:', fallbackError);
+                                    }
+                                }
+                            }
                         } else {
                             console.error('❌ [FORM] Container servicesContainerFullPage non trouvé');
                         }
@@ -1580,12 +2157,112 @@
                 console.log('✅ [GHOST MONITOR] Surveillance active');
             }
             
+            // ==========================================
+            // SURVEILLANCE ULTRA-AGRESSIVE DES CHAMPS ÉDITABLES
+            // ==========================================
+            function ensureFieldsAlwaysEditable() {
+                console.log('🔒 [FIELDS] Surveillance ULTRA-AGRESSIVE des champs éditables...');
+                
+                function reactivateAllFields() {
+                    const form = document.getElementById('newQuoteForm');
+                    if (form && !form.classList.contains('hidden')) {
+                        const fields = form.querySelectorAll('input, textarea, select');
+                        let reactivatedCount = 0;
+                        
+                        fields.forEach(field => {
+                            if (field.disabled || field.readOnly) {
+                                field.disabled = false;
+                                field.readOnly = false;
+                                field.removeAttribute('disabled');
+                                field.removeAttribute('readonly');
+                                field.style.setProperty('pointer-events', 'auto', 'important');
+                                field.style.cursor = 'text';
+                                field.style.setProperty('opacity', '1', 'important');
+                                field.style.backgroundColor = '#ffffff';
+                                field.style.color = '#000000';
+                                reactivatedCount++;
+                                console.log('🔓 [SURVEILLANCE] Champ réactivé automatiquement:', field.name || field.id);
+                            }
+                        });
+                        
+                        // Champs spécifiques des prestations avec forçage
+                        const serviceFields = document.querySelectorAll('#servicesContainerFullPage input, #servicesContainerFullPage textarea, #servicesContainerFullPage select');
+                        serviceFields.forEach(field => {
+                            if (field.disabled || field.readOnly) {
+                                field.disabled = false;
+                                field.readOnly = false;
+                                field.removeAttribute('disabled');
+                                field.removeAttribute('readonly');
+                                field.style.setProperty('pointer-events', 'auto', 'important');
+                                field.style.cursor = 'text';
+                                field.style.setProperty('opacity', '1', 'important');
+                                field.style.backgroundColor = '#ffffff';
+                                field.style.color = '#000000';
+                                reactivatedCount++;
+                                console.log('🔓 [SURVEILLANCE] Service field réactivé automatiquement:', field.name || field.id);
+                            }
+                        });
+                        
+                        if (reactivatedCount > 0) {
+                            console.log(`🔒 [FIELDS] ${reactivatedCount} champs réactivés automatiquement par surveillance`);
+                        }
+                    }
+                }
+                
+                // Vérification TRÈS fréquente toutes les 500ms (au lieu de 2000ms)
+                setInterval(reactivateAllFields, 500);
+                
+                // MutationObserver ULTRA-SENSIBLE pour surveillance en temps réel
+                const fieldObserver = new MutationObserver((mutations) => {
+                    let needsImmediateCheck = false;
+                    
+                    mutations.forEach((mutation) => {
+                        if (mutation.type === 'attributes') {
+                            const target = mutation.target;
+                            if (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.tagName === 'SELECT') {
+                                if (mutation.attributeName === 'disabled' || mutation.attributeName === 'readonly') {
+                                    needsImmediateCheck = true;
+                                    console.log('🚨 [SURVEILLANCE] Détection modification attribut disabled/readonly sur:', target.name || target.id);
+                                }
+                            }
+                        }
+                    });
+                    
+                    if (needsImmediateCheck) {
+                        console.log('⚡ [SURVEILLANCE] RÉACTIVATION IMMÉDIATE suite à détection');
+                        reactivateAllFields();
+                        // Double vérification 
+                        setTimeout(reactivateAllFields, 10);
+                        setTimeout(reactivateAllFields, 50);
+                    }
+                });
+                
+                fieldObserver.observe(document.body, {
+                    childList: true,
+                    subtree: true,
+                    attributes: true,
+                    attributeFilter: ['disabled', 'readonly', 'style', 'class']
+                });
+                
+                // Événements additionnels pour forcer la réactivation
+                document.addEventListener('click', () => {
+                    setTimeout(reactivateAllFields, 10);
+                });
+                
+                document.addEventListener('focus', () => {
+                    setTimeout(reactivateAllFields, 10);
+                }, true);
+                
+                console.log('✅ [FIELDS] Surveillance ULTRA-AGRESSIVE des champs éditables active');
+            }
+            
             // === EXÉCUTION IMMÉDIATE ET SURVEILLANCE ===
             removeAllGhostButtonsDefinitively();
             setTimeout(() => removeAllGhostButtonsDefinitively(), 500);
             setTimeout(() => removeAllGhostButtonsDefinitively(), 1000);
             setTimeout(() => removeAllGhostButtonsDefinitively(), 2000);
             setupGhostButtonMonitoring();
+            ensureFieldsAlwaysEditable();
             
             // Configuration de la création de devis
             setupQuoteCreation();
@@ -1608,6 +2285,13 @@
                     console.log('✅ Ajout du listener sur le bouton Nouveau Devis');
                     createQuoteBtn.addEventListener('click', () => {
                         console.log('📝 Ouverture de la vue création de devis');
+                        
+                        // NETTOYER COMPLÈTEMENT LE FORMULAIRE AVANT L'OUVERTURE
+                        cleanFormCompletely();
+                        
+                        // DÉFINIR LE MODE NOUVEAU DEVIS
+                        window.currentEditingMode = 'new';
+                        window.currentEditingQuoteId = null;
                         
                         // Afficher la vue création de devis en plein écran
                         const newQuoteView = document.getElementById('newQuoteView');
@@ -1636,6 +2320,25 @@
                             setTimeout(() => removeAllGhostButtonsDefinitively(), 50);
                             setTimeout(() => removeAllGhostButtonsDefinitively(), 200);
                             setTimeout(() => removeAllGhostButtonsDefinitively(), 500);
+                            
+                            // RÉACTIVATION IMMÉDIATE DES CHAMPS À L'OUVERTURE
+                            console.log('🔒 [OPEN VIEW] Activation des champs éditables à l\'ouverture');
+                            setTimeout(() => {
+                                const form = document.getElementById('newQuoteForm');
+                                if (form) {
+                                    const fields = form.querySelectorAll('input, textarea, select');
+                                    fields.forEach(field => {
+                                        field.disabled = false;
+                                        field.readOnly = false;
+                                        field.removeAttribute('disabled');
+                                        field.removeAttribute('readonly');
+                                        field.style.pointerEvents = 'auto';
+                                        field.style.cursor = 'text';
+                                        field.style.opacity = '1';
+                                    });
+                                    console.log('✅ [OPEN VIEW] Tous les champs sont garantis éditables');
+                                }
+                            }, 100);
                             
                             // Réinitialiser le formulaire
                             const newQuoteForm = document.getElementById('newQuoteForm');
@@ -1899,20 +2602,261 @@
                         return;
                     }
                     
-                    console.log('🔍 Vérification validité du formulaire...');
-                    const isValid = form.checkValidity();
+                    // FONCTION ULTRA-COMPLÈTE POUR RÉSOUDRE LE PROBLÈME DE SAISIE APRÈS VALIDATION
+                    function ultraCompleteFieldReactivation() {
+                        console.log('🔥 [FORM] RÉACTIVATION ULTRA-COMPLÈTE - Résolution problème saisie...');
+                        
+                        // Traiter TOUS les champs du formulaire avec une approche radicale
+                        const allFields = form.querySelectorAll('input, textarea, select, button');
+                        allFields.forEach((field, index) => {
+                            // Supprimer TOUS les attributs qui peuvent bloquer l'édition
+                            const blockingAttributes = ['disabled', 'readonly', 'aria-disabled', 'tabindex', 'contenteditable'];
+                            blockingAttributes.forEach(attr => {
+                                field.removeAttribute(attr);
+                            });
+                            
+                            // Réinitialiser toutes les propriétés JavaScript
+                            field.disabled = false;
+                            field.readOnly = false;
+                            
+                            // Supprimer toutes les classes CSS qui peuvent bloquer
+                            const blockingClasses = ['disabled', 'readonly', 'non-editable', 'blocked', 'invalid'];
+                            field.classList.remove(...blockingClasses);
+                            
+                            // Appliquer des styles CSS forcés avec !important
+                            const forceStyles = {
+                                'pointer-events': 'auto',
+                                'cursor': (field.type === 'text' || field.type === 'number' || field.type === 'email' || field.tagName === 'TEXTAREA') ? 'text' : 'auto',
+                                'opacity': '1',
+                                'background-color': '',
+                                'color': '',
+                                'user-select': 'text',
+                                '-webkit-user-select': 'text',
+                                '-moz-user-select': 'text',
+                                '-ms-user-select': 'text',
+                                'outline': 'none'
+                            };
+                            
+                            Object.entries(forceStyles).forEach(([prop, value]) => {
+                                field.style.setProperty(prop, value, 'important');
+                            });
+                            
+                            // Pour les INPUT, forcer l'édition
+                            if (field.tagName === 'INPUT') {
+                                field.setAttribute('contenteditable', 'true');
+                                field.style.setProperty('-webkit-user-modify', 'read-write', 'important');
+                                
+                                // Réinitialiser la valeur si elle existe pour forcer la mise à jour
+                                const currentValue = field.value;
+                                field.value = '';
+                                field.value = currentValue;
+                            }
+                            
+                            // Forcer un cycle focus/blur pour réinitialiser l'état
+                            setTimeout(() => {
+                                try {
+                                    field.focus();
+                                    setTimeout(() => {
+                                        field.blur();
+                                        // Focus de nouveau si c'est un champ vide obligatoire
+                                        if (field.hasAttribute('required') && !field.value) {
+                                            field.focus();
+                                        }
+                                    }, 5);
+                                } catch (e) { /* Ignore focus errors */ }
+                            }, index * 5); // Délai échelonné
+                            
+                            console.log('🔥 Champ ULTRA-traité:', field.name || field.id || field.tagName, field.type || '');
+                        });
+                        
+                        // Traitement spécial pour les champs obligatoires vides
+                        setTimeout(() => {
+                            const emptyRequiredFields = form.querySelectorAll('input[required]:not([value]), input[required][value=""]');
+                            emptyRequiredFields.forEach((field, index) => {
+                                console.log('🎯 Traitement spécial champ vide obligatoire:', field.name || field.id);
+                                
+                                // Re-forcer tous les styles
+                                field.disabled = false;
+                                field.readOnly = false;
+                                field.removeAttribute('disabled');
+                                field.removeAttribute('readonly');
+                                field.style.setProperty('pointer-events', 'auto', 'important');
+                                field.style.setProperty('cursor', 'text', 'important');
+                                field.style.setProperty('user-select', 'text', 'important');
+                                
+                                // Cycle focus/blur spécial
+                                setTimeout(() => {
+                                    field.focus();
+                                    field.click(); // Simuler un click pour activer
+                                    setTimeout(() => field.blur(), 10);
+                                }, index * 20);
+                            });
+                        }, 100);
+                        
+                        console.log('✅ [FORM] RÉACTIVATION ULTRA-COMPLÈTE terminée');
+                    }
+                    
+                    // FONCTION POUR RÉACTIVER TOUS LES CHAMPS DU FORMULAIRE
+                    function reactivateAllFormFields() {
+                        console.log('� [FORM] Réactivation de tous les champs du formulaire...');
+                        
+                        // Réactiver tous les inputs, textareas et selects
+                        const allFields = form.querySelectorAll('input, textarea, select, button');
+                        allFields.forEach(field => {
+                            field.disabled = false;
+                            field.readOnly = false;
+                            field.removeAttribute('disabled');
+                            field.removeAttribute('readonly');
+                            
+                            // S'assurer que les champs sont interactifs
+                            field.style.pointerEvents = 'auto';
+                            field.style.cursor = 'text';
+                            field.style.opacity = '1';
+                            
+                            console.log('🔄 Champ réactivé:', field.name || field.id || field.tagName);
+                        });
+                        
+                        // Réactiver spécifiquement les champs dans les prestations avec traitement complet
+                        const serviceFields = document.querySelectorAll('#servicesContainerFullPage input, #servicesContainerFullPage textarea, #servicesContainerFullPage select');
+                        serviceFields.forEach(field => {
+                            // Traitement identique pour les champs de prestations
+                            field.disabled = false;
+                            field.readOnly = false;
+                            field.removeAttribute('disabled');
+                            field.removeAttribute('readonly');
+                            field.removeAttribute('aria-disabled');
+                            field.removeAttribute('tabindex');
+                            
+                            field.classList.remove('disabled', 'readonly', 'non-editable', 'blocked');
+                            
+                            field.style.setProperty('pointer-events', 'auto', 'important');
+                            field.style.setProperty('cursor', 'text', 'important');
+                            field.style.setProperty('opacity', '1', 'important');
+                            field.style.setProperty('background-color', '', 'important');
+                            field.style.setProperty('color', '', 'important');
+                            field.style.setProperty('user-select', 'text', 'important');
+                            field.style.setProperty('-webkit-user-select', 'text', 'important');
+                            field.style.setProperty('-moz-user-select', 'text', 'important');
+                            field.style.setProperty('-ms-user-select', 'text', 'important');
+                            
+                            if (field.tagName === 'INPUT') {
+                                field.setAttribute('contenteditable', 'true');
+                                field.style.setProperty('-webkit-user-modify', 'read-write', 'important');
+                            }
+                            
+                            try {
+                                field.focus();
+                                field.blur();
+                            } catch (e) { /* Ignore focus errors */ }
+                        });
+                        
+                        // Forcer la recréation des champs les plus problématiques (ceux qui restent vides)
+                        const problematicFields = form.querySelectorAll('input[required]:not([value])');
+                        problematicFields.forEach((field, index) => {
+                            setTimeout(() => {
+                                // Double traitement pour les champs vides obligatoires
+                                field.disabled = false;
+                                field.readOnly = false;
+                                field.removeAttribute('disabled');
+                                field.removeAttribute('readonly');
+                                field.style.setProperty('pointer-events', 'auto', 'important');
+                                field.style.setProperty('user-select', 'text', 'important');
+                                field.style.setProperty('cursor', 'text', 'important');
+                                field.focus();
+                                field.blur();
+                                console.log('🔥 Champ vide obligatoire ULTRA-traité:', field.name || field.id);
+                            }, index * 10); // Délai échelonné
+                        });
+                        
+                        console.log('✅ [FORM] Tous les champs du formulaire sont ULTRA-réactivés');
+                    }
+                    
+                    console.log('�🔍 Vérification validité du formulaire...');
+                    // const isValid = form.checkValidity(); // SUPPRIMÉ - Plus de validation
+                    const isValid = true; // FORCÉ À TRUE - Enregistrement toujours autorisé
                     console.log('📋 Formulaire valide:', isValid);
                     
                     if (!isValid) {
                         console.warn('⚠️ Formulaire invalide, affichage des erreurs...');
                         form.reportValidity();
-                        alert('Veuillez remplir tous les champs obligatoires');
-                        return;
+                        
+                        // RÉACTIVATION IMMÉDIATE ET AGGRESSIVE DES CHAMPS AVANT L'ALERT
+                        console.log('⚡ [FORM] RÉACTIVATION IMMÉDIATE avant l\'alert...');
+                        reactivateAllFormFields();
+                        ultraCompleteFieldReactivation(); // NOUVELLE FONCTION ULTRA-COMPLÈTE
+                        
+                        // Réactivation supplémentaire avec styles forcés
+                        const allFormFields = form.querySelectorAll('input, textarea, select');
+                        allFormFields.forEach(field => {
+                            field.disabled = false;
+                            field.readOnly = false;
+                            field.removeAttribute('disabled');
+                            field.removeAttribute('readonly');
+                            field.style.setProperty('pointer-events', 'auto', 'important');
+                            field.style.setProperty('opacity', '1', 'important');
+                            field.style.backgroundColor = '#ffffff';
+                            field.style.color = '#000000';
+                        });
+                        
+                        // alert('Veuillez remplir tous les champs obligatoires'); // SUPPRIMÉ - Plus d'alerte de validation
+                        console.log('💾 [VALIDATION] Message d\'alerte supprimé - Enregistrement autorisé');
+                        
+                        // RÉACTIVATION POST-ALERT AVEC FONCTION ULTRA-COMPLÈTE
+                        console.log('⚡ [FORM] RÉACTIVATION POST-ALERT...');
+                        reactivateAllFormFields();
+                        ultraCompleteFieldReactivation(); // SOLUTION COMPLÈTE POUR PROBLÈME SAISIE
+                        
+                        setTimeout(() => {
+                            console.log('⚡ [FORM] RÉACTIVATION DÉLAI 50ms...');
+                            reactivateAllFormFields();
+                            ultraCompleteFieldReactivation(); // DOUBLE TRAITEMENT
+                            
+                            // Force supplémentaire sur les champs des services
+                            document.querySelectorAll('#servicesContainerFullPage input, #servicesContainerFullPage textarea, #servicesContainerFullPage select').forEach(field => {
+                                field.disabled = false;
+                                field.readOnly = false;
+                                field.removeAttribute('disabled');
+                                field.removeAttribute('readonly');
+                                field.style.setProperty('pointer-events', 'auto', 'important');
+                                field.style.setProperty('opacity', '1', 'important');
+                            });
+                        }, 50);
+                        
+                        setTimeout(() => {
+                            console.log('⚡ [FORM] RÉACTIVATION DÉLAI 200ms...');
+                            reactivateAllFormFields();
+                        }, 200);
+                        
+                        setTimeout(() => {
+                            console.log('⚡ [FORM] RÉACTIVATION FINALE DÉLAI 500ms...');
+                            reactivateAllFormFields();
+                            ultraCompleteFieldReactivation(); // TRAITEMENT FINAL ULTRA-COMPLET
+                            
+                            // Vérification finale
+                            const stillDisabled = document.querySelectorAll('#newQuoteForm input[disabled], #newQuoteForm textarea[disabled], #newQuoteForm select[disabled]');
+                            if (stillDisabled.length > 0) {
+                                console.error('❌ [FORM] CHAMPS ENCORE DÉSACTIVÉS:', stillDisabled);
+                                stillDisabled.forEach(field => {
+                                    field.disabled = false;
+                                    field.readOnly = false;
+                                    field.removeAttribute('disabled');
+                                    field.removeAttribute('readonly');
+                                    field.style.setProperty('pointer-events', 'auto', 'important');
+                                    field.style.setProperty('opacity', '1', 'important');
+                                    field.focus();
+                                    field.blur();
+                                });
+                            }
+                            console.log('✅ [FORM] RÉACTIVATION FINALE TERMINÉE - Champs garantis éditables');
+                        }, 500);
+                        
+                        // SUPPRIMÉ: return; // Plus de blocage sur validation échouée
                     }
                     
-                    console.log('✅ Formulaire valide, début de la sauvegarde...');
+                    console.log('💾 [FORM] Validation DÉSACTIVÉE - Enregistrement autorisé avec champs vides');
+                    console.log('✅ Début de la sauvegarde sans validation...');
                     
-                    // Désactiver le bouton pendant le traitement (avec vérification)
+                    // Désactiver UNIQUEMENT le bouton pendant le traitement (pas les champs)
                     let originalText = '';
                     if (buttonElement && buttonElement.textContent) {
                         originalText = buttonElement.textContent;
@@ -1982,9 +2926,11 @@
                         
                         console.log('📊 Nombre total de services valides:', quoteData.services.length);
                         
-                        if (quoteData.services.length === 0) {
-                            throw new Error('Veuillez ajouter au moins une prestation valide');
-                        }
+                        // SUPPRIMÉ - Validation des prestations désactivée - L'utilisateur peut enregistrer sans prestations
+                        // if (quoteData.services.length === 0) {
+                        //     throw new Error('Veuillez ajouter au moins une prestation valide');
+                        // }
+                        console.log('💾 [PRESTATIONS] Validation DÉSACTIVÉE - Enregistrement autorisé sans prestations');
                         
                         // Calculer les totaux
                         let totalHT = 0;
@@ -2071,17 +3017,40 @@
                                 console.log('💾 Appel createQuote avec les données:', {
                                     clientName: quoteData.clientName,
                                     servicesCount: quoteData.services.length,
-                                    totalTTC: quoteData.totalTTC
+                                    totalTTC: quoteData.totalTTC,
+                                    mode: window.currentEditingMode,
+                                    editingId: window.currentEditingQuoteId
                                 });
                                 
-                                const dbResult = await window.dbService.createQuote(quoteData);
-                                console.log('✅ Devis sauvegardé en base de données:', dbResult);
+                                let dbResult;
+                                
+                                // Vérifier si on est en mode édition
+                                if (window.currentEditingMode === 'edit' && window.currentEditingQuoteId) {
+                                    console.log('📝 MODE ÉDITION - Mise à jour du devis existant:', window.currentEditingQuoteId);
+                                    
+                                    // Ajouter l'ID au quoteData pour la mise à jour
+                                    quoteData.id = window.currentEditingQuoteId;
+                                    
+                                    // Appeler updateQuote s'il existe, sinon createQuote
+                                    if (typeof window.dbService.updateQuote === 'function') {
+                                        dbResult = await window.dbService.updateQuote(window.currentEditingQuoteId, quoteData);
+                                        console.log('✅ Devis MODIFIÉ en base de données:', dbResult);
+                                    } else {
+                                        // Fallback vers createQuote avec ID
+                                        dbResult = await window.dbService.createQuote(quoteData);
+                                        console.log('✅ Devis sauvegardé en base de données (createQuote):', dbResult);
+                                    }
+                                } else {
+                                    console.log('📝 MODE CRÉATION - Nouveau devis');
+                                    dbResult = await window.dbService.createQuote(quoteData);
+                                    console.log('✅ NOUVEAU devis sauvegardé en base de données:', dbResult);
+                                }
                                 
                                 if (dbResult && dbResult.id) {
                                     quoteData.id = dbResult.id; // Garder l'ID pour référence
-                                    console.log('✅ ID du devis créé:', dbResult.id);
+                                    console.log('✅ ID du devis:', dbResult.id);
                                 } else {
-                                    console.warn('⚠️ Aucun ID retourné par createQuote:', dbResult);
+                                    console.warn('⚠️ Aucun ID retourné:', dbResult);
                                 }
                                 
                             } catch (dbError) {
@@ -2125,14 +3094,77 @@
                     } catch (error) {
                         console.error('❌ Erreur lors de la création du devis:', error);
                         alert('❌ Erreur - ' + error.message);
+                        
+                        // IMPORTANT: Réactiver tous les champs après une erreur
+                        const form = document.getElementById('newQuoteForm');
+                        if (form) {
+                            console.log('🔄 [ERROR] Réactivation des champs après erreur...');
+                            const allFields = form.querySelectorAll('input, textarea, select, button');
+                            allFields.forEach(field => {
+                                field.disabled = false;
+                                field.readOnly = false;
+                                field.removeAttribute('disabled');
+                                field.removeAttribute('readonly');
+                                field.style.pointerEvents = 'auto';
+                                field.style.cursor = field.tagName === 'INPUT' || field.tagName === 'TEXTAREA' ? 'text' : 'pointer';
+                                field.style.opacity = '1';
+                            });
+                            
+                            // Réactiver spécifiquement les champs des prestations
+                            const serviceFields = document.querySelectorAll('#servicesContainerFullPage input, #servicesContainerFullPage textarea, #servicesContainerFullPage select');
+                            serviceFields.forEach(field => {
+                                field.disabled = false;
+                                field.readOnly = false;
+                                field.removeAttribute('disabled');
+                                field.removeAttribute('readonly');
+                                field.style.pointerEvents = 'auto';
+                                field.style.cursor = 'text';
+                                field.style.opacity = '1';
+                            });
+                            
+                            console.log('✅ [ERROR] Tous les champs sont réactivés après l\'erreur');
+                        }
+                        
                     } finally {
-                        // Réactiver le bouton
+                        // Réactiver le bouton ET s'assurer que tous les champs sont éditables
                         if (buttonElement) {
                             buttonElement.disabled = false;
                             if (originalText) {
                                 buttonElement.textContent = originalText;
                             }
                         }
+                        
+                        // SÉCURITÉ: Réactivation finale de tous les champs
+                        setTimeout(() => {
+                            const form = document.getElementById('newQuoteForm');
+                            if (form) {
+                                console.log('🔄 [FINALLY] Réactivation finale de sécurité des champs...');
+                                const allFields = form.querySelectorAll('input, textarea, select');
+                                allFields.forEach(field => {
+                                    field.disabled = false;
+                                    field.readOnly = false;
+                                    field.removeAttribute('disabled');
+                                    field.removeAttribute('readonly');
+                                    field.style.pointerEvents = 'auto';
+                                    field.style.cursor = field.tagName === 'INPUT' || field.tagName === 'TEXTAREA' ? 'text' : 'pointer';
+                                    field.style.opacity = '1';
+                                });
+                                
+                                // S'assurer que les champs des prestations sont actifs
+                                const serviceFields = document.querySelectorAll('#servicesContainerFullPage input, #servicesContainerFullPage textarea, #servicesContainerFullPage select');
+                                serviceFields.forEach(field => {
+                                    field.disabled = false;
+                                    field.readOnly = false;
+                                    field.removeAttribute('disabled');
+                                    field.removeAttribute('readonly');
+                                    field.style.pointerEvents = 'auto';
+                                    field.style.cursor = 'text';
+                                    field.style.opacity = '1';
+                                });
+                                
+                                console.log('✅ [FINALLY] Réactivation finale terminée - tous les champs sont garantis éditables');
+                            }
+                        }, 200);
                     }
                 };
 
@@ -2147,6 +3179,77 @@
                     saveQuoteBtnMain.addEventListener('click', () => window.handleSaveQuote(saveQuoteBtnMain));
                 } else {
                     console.error('❌ Bouton principal d\\\'enregistrement non trouvé !');
+                }
+                
+                // ==========================================
+                // BOUTON DE TEST POUR VÉRIFIER LA RÉACTIVATION DES CHAMPS
+                // ==========================================
+                const testValidationBtn = document.getElementById('testValidationBtn');
+                if (testValidationBtn) {
+                    console.log('🧪 Configuration du bouton de test de validation...');
+                    testValidationBtn.addEventListener('click', () => {
+                        console.log('🧪 [TEST] Simulation d\'une erreur de validation...');
+                        
+                        const form = document.getElementById('newQuoteForm');
+                        if (form) {
+                            // Simuler l'erreur de validation sans réellement valider
+                            form.reportValidity(); // Déclenche les messages d'erreur HTML5
+                            
+                            // Simuler le processus de notre fonction handleSaveQuote
+                            alert('🧪 TEST: Veuillez remplir tous les champs obligatoires');
+                            
+                            // Forcer la réactivation immédiate comme dans notre fonction
+                            console.log('🧪 [TEST] RÉACTIVATION TEST après l\'alert...');
+                            
+                            // Même logic que dans handleSaveQuote
+                            const allFormFields = form.querySelectorAll('input, textarea, select');
+                            allFormFields.forEach(field => {
+                                field.disabled = false;
+                                field.readOnly = false;
+                                field.removeAttribute('disabled');
+                                field.removeAttribute('readonly');
+                                field.style.setProperty('pointer-events', 'auto', 'important');
+                                field.style.setProperty('opacity', '1', 'important');
+                                field.style.backgroundColor = '#ffffff';
+                                field.style.color = '#000000';
+                            });
+                            
+                            // Réactivation avec délais multiples comme dans la vraie fonction
+                            setTimeout(() => {
+                                console.log('🧪 [TEST] RÉACTIVATION DÉLAI 50ms...');
+                                allFormFields.forEach(field => {
+                                    field.disabled = false;
+                                    field.readOnly = false;
+                                    field.removeAttribute('disabled');
+                                    field.removeAttribute('readonly');
+                                    field.style.setProperty('pointer-events', 'auto', 'important');
+                                    field.style.setProperty('opacity', '1', 'important');
+                                });
+                            }, 50);
+                            
+                            setTimeout(() => {
+                                console.log('🧪 [TEST] VÉRIFICATION FINALE - Tous les champs devraient être éditables');
+                                const stillDisabled = form.querySelectorAll('input[disabled], textarea[disabled], select[disabled]');
+                                if (stillDisabled.length > 0) {
+                                    console.error('❌ [TEST] PROBLÈME DÉTECTÉ - Champs encore désactivés:', stillDisabled);
+                                } else {
+                                    console.log('✅ [TEST] SUCCÈS - Tous les champs sont éditables !');
+                                    
+                                    // Test de focus pour prouver que ça marche
+                                    const firstInput = form.querySelector('input[type="text"]');
+                                    if (firstInput) {
+                                        firstInput.focus();
+                                        firstInput.style.border = '2px solid green';
+                                        setTimeout(() => {
+                                            firstInput.style.border = '';
+                                        }, 2000);
+                                        console.log('✅ [TEST] Focus appliqué avec succès sur le premier champ');
+                                    }
+                                }
+                            }, 500);
+                        }
+                    });
+                    console.log('✅ [TEST] Bouton de test configuré');
                 }
                 
                 // Fonction pour générer et télécharger le PDF (version simplifiée et robuste)

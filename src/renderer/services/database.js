@@ -269,6 +269,44 @@ class DatabaseService {
             }
             
             console.log('✅ [getQuotes] Données récupérées de Supabase:', data);
+            
+            // 🔧 CORRECTION: Récupérer les prestations (quote_lines) pour chaque devis
+            console.log('🔍 [getQuotes] Récupération des prestations pour chaque devis...');
+            
+            for (let i = 0; i < data.length; i++) {
+                const quote = data[i];
+                console.log(`📋 [getQuotes] Recherche prestations pour devis ${quote.id}...`);
+                
+                try {
+                    const { data: quoteLines, error: linesError } = await this.supabase
+                        .from('quote_lines')
+                        .select('*')
+                        .eq('quote_id', quote.id)
+                        .order('line_order');
+                    
+                    if (linesError) {
+                        console.log(`⚠️ [getQuotes] Erreur récupération prestations devis ${quote.id}:`, linesError);
+                        quote.services = [];
+                    } else if (!quoteLines || quoteLines.length === 0) {
+                        console.log(`ℹ️ [getQuotes] Aucune prestation trouvée pour devis ${quote.id}`);
+                        quote.services = [];
+                    } else {
+                        // Transformer les quote_lines en format services
+                        quote.services = quoteLines.map(line => ({
+                            description: line.description,
+                            quantity: line.quantity,
+                            price: line.unit_price_ht,
+                            unit: ''
+                        }));
+                        console.log(`✅ [getQuotes] ${quote.services.length} prestations récupérées pour devis ${quote.id}`);
+                    }
+                } catch (lineError) {
+                    console.error(`❌ [getQuotes] Exception lors récupération prestations devis ${quote.id}:`, lineError);
+                    quote.services = [];
+                }
+            }
+            
+            console.log('✅ [getQuotes] Tous les devis avec prestations chargés');
             return data;
 
         } catch (error) {
@@ -394,7 +432,8 @@ class DatabaseService {
                     description: service.description || '',
                     quantity: service.quantity || 1,
                     unit_price_ht: service.price || 0,
-                    total_ht: (service.quantity || 1) * (service.price || 0)
+                    tax_rate: 20.00 // TVA par défaut de 20%
+                    // Ne pas inclure total_ht car c'est calculé automatiquement par la DB
                 }));
                 
                 console.log('📊 [createQuote] Données à insérer dans quote_lines:', quoteLines);
@@ -403,12 +442,46 @@ class DatabaseService {
                     .from('quote_lines')
                     .insert(quoteLines);
                 
+                // DIAGNOSTIC ULTRA-DÉTAILLÉ
+                console.log('🔍 [DEBUG] Résultat insertion quote_lines:');
+                console.log('  - linesData:', linesData);
+                console.log('  - linesError:', linesError);
+                console.log('  - Type linesData:', typeof linesData);
+                console.log('  - linesData est null?', linesData === null);
+                console.log('  - linesData est undefined?', linesData === undefined);
+                console.log('  - JSON linesData:', JSON.stringify(linesData));
+                console.log('  - JSON linesError:', JSON.stringify(linesError, null, 2));
+                
                 if (linesError) {
                     console.error('⚠️ Erreur lors de la création des lignes:', linesError);
                     console.error('⚠️ Détails erreur lignes:', JSON.stringify(linesError, null, 2));
                     // Ne pas faire échouer tout le devis pour ça
                 } else {
                     console.log('✅ Lignes de devis créées avec succès:', linesData);
+                    
+                    // VÉRIFICATION IMMÉDIATE: tenter de récupérer les lignes qu'on vient de créer
+                    console.log('🔍 [VERIFICATION] Tentative récupération immédiate des lignes...');
+                    try {
+                        const { data: verifyLines, error: verifyError } = await this.supabase
+                            .from('quote_lines')
+                            .select('*')
+                            .eq('quote_id', data.id);
+                        
+                        console.log('🔍 [VERIFICATION] Résultat vérification:');
+                        console.log('  - verifyLines:', verifyLines);
+                        console.log('  - verifyError:', verifyError);
+                        console.log('  - Nombre de lignes trouvées:', verifyLines ? verifyLines.length : 0);
+                        
+                        if (verifyError) {
+                            console.error('❌ [VERIFICATION] Erreur récupération:', verifyError);
+                        } else if (!verifyLines || verifyLines.length === 0) {
+                            console.error('❌ [VERIFICATION] AUCUNE LIGNE TROUVÉE après insertion !');
+                        } else {
+                            console.log('✅ [VERIFICATION] Lignes retrouvées:', verifyLines);
+                        }
+                    } catch (verifyErr) {
+                        console.error('❌ [VERIFICATION] Exception:', verifyErr);
+                    }
                 }
             } else {
                 console.log('⚠️ Aucun service à sauvegarder:', {
@@ -522,6 +595,128 @@ class DatabaseService {
         } catch (error) {
             console.error('❌ [getQuoteById] Erreur lors de la récupération du devis:', error);
             return null;
+        }
+    }
+
+    async updateQuote(quoteId, quoteData) {
+        console.log('📝 [updateQuote] === DÉBUT MISE À JOUR DEVIS ===');
+        console.log('📊 Données reçues:', JSON.stringify({
+            id: quoteId,
+            clientName: quoteData.clientName,
+            servicesCount: quoteData.services ? quoteData.services.length : 0,
+            totalTTC: quoteData.totalTTC
+        }, null, 2));
+        
+        try {
+            // Vérifier que Supabase est disponible
+            if (!this.supabase) {
+                console.log('❌ [updateQuote] Supabase non disponible, initialisation...');
+                
+                if (window.supabaseAPI && window.supabaseAPI.isConfigured()) {
+                    const supabaseUrl = window.supabaseAPI.getSupabaseUrl();
+                    const supabaseKey = window.supabaseAPI.getSupabaseKey();
+                    this.supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
+                    console.log('✅ [updateQuote] Supabase initialisé');
+                } else {
+                    console.error('❌ [updateQuote] Configuration Supabase non disponible');
+                    throw new Error('Configuration Supabase non disponible');
+                }
+            }
+            
+            console.log('🚀 [updateQuote] === TENTATIVE MISE À JOUR SUPABASE ===');
+            
+            // Préparer les données du devis principal
+            const quoteUpdateData = {
+                client_name: quoteData.clientName || '',
+                client_email: quoteData.clientEmail || '',
+                client_phone: quoteData.clientPhone || '',
+                client_address: quoteData.clientAddress || '',
+                quote_date: quoteData.quoteDate || new Date().toISOString().split('T')[0],
+                notes: quoteData.notes || '',
+                subtotal_ht: quoteData.totalHT || 0,
+                tax_amount: quoteData.totalTVA || 0,
+                total_ttc: quoteData.totalTTC || 0,
+                updated_at: new Date().toISOString()
+            };
+            
+            console.log('📊 [updateQuote] Données du devis à mettre à jour:', quoteUpdateData);
+            
+            // Mettre à jour le devis principal
+            const { data, error } = await this.supabase
+                .from('quotes')
+                .update(quoteUpdateData)
+                .eq('id', quoteId)
+                .select()
+                .single();
+            
+            if (error) {
+                console.error('❌ [updateQuote] Erreur mise à jour devis:', error);
+                throw error;
+            }
+            
+            console.log('✅ [updateQuote] Devis principal mis à jour:', data);
+            
+            // Gérer les prestations (quote_lines)
+            if (quoteData.services && Array.isArray(quoteData.services) && quoteData.services.length > 0) {
+                console.log('📊 [updateQuote] Mise à jour de', quoteData.services.length, 'prestations');
+                
+                // 1. Supprimer toutes les anciennes prestations
+                const { error: deleteError } = await this.supabase
+                    .from('quote_lines')
+                    .delete()
+                    .eq('quote_id', quoteId);
+                
+                if (deleteError) {
+                    console.error('⚠️ [updateQuote] Erreur suppression anciennes prestations:', deleteError);
+                } else {
+                    console.log('✅ [updateQuote] Anciennes prestations supprimées');
+                }
+                
+                // 2. Créer les nouvelles prestations
+                const quoteLines = quoteData.services.map((service, index) => ({
+                    quote_id: quoteId,
+                    line_order: index + 1,
+                    description: service.description || '',
+                    quantity: service.quantity || 1,
+                    unit_price_ht: service.price || 0,
+                    tax_rate: 20.00 // TVA par défaut de 20%
+                    // Ne pas inclure total_ht car c'est calculé automatiquement par la DB
+                }));
+                
+                console.log('📊 [updateQuote] Nouvelles prestations à insérer:', quoteLines);
+                
+                const { data: linesData, error: linesError } = await this.supabase
+                    .from('quote_lines')
+                    .insert(quoteLines);
+                
+                if (linesError) {
+                    console.error('⚠️ [updateQuote] Erreur création nouvelles prestations:', linesError);
+                    // Ne pas faire échouer tout le devis pour ça
+                } else {
+                    console.log('✅ [updateQuote] Nouvelles prestations créées:', linesData);
+                }
+            } else {
+                console.log('⚠️ [updateQuote] Pas de prestations à sauvegarder, suppression des anciennes');
+                
+                // Supprimer toutes les prestations s'il n'y en a plus
+                const { error: deleteError } = await this.supabase
+                    .from('quote_lines')
+                    .delete()
+                    .eq('quote_id', quoteId);
+                
+                if (deleteError) {
+                    console.error('⚠️ [updateQuote] Erreur suppression prestations:', deleteError);
+                } else {
+                    console.log('✅ [updateQuote] Prestations supprimées (devis sans prestations)');
+                }
+            }
+            
+            console.log('✅ [updateQuote] Devis mis à jour avec succès');
+            return { ...data, id: quoteId };
+            
+        } catch (error) {
+            console.error('❌ [updateQuote] Erreur lors de la mise à jour du devis:', error);
+            throw error;
         }
     }
 

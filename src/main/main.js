@@ -68,9 +68,9 @@ class Application {
 
     this.loginWindow.loadFile(path.join(__dirname, '../renderer/login.html'));
 
-    if (isDev) {
-      this.loginWindow.webContents.openDevTools();
-    }
+    // FORCER L'OUVERTURE DE LA CONSOLE DE DÉVELOPPEMENT pour la fenêtre de connexion
+    console.log('🔧 FORCE - Ouverture des DevTools pour fenêtre de connexion');
+    this.loginWindow.webContents.openDevTools();
 
     // Capturer les erreurs de console
     this.loginWindow.webContents.on('console-message', (event, level, message, line, sourceId) => {
@@ -112,10 +112,9 @@ class Application {
     console.log('📄 Chargement du fichier index.new.html...');
     this.mainWindow.loadFile(path.join(__dirname, '../renderer/index.new.html'));
 
-    if (isDev) {
-      console.log('🔧 Ouverture des DevTools (mode développement)');
-      this.mainWindow.webContents.openDevTools();
-    }
+    // FORCER L'OUVERTURE DE LA CONSOLE DE DÉVELOPPEMENT
+    console.log('🔧 FORCE - Ouverture des DevTools pour diagnostic');
+    this.mainWindow.webContents.openDevTools();
 
     this.mainWindow.once('ready-to-show', () => {
       console.log('✅ Fenêtre principale prête, affichage...');
