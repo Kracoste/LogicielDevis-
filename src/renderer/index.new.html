@@ -791,7 +791,7 @@
 
         // Fonction pour nettoyer complètement le formulaire
         function clearQuoteForm() {
-            console.log('🧹 [FORM] Nettoyage complet du formulaire...');
+            console.log('🧹 [FORM] Nettoyage complet du formulaire - IMMÉDIAT...');
             
             const form = document.getElementById('newQuoteForm');
             if (!form) {
@@ -799,7 +799,7 @@
                 return;
             }
             
-            // Vider tous les champs de base
+            // VIDER IMMÉDIATEMENT et VISUELLEMENT tous les champs pour éviter le flash
             const clientName = form.querySelector('#clientName') || form.querySelector('input[name="clientName"]');
             const clientEmail = form.querySelector('#clientEmail') || form.querySelector('input[name="clientEmail"]');
             const clientPhone = form.querySelector('#clientPhone') || form.querySelector('input[name="clientPhone"]');
@@ -942,6 +942,18 @@
         window.showEditQuoteView = function(quoteId) {
             console.log('✏️ Ouverture de la vue MODIFICATION devis:', quoteId);
             
+            // IMMÉDIATEMENT nettoyer le formulaire pour éviter le "flash" des données précédentes
+            console.log('🧹 [EDIT] Nettoyage préventif immédiat...');
+            
+            // MASQUER temporairement le formulaire pendant le changement
+            const form = document.getElementById('newQuoteForm');
+            if (form) {
+                form.style.visibility = 'hidden';
+                console.log('👻 [EDIT] Formulaire temporairement masqué');
+            }
+            
+            clearQuoteForm();
+            
             // Marquer le mode édition
             window.currentEditingMode = 'edit';
             window.currentEditingQuoteId = quoteId;
@@ -988,13 +1000,14 @@
                 
                 console.log('📋 Chargement du devis pour modification:', quote);
                 
-                // D'ABORD basculer vers la vue de modification (cela va préparer l'interface)
+                // D'ABORD basculer vers la vue de modification (cela va nettoyer ET préparer l'interface)
                 showEditQuoteView(quoteId);
                 
-                // ENSUITE charger les données dans le formulaire (après un délai pour s'assurer que la vue est prête)
+                // ENSUITE charger les données dans le formulaire (délai plus long pour garantir le nettoyage complet)
                 setTimeout(() => {
+                    console.log('📋 [EDIT] Début du chargement des données du devis...');
                     loadQuoteInForm(quote);
-                }, 100);
+                }, 200);
                 
             } catch (error) {
                 console.error('❌ [QUOTES] Erreur lors de la modification:', error);
@@ -1768,8 +1781,22 @@
                     
                     console.log('✅ [FORM] Devis chargé dans le formulaire');
                     
+                    // RÉAFFICHER le formulaire maintenant que tout est chargé correctement
+                    const formElement = document.getElementById('newQuoteForm');
+                    if (formElement) {
+                        formElement.style.visibility = 'visible';
+                        console.log('👁️ [FORM] Formulaire rendu visible - chargement terminé');
+                    }
+                    
                 } catch (error) {
                     console.error('❌ [FORM] Erreur lors du chargement du devis:', error);
+                    
+                    // En cas d'erreur, réafficher quand même le formulaire
+                    const formElement = document.getElementById('newQuoteForm');
+                    if (formElement) {
+                        formElement.style.visibility = 'visible';
+                        console.log('👁️ [FORM] Formulaire rendu visible - malgré l\'erreur');
+                    }
                 }
             }
 
