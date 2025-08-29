@@ -1127,9 +1127,10 @@
                 const quotes = await window.dbService.getQuotes();
                 console.log('📋 [QUOTES] Devis récupérés:', quotes);
                 
-                const container = document.getElementById('quotes-container');
+                // ✅ Correction: utiliser le bon ID du container
+                const container = document.getElementById('quotesList');
                 if (!container) {
-                    console.error('❌ [QUOTES] Container non trouvé');
+                    console.error('❌ [QUOTES] Container quotesList non trouvé');
                     return;
                 }
                 
@@ -1139,6 +1140,8 @@
                             <p class="text-gray-500">Aucun devis trouvé</p>
                         </div>
                     `;
+                    // ✨ Mise à jour du compteur même quand il n'y a pas de devis
+                    await window.updateQuotesCount();
                     return;
                 }
                 
@@ -1176,7 +1179,8 @@
                 
             } catch (error) {
                 console.error('❌ [QUOTES] Erreur lors du chargement des devis:', error);
-                const container = document.getElementById('quotes-container');
+                // ✅ Correction: utiliser le bon ID du container
+                const container = document.getElementById('quotesList');
                 if (container) {
                     container.innerHTML = `
                         <div class="text-center py-8">
@@ -3115,6 +3119,14 @@
                             await window.updateQuotesCount();
                         } catch (countError) {
                             console.warn('⚠️ [COUNT] Erreur mise à jour compteur:', countError);
+                        }
+                        
+                        // ✨ Actualisation de la liste des devis en temps réel
+                        console.log('🔄 [CREATE] Actualisation de la liste des devis...');
+                        try {
+                            await window.loadQuotesList();
+                        } catch (listError) {
+                            console.warn('⚠️ [CREATE] Erreur actualisation liste:', listError);
                         }
                         
                         // Fermer la vue après succès
