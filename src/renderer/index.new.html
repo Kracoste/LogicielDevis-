@@ -56,6 +56,44 @@
 			overflow-y: auto !important;
 		}
 		
+		/* SOLUTION ULTRA-RADICALE - SUPPRIMER TOUS LES BOUTONS INVISIBLES */
+		
+		/* Zone Header "Nouveau Devis" - Ligne 328-335 */
+		#newQuoteView .flex.items-center.justify-between.mb-4.bg-white.rounded-lg.shadow-sm.p-3.border * {
+			cursor: default !important;
+			pointer-events: none !important;
+			user-select: none !important;
+		}
+		
+		/* Réactiver SEULEMENT les vrais boutons dans le header */
+		#newQuoteView #backToQuotesBtn,
+		#newQuoteView #saveQuoteBtn {
+			cursor: pointer !important;
+			pointer-events: auto !important;
+			user-select: auto !important;
+		}
+		
+		/* Zone Prestations - Lignes 369-378 */
+		#newQuoteView .bg-white.rounded-lg.shadow-sm.border.border-gray-200.p-6 .flex.items-center.justify-between * {
+			cursor: default !important;
+			pointer-events: none !important;
+			user-select: none !important;
+		}
+		
+		/* Réactiver SEULEMENT le vrai bouton "Ajouter une prestation" */
+		#newQuoteView #addServiceBtn {
+			cursor: pointer !important;
+			pointer-events: auto !important;
+			user-select: auto !important;
+		}
+		
+		/* Supprimer tous les pseudo-éléments et éléments cachés */
+		#newQuoteView *:before,
+		#newQuoteView *:after {
+			display: none !important;
+			content: none !important;
+		}
+		
 		#newQuoteView .min-h-screen {
 			min-height: 100vh !important;
 			width: 100% !important;
@@ -309,11 +347,11 @@
     <!-- Vue Création de Devis - LAYOUT ÉQUILIBRÉ -->
     <div id="newQuoteView" class="hidden" style="position: fixed !important; top: 0 !important; left: 0 !important; right: 0 !important; bottom: 0 !important; width: 100vw !important; height: 100vh !important; background-color: #f8fafc !important; z-index: 9999 !important; overflow-y: auto !important;">
         <div style="min-height: 100vh !important; width: 100% !important; padding: 1rem; max-width: 1100px; margin: 0 auto;">
-            <!-- Header équilibré -->
+            <!-- Header simplifié - TEXTE PUR SANS CONTENANTS CLIQUABLES -->
             <div class="flex items-center justify-between mb-4 bg-white rounded-lg shadow-sm p-3 border">
                 <div class="flex items-center space-x-4">
-                    <div id="backToQuotesBtn">← Retour</div>
-                    <h1 class="text-xl font-bold text-gray-900">Nouveau Devis</h1>
+                    <div id="backToQuotesBtn" style="cursor: pointer; padding: 8px 12px; background: #f3f4f6; border-radius: 6px;">← Retour</div>
+                    <div style="font-size: 1.25rem; font-weight: bold; color: #111827; pointer-events: none; user-select: none;">Nouveau Devis</div>
                 </div>
                 <button id="saveQuoteBtn" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium transition-colors">
                     Enregistrer
@@ -350,15 +388,15 @@
                             </div>
                         </div>
 
-                        <!-- Prestations équilibrées -->
+                        <!-- Section prestations simplifiée - TEXTE PUR SANS CONTENANTS CLIQUABLES -->
                         <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
                             <div class="flex items-center justify-between mb-4">
-                                <h3 class="text-lg font-semibold text-gray-800 flex items-center">
-                                    <svg class="w-5 h-5 mr-2 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <div style="font-size: 1.125rem; font-weight: 600; color: #1f2937; display: flex; align-items: center; pointer-events: none; user-select: none;">
+                                    <svg style="width: 1.25rem; height: 1.25rem; margin-right: 0.5rem; color: #2563eb; pointer-events: none;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
                                     </svg>
-                                    Prestations
-                                </h3>
+                                    <div style="pointer-events: none; user-select: none;">Prestations</div>
+                                </div>
                                 <button type="button" id="addServiceBtn" class="bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white px-4 py-2 rounded-lg flex items-center gap-2 text-sm font-medium transition-all duration-200 shadow-md hover:shadow-lg transform hover:scale-105">
                                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
@@ -1309,6 +1347,10 @@
             function switchTab(tabName) {
                 console.log(`🔄 [NAVIGATION] Switching to ${tabName} tab`);
                 
+                // SUPPRESSION IMMÉDIATE DES BOUTONS FANTÔMES LORS DU CHANGEMENT D'ONGLET
+                console.log('🗑️ [TAB SWITCH] Nettoyage des boutons fantômes lors du changement d\'onglet');
+                removeAllGhostButtonsDefinitively();
+                
                 // FORCER LA FERMETURE de la vue nouveau devis si elle est ouverte
                 const newQuoteView = document.getElementById('newQuoteView');
                 if (newQuoteView && !newQuoteView.classList.contains('hidden')) {
@@ -1347,6 +1389,9 @@
                     sidebarItem.classList.add('active');
                     console.log(`✅ Sidebar ${tabName} activé`);
                 }
+                
+                // NETTOYAGE SUPPLÉMENTAIRE après activation des onglets
+                setTimeout(() => removeAllGhostButtonsDefinitively(), 100);
                 
                 // Charger les données spécifiques à l'onglet
                 if (tabName === 'quotes') {
@@ -1404,6 +1449,144 @@
             
             console.log('✅ [MAIN WINDOW] Navigation initialisée');
             
+            // ==========================================
+            // SUPPRESSION RADICALE DES BOUTONS INVISIBLES - VERSION DÉFINITIVE
+            // ==========================================
+            function removeAllGhostButtonsDefinitively() {
+                console.log('🔍 [GHOST REMOVAL] SUPPRESSION DÉFINITIVE des boutons invisibles - SCAN COMPLET');
+                
+                let removedCount = 0;
+                
+                // === MÉTHODE 1: Supprimer tous les boutons avec text-white sur fond blanc ===
+                document.querySelectorAll('button.text-white, .text-white button, button[style*="color: white"], button[style*="color:#ffffff"], button[style*="color: #ffffff"]').forEach((btn, index) => {
+                    const computedStyle = window.getComputedStyle(btn);
+                    const bgColor = computedStyle.backgroundColor;
+                    const color = computedStyle.color;
+                    
+                    // Vérifier si c'est un bouton avec texte blanc sur fond blanc/transparent
+                    if (
+                        (color === 'rgb(255, 255, 255)' || color === '#ffffff' || color === 'white') &&
+                        (bgColor === 'rgba(0, 0, 0, 0)' || bgColor === 'transparent' || bgColor === 'rgb(255, 255, 255)' || bgColor === '#ffffff' || bgColor === 'white')
+                    ) {
+                        console.log(`🗑️ [GHOST] Suppression bouton blanc-sur-blanc ${index + 1}:`, btn);
+                        btn.remove();
+                        removedCount++;
+                    }
+                });
+                
+                // === MÉTHODE 2: Supprimer les boutons invisibles (opacity 0, visibility hidden) ===
+                document.querySelectorAll('button[style*="opacity: 0"], button[style*="opacity:0"], button[style*="visibility: hidden"], button[style*="visibility:hidden"]').forEach((btn, index) => {
+                    console.log(`🗑️ [GHOST] Suppression bouton invisible ${index + 1}:`, btn);
+                    btn.remove();
+                    removedCount++;
+                });
+                
+                // === MÉTHODE 3: Supprimer les boutons cachés par display:none ===
+                document.querySelectorAll('button[style*="display: none"], button[style*="display:none"]').forEach((btn, index) => {
+                    console.log(`🗑️ [GHOST] Suppression bouton caché ${index + 1}:`, btn);
+                    btn.remove();
+                    removedCount++;
+                });
+                
+                // === MÉTHODE 4: Scanner les zones problématiques spécifiques ===
+                const problematicZones = [
+                    '#newQuoteView .flex.items-center.justify-between',
+                    '.bg-white.rounded-lg.shadow-sm.border.border-gray-200 .flex.items-center.justify-between',
+                    '[style*="Nouveau Devis"]',
+                    '[style*="Prestations"]',
+                    '.space-x-4',
+                    '.gap-2'
+                ];
+                
+                problematicZones.forEach(zone => {
+                    const zoneElements = document.querySelectorAll(zone);
+                    zoneElements.forEach(zoneEl => {
+                        const buttons = zoneEl.querySelectorAll('button, [role="button"], .cursor-pointer');
+                        buttons.forEach((btn, index) => {
+                            const computedStyle = window.getComputedStyle(btn);
+                            const isInvisible = (
+                                computedStyle.opacity === '0' ||
+                                computedStyle.visibility === 'hidden' ||
+                                computedStyle.display === 'none' ||
+                                (computedStyle.color === 'rgb(255, 255, 255)' && (computedStyle.backgroundColor === 'rgba(0, 0, 0, 0)' || computedStyle.backgroundColor === 'transparent'))
+                            );
+                            
+                            if (isInvisible) {
+                                console.log(`🗑️ [GHOST] Zone ${zone} - Suppression bouton fantôme ${index + 1}:`, btn);
+                                btn.remove();
+                                removedCount++;
+                            }
+                        });
+                    });
+                });
+                
+                // === MÉTHODE 5: Vérifier les boutons par texte (si vide ou invisible) ===
+                document.querySelectorAll('button').forEach((btn, index) => {
+                    const text = btn.textContent.trim();
+                    const innerHTML = btn.innerHTML.trim();
+                    const computedStyle = window.getComputedStyle(btn);
+                    
+                    // Bouton sans contenu visible ET invisible
+                    if (
+                        (!text && !innerHTML) ||
+                        (text === '' && innerHTML === '') ||
+                        (computedStyle.opacity === '0' || computedStyle.visibility === 'hidden')
+                    ) {
+                        console.log(`🗑️ [GHOST] Suppression bouton vide/invisible ${index + 1}:`, btn);
+                        btn.remove();
+                        removedCount++;
+                    }
+                });
+                
+                console.log(`✅ [GHOST REMOVAL] SUPPRESSION TERMINÉE - ${removedCount} boutons fantômes supprimés`);
+                return removedCount;
+            }
+            
+            // === SURVEILLANCE CONTINUE AVEC MUTATIONOBSERVER ===
+            function setupGhostButtonMonitoring() {
+                console.log('👁️ [GHOST MONITOR] Démarrage surveillance continue des boutons fantômes');
+                
+                const observer = new MutationObserver((mutations) => {
+                    let needsScan = false;
+                    
+                    mutations.forEach((mutation) => {
+                        if (mutation.type === 'childList' && mutation.addedNodes.length > 0) {
+                            mutation.addedNodes.forEach(node => {
+                                if (node.nodeType === 1) { // Element node
+                                    if (node.tagName === 'BUTTON' || node.querySelector('button')) {
+                                        needsScan = true;
+                                    }
+                                }
+                            });
+                        }
+                        if (mutation.type === 'attributes' && mutation.target.tagName === 'BUTTON') {
+                            needsScan = true;
+                        }
+                    });
+                    
+                    if (needsScan) {
+                        console.log('🔄 [GHOST MONITOR] Nouveau bouton détecté - Scan automatique');
+                        setTimeout(() => removeAllGhostButtonsDefinitively(), 100);
+                    }
+                });
+                
+                observer.observe(document.body, {
+                    childList: true,
+                    subtree: true,
+                    attributes: true,
+                    attributeFilter: ['style', 'class']
+                });
+                
+                console.log('✅ [GHOST MONITOR] Surveillance active');
+            }
+            
+            // === EXÉCUTION IMMÉDIATE ET SURVEILLANCE ===
+            removeAllGhostButtonsDefinitively();
+            setTimeout(() => removeAllGhostButtonsDefinitively(), 500);
+            setTimeout(() => removeAllGhostButtonsDefinitively(), 1000);
+            setTimeout(() => removeAllGhostButtonsDefinitively(), 2000);
+            setupGhostButtonMonitoring();
+            
             // Configuration de la création de devis
             setupQuoteCreation();
             
@@ -1447,6 +1630,12 @@
                             newQuoteView.style.padding = '0';
                             
                             console.log('🎯 Vue forcée en plein écran avec styles JavaScript');
+                            
+                            // SUPPRESSION IMMÉDIATE DES BOUTONS FANTÔMES À L'OUVERTURE
+                            console.log('🗑️ [OPEN VIEW] Nettoyage des boutons fantômes à l\'ouverture');
+                            setTimeout(() => removeAllGhostButtonsDefinitively(), 50);
+                            setTimeout(() => removeAllGhostButtonsDefinitively(), 200);
+                            setTimeout(() => removeAllGhostButtonsDefinitively(), 500);
                             
                             // Réinitialiser le formulaire
                             const newQuoteForm = document.getElementById('newQuoteForm');
@@ -2451,6 +2640,204 @@
         
         // Instance globale du QuoteManager
         window.quoteManager = new QuoteManager();
+        
+        // SOLUTION DÉFINITIVE - SUPPRIMER LES BOUTONS INVISIBLES SPÉCIFIQUES
+        function supprimerBoutonsInvisiblesDefinitif() {
+            console.log('🔥 === SUPPRESSION PHYSIQUE DÉFINITIVE DES BOUTONS BLANCS ===');
+            
+            function supprimerTousBoutonsBlancs() {
+                console.log('�️ Suppression physique de TOUS les boutons blancs...');
+                
+                // Chercher ABSOLUMENT TOUS les éléments interactifs
+                const selecteurs = [
+                    '#newQuoteView button',
+                    '#newQuoteView [onclick]',
+                    '#newQuoteView [role="button"]',
+                    '#newQuoteView a',
+                    '#newQuoteView input[type="button"]',
+                    '#newQuoteView input[type="submit"]',
+                    '#newQuoteView [style*="cursor: pointer"]',
+                    '#newQuoteView [tabindex]',
+                    '#newQuoteView .btn',
+                    '#newQuoteView .button'
+                ];
+                
+                let elementsSupprimes = 0;
+                
+                selecteurs.forEach(selecteur => {
+                    const elements = document.querySelectorAll(selecteur);
+                    
+                    elements.forEach((element, index) => {
+                        const styles = window.getComputedStyle(element);
+                        
+                        // Critères de suppression DÉFINITIVE
+                        const doitEtreSuprime = (
+                            // Texte blanc sur n'importe quel fond
+                            styles.color === 'rgb(255, 255, 255)' || 
+                            styles.color === '#ffffff' || 
+                            styles.color === '#fff' || 
+                            styles.color === 'white' ||
+                            
+                            // Éléments transparents ou cachés
+                            styles.opacity === '0' ||
+                            styles.visibility === 'hidden' ||
+                            
+                            // Dans les zones problématiques ET pas un bouton légitime
+                            (element.closest('.flex.items-center.justify-between.mb-4') && 
+                             element.id !== 'backToQuotesBtn' && 
+                             element.id !== 'saveQuoteBtn') ||
+                             
+                            (element.closest('.bg-white.rounded-lg.shadow-sm.border.border-gray-200.p-6') && 
+                             element.id !== 'addServiceBtn') ||
+                             
+                            // Boutons sans texte visible mais avec cursor pointer
+                            (styles.cursor === 'pointer' && 
+                             !element.textContent.trim() && 
+                             !element.querySelector('svg, img') &&
+                             element.id !== 'backToQuotesBtn' && 
+                             element.id !== 'saveQuoteBtn' && 
+                             element.id !== 'addServiceBtn')
+                        );
+                        
+                        // EXCEPTIONS - Ne JAMAIS supprimer ces boutons
+                        const estProtege = (
+                            element.id === 'backToQuotesBtn' ||
+                            element.id === 'saveQuoteBtn' ||
+                            element.id === 'addServiceBtn' ||
+                            element.id === 'saveQuoteBtnMain' ||
+                            element.tagName === 'INPUT' ||
+                            element.tagName === 'TEXTAREA' ||
+                            element.tagName === 'SELECT'
+                        );
+                        
+                        if (doitEtreSuprime && !estProtege) {
+                            console.log(`� SUPPRESSION DÉFINITIVE ${selecteur}[${index}]:`, {
+                                element: element,
+                                id: element.id,
+                                classe: element.className,
+                                texte: element.textContent?.trim().substring(0, 30),
+                                couleur: styles.color,
+                                cursor: styles.cursor,
+                                parent: element.parentElement?.tagName
+                            });
+                            
+                            // SUPPRESSION BRUTALE ET DÉFINITIVE
+                            if (element.parentElement) {
+                                element.parentElement.removeChild(element);
+                            } else {
+                                element.remove();
+                            }
+                            elementsSupprimes++;
+                        }
+                    });
+                });
+                
+                console.log(`🔥 ${elementsSupprimes} boutons supprimés définitivement`);
+                return elementsSupprimes;
+            }
+            
+            // Suppression immédiate au chargement
+            let totalSupprimes = supprimerTousBoutonsBlancs();
+            
+            // Répéter plusieurs fois pour attraper les éléments générés dynamiquement
+            setTimeout(() => {
+                totalSupprimes += supprimerTousBoutonsBlancs();
+            }, 100);
+            
+            setTimeout(() => {
+                totalSupprimes += supprimerTousBoutonsBlancs();
+            }, 500);
+            
+            setTimeout(() => {
+                totalSupprimes += supprimerTousBoutonsBlancs();
+                console.log(`💀 SUPPRESSION DÉFINITIVE TERMINÉE - ${totalSupprimes} boutons éliminés au total`);
+            }, 1000);
+            
+            // Observer les mutations DOM pour supprimer tout nouveau bouton blanc
+            const observer = new MutationObserver(function(mutations) {
+                mutations.forEach(function(mutation) {
+                    if (mutation.type === 'childList') {
+                        mutation.addedNodes.forEach(function(node) {
+                            if (node.nodeType === Node.ELEMENT_NODE) {
+                                // Vérifier si le nouveau nœud contient des boutons blancs
+                                setTimeout(() => {
+                                    const nouveauxBoutons = node.querySelectorAll ? 
+                                        node.querySelectorAll('button, [onclick], [role="button"]') : [];
+                                    
+                                    nouveauxBoutons.forEach(bouton => {
+                                        const styles = window.getComputedStyle(bouton);
+                                        if (styles.color === 'rgb(255, 255, 255)' && 
+                                            bouton.id !== 'backToQuotesBtn' && 
+                                            bouton.id !== 'saveQuoteBtn' && 
+                                            bouton.id !== 'addServiceBtn') {
+                                            console.log('🚫 Nouveau bouton blanc détecté et supprimé:', bouton);
+                                            bouton.remove();
+                                        }
+                                    });
+                                }, 10);
+                            }
+                        });
+                    }
+                });
+            });
+            
+            // Surveiller la vue newQuoteView
+            const newQuoteView = document.getElementById('newQuoteView');
+            if (newQuoteView) {
+                observer.observe(newQuoteView, {
+                    childList: true,
+                    subtree: true
+                });
+            }
+            
+            console.log('🔥 SYSTÈME DE SUPPRESSION DÉFINITIVE ACTIVÉ');
+        }
+        
+        // EXÉCUTER IMMÉDIATEMENT
+        supprimerBoutonsInvisiblesDefinitif();
+        
+        // Fonction pour appeler la suppression quand la vue s'ouvre
+        const originalShowNewQuoteView = window.showNewQuoteView;
+        window.showNewQuoteView = function() {
+            if (originalShowNewQuoteView) originalShowNewQuoteView();
+            
+            console.log('📝 Ouverture vue - Suppression boutons invisibles...');
+            const view = document.getElementById('newQuoteView');
+            if (view) {
+                view.classList.remove('hidden');
+                supprimerBoutonsInvisiblesDefinitif();
+                
+                // Diagnostic final après suppression
+                setTimeout(() => {
+                    console.log('🔍 === DIAGNOSTIC FINAL ===');
+                    
+                    // Vérifier tous les éléments dans les zones problématiques
+                    const headerZone = document.querySelector('#newQuoteView .flex.items-center.justify-between.mb-4');
+                    if (headerZone) {
+                        const clickableInHeader = headerZone.querySelectorAll('*');
+                        clickableInHeader.forEach((el, index) => {
+                            const style = window.getComputedStyle(el);
+                            if (style.cursor !== 'default' || style.pointerEvents !== 'none') {
+                                console.log(`⚠️ Header élément ${index} encore cliquable:`, el.tagName, el.id, el.className);
+                            }
+                        });
+                    }
+                    
+                    const prestationsZone = document.querySelector('#newQuoteView .bg-white.rounded-lg.shadow-sm.border.border-gray-200.p-6 .flex.items-center.justify-between');
+                    if (prestationsZone) {
+                        const clickableInPrestations = prestationsZone.querySelectorAll('*');
+                        clickableInPrestations.forEach((el, index) => {
+                            const style = window.getComputedStyle(el);
+                            if (style.cursor !== 'default' || style.pointerEvents !== 'none') {
+                                console.log(`⚠️ Prestations élément ${index} encore cliquable:`, el.tagName, el.id, el.className);
+                            }
+                        });
+                    }
+                    
+                    console.log('🔍 DIAGNOSTIC TERMINÉ');
+                }, 300);
+            }
+        };
         
         // Configuration finale terminée, listeners définis dans setupQuoteCreation()
         console.log('✅ Configuration FINALE terminée - uniquement vue plein écran');

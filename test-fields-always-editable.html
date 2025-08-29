@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Test des Champs Toujours Éditables</title>
+    <style>
+        body { 
+            font-family: Arial, sans-serif; 
+            padding: 20px; 
+            background-color: #f5f5f5; 
+        }
+        .container { 
+            max-width: 600px; 
+            margin: 0 auto; 
+            background: white; 
+            padding: 20px; 
+            border-radius: 8px; 
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1); 
+        }
+        .field-group { 
+            margin: 15px 0; 
+        }
+        label { 
+            display: block; 
+            margin-bottom: 5px; 
+            font-weight: bold; 
+        }
+        input, textarea { 
+            width: 100%; 
+            padding: 10px; 
+            border: 2px solid #ddd; 
+            border-radius: 4px; 
+            font-size: 16px; 
+        }
+        button { 
+            background: #007cba; 
+            color: white; 
+            padding: 12px 24px; 
+            border: none; 
+            border-radius: 4px; 
+            cursor: pointer; 
+            font-size: 16px; 
+            margin: 10px 5px; 
+        }
+        button:hover { background: #005a8b; }
+        .error { color: red; margin: 10px 0; }
+        .success { color: green; margin: 10px 0; }
+        .status { 
+            padding: 10px; 
+            margin: 10px 0; 
+            border-radius: 4px; 
+            background: #e8f4fd; 
+            border: 1px solid #bee5eb; 
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🧪 Test des Champs Toujours Éditables</h1>
+        <p>Ce test simule le problème des champs qui deviennent non éditables après une validation échouée.</p>
+        
+        <form id="testForm" novalidate>
+            <div class="field-group">
+                <label for="clientName">Nom du client *</label>
+                <input type="text" id="clientName" name="clientName" placeholder="Nom du client...">
+            </div>
+            
+            <div class="field-group">
+                <label for="clientEmail">Email</label>
+                <input type="email" id="clientEmail" name="clientEmail" placeholder="Email...">
+            </div>
+            
+            <div class="field-group">
+                <label for="serviceDescription">Description de la prestation *</label>
+                <textarea id="serviceDescription" name="serviceDescription" placeholder="Décrivez votre prestation..." rows="3"></textarea>
+            </div>
+            
+            <div class="field-group">
+                <label for="servicePrice">Prix HT *</label>
+                <input type="number" id="servicePrice" name="servicePrice" step="0.01" placeholder="0.00">
+            </div>
+        </form>
+        
+        <div id="statusDiv" class="status">
+            <strong>État:</strong> Prêt pour test
+        </div>
+        
+        <button onclick="testValidation()">💾 Tenter Sauvegarde (avec validation)</button>
+        <button onclick="checkFieldsStatus()">🔍 Vérifier État des Champs</button>
+        <button onclick="forceReactivateFields()">🛡️ Forcer Réactivation</button>
+        <button onclick="resetForm()">🔄 Reset Form</button>
+        
+        <div id="results"></div>
+    </div>
+
+    <script>
+        let watchdogRunning = false;
+        
+        function updateStatus(message, type = 'info') {
+            const statusDiv = document.getElementById('statusDiv');
+            const colors = {
+                'info': '#e8f4fd',
+                'success': '#d4edda', 
+                'error': '#f8d7da',
+                'warning': '#fff3cd'
+            };
+            
+            statusDiv.style.backgroundColor = colors[type] || colors['info'];
+            statusDiv.innerHTML = `<strong>État:</strong> ${message}`;
+            console.log(`[TEST] ${type.toUpperCase()}: ${message}`);
+        }
+        
+        function testValidation() {
+            updateStatus('Test de validation en cours...', 'info');
+            
+            const form = document.getElementById('testForm');
+            const formData = new FormData(form);
+            
+            // Simulation validation manuelle (comme dans le vrai app)
+            const clientName = formData.get('clientName');
+            const serviceDescription = formData.get('serviceDescription');
+            const servicePrice = formData.get('servicePrice');
+            
+            let missingFields = [];
+            let isValid = true;
+            
+            if (!clientName || !clientName.trim()) {
+                missingFields.push('Nom du client');
+                isValid = false;
+                document.getElementById('clientName').style.borderColor = '#ef4444';
+            }
+            
+            if (!serviceDescription || !serviceDescription.trim()) {
+                missingFields.push('Description de la prestation');
+                isValid = false;
+                document.getElementById('serviceDescription').style.borderColor = '#ef4444';
+            }
+            
+            if (!servicePrice || parseFloat(servicePrice) <= 0) {
+                missingFields.push('Prix HT');
+                isValid = false;
+                document.getElementById('servicePrice').style.borderColor = '#ef4444';
+            }
+            
+            if (!isValid) {
+                updateStatus(`❌ Validation échouée: ${missingFields.join(', ')} manquant(s)`, 'error');
+                
+                // RÉACTIVER IMMÉDIATEMENT TOUS LES CHAMPS
+                const allInputs = form.querySelectorAll('input, textarea');
+                allInputs.forEach(input => {
+                    input.disabled = false;
+                    input.readOnly = false;
+                    input.removeAttribute('disabled');
+                    input.removeAttribute('readonly');
+                    input.style.pointerEvents = 'auto';
+                    input.style.cursor = 'text';
+                    input.style.opacity = '1';
+                });
+                
+                updateStatus('❌ Validation échouée - mais tous les champs restent éditables!', 'warning');
+                startWatchdog();
+            } else {
+                updateStatus('✅ Validation réussie!', 'success');
+            }
+        }
+        
+        function checkFieldsStatus() {
+            const form = document.getElementById('testForm');
+            const allInputs = form.querySelectorAll('input, textarea');
+            let results = [];
+            
+            allInputs.forEach((input, index) => {
+                const name = input.name || input.id || `champ-${index+1}`;
+                const disabled = input.disabled;
+                const readOnly = input.readOnly;
+                const pointerEvents = getComputedStyle(input).pointerEvents;
+                const editable = !disabled && !readOnly && pointerEvents !== 'none';
+                
+                results.push({
+                    name,
+                    disabled,
+                    readOnly, 
+                    pointerEvents,
+                    editable
+                });
+            });
+            
+            console.log('📊 État des champs:', results);
+            
+            const editableCount = results.filter(r => r.editable).length;
+            const totalCount = results.length;
+            
+            updateStatus(`📊 ${editableCount}/${totalCount} champs éditables`, 
+                editableCount === totalCount ? 'success' : 'error');
+            
+            // Afficher détails
+            const resultsDiv = document.getElementById('results');
+            resultsDiv.innerHTML = '<h3>🔍 Détail des champs:</h3>' + 
+                results.map(r => 
+                    `<div style="padding: 5px; margin: 2px; background: ${r.editable ? '#d4edda' : '#f8d7da'}; border-radius: 3px;">
+                        <strong>${r.name}:</strong> ${r.editable ? '✅ Éditable' : '❌ Bloqué'} 
+                        (disabled: ${r.disabled}, readOnly: ${r.readOnly}, pointerEvents: ${r.pointerEvents})
+                    </div>`
+                ).join('');
+        }
+        
+        function forceReactivateFields() {
+            updateStatus('🛡️ Forçage de la réactivation...', 'warning');
+            
+            const form = document.getElementById('testForm');
+            const allInputs = form.querySelectorAll('input, textarea');
+            
+            allInputs.forEach(input => {
+                input.disabled = false;
+                input.readOnly = false;
+                input.removeAttribute('disabled');
+                input.removeAttribute('readonly');
+                input.style.setProperty('pointer-events', 'auto', 'important');
+                input.style.setProperty('cursor', 'text', 'important');
+                input.style.setProperty('opacity', '1', 'important');
+                input.style.setProperty('background-color', 'white', 'important');
+            });
+            
+            updateStatus('🛡️ Tous les champs ont été forcés à être éditables', 'success');
+            checkFieldsStatus();
+        }
+        
+        function resetForm() {
+            document.getElementById('testForm').reset();
+            
+            // Reset bordures
+            const allInputs = document.querySelectorAll('input, textarea');
+            allInputs.forEach(input => {
+                input.style.borderColor = '#ddd';
+            });
+            
+            updateStatus('🔄 Formulaire remis à zéro', 'info');
+            document.getElementById('results').innerHTML = '';
+        }
+        
+        function startWatchdog() {
+            if (watchdogRunning) return;
+            
+            watchdogRunning = true;
+            updateStatus('🛡️ Surveillance automatique démarrée', 'info');
+            
+            function watchFields() {
+                if (!watchdogRunning) return;
+                
+                const form = document.getElementById('testForm');
+                const allInputs = form.querySelectorAll('input, textarea');
+                let reactivatedCount = 0;
+                
+                allInputs.forEach(input => {
+                    const wasDisabled = input.disabled || input.readOnly;
+                    const hadBadPointerEvents = getComputedStyle(input).pointerEvents === 'none';
+                    
+                    if (wasDisabled || hadBadPointerEvents) {
+                        input.disabled = false;
+                        input.readOnly = false;
+                        input.removeAttribute('disabled');
+                        input.removeAttribute('readonly');
+                        input.style.setProperty('pointer-events', 'auto', 'important');
+                        reactivatedCount++;
+                    }
+                });
+                
+                if (reactivatedCount > 0) {
+                    console.log(`🛡️ WATCHDOG - ${reactivatedCount} champs réactivés automatiquement`);
+                }
+                
+                setTimeout(watchFields, 500);
+            }
+            
+            watchFields();
+        }
+        
+        // Test automatique au chargement
+        document.addEventListener('DOMContentLoaded', () => {
+            updateStatus('✅ Page chargée - prête pour les tests', 'success');
+            
+            // Ajouter listeners de survie sur tous les champs
+            const allInputs = document.querySelectorAll('input, textarea');
+            allInputs.forEach(input => {
+                ['click', 'focus', 'mousedown', 'keydown'].forEach(eventType => {
+                    input.addEventListener(eventType, function(e) {
+                        if (this.disabled || this.readOnly) {
+                            console.log(`🛡️ SURVIE - Réactivation ${eventType} sur ${this.name || this.id}`);
+                            this.disabled = false;
+                            this.readOnly = false;
+                            this.removeAttribute('disabled');
+                            this.removeAttribute('readonly');
+                        }
+                    }, { passive: true });
+                });
+            });
+        });
+    </script>
+</body>
+</html>

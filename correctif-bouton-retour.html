@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Correctif Bouton Retour</title>
+</head>
+<body>
+    <h1>🔧 Correctif pour le bouton Retour</h1>
+    
+    <div style="background: #f0f0f0; padding: 20px; border-radius: 8px; margin: 20px 0;">
+        <h2>📋 Instructions :</h2>
+        <ol>
+            <li>Copiez le code JavaScript ci-dessous</li>
+            <li>Ouvrez l'application Electron</li>
+            <li>Appuyez sur <strong>F12</strong> pour ouvrir la console</li>
+            <li>Collez le code dans la console et appuyez sur Entrée</li>
+            <li>Testez : Nouveau Devis → ← Retour</li>
+        </ol>
+    </div>
+
+    <div style="background: #1e1e1e; color: #00ff00; padding: 20px; border-radius: 8px; font-family: monospace;">
+        <h3>Code à copier-coller :</h3>
+        <pre id="code">console.log('🔧 CORRECTIF BOUTON RETOUR - Application en cours...');
+
+// Redéfinir complètement la fonction problématique
+window.closeNewQuoteViewCompletely = function() {
+    console.log('🔙 CORRECTIF APPLIQUÉ - Retour vers onglet devis');
+    
+    // 1. Masquer la vue nouveau devis
+    const newQuoteView = document.getElementById('newQuoteView');
+    if (newQuoteView) {
+        newQuoteView.classList.add('hidden');
+        newQuoteView.style.display = 'none !important';
+        newQuoteView.style.visibility = 'hidden !important';
+        newQuoteView.style.opacity = '0 !important';
+        newQuoteView.style.zIndex = '-9999 !important';
+        console.log('✅ Vue nouveau devis masquée');
+    }
+    
+    // 2. Nettoyer les timers
+    if (window.formFieldWatcherInterval) {
+        clearInterval(window.formFieldWatcherInterval);
+        window.formFieldWatcherInterval = null;
+    }
+    if (window.fieldWatcherTimeout) {
+        clearTimeout(window.fieldWatcherTimeout);
+        window.fieldWatcherTimeout = null;
+    }
+    
+    // 3. Navigation sécurisée vers l'onglet devis
+    if (typeof switchTab === 'function') {
+        console.log('🔄 Navigation via switchTab');
+        switchTab('quotes');
+    } else {
+        console.log('🔄 Navigation manuelle vers quotes');
+        
+        // Masquer tous les onglets
+        document.querySelectorAll('.tab-content').forEach(tab => {
+            tab.classList.remove('active');
+        });
+        
+        // Activer l'onglet quotes
+        const quotesTab = document.getElementById('quotesTab');
+        if (quotesTab) {
+            quotesTab.classList.add('active');
+            quotesTab.style.display = 'block !important';
+            console.log('✅ Onglet quotes activé');
+        }
+        
+        // Mettre à jour la sidebar
+        document.querySelectorAll('.sidebar-item').forEach(item => {
+            item.classList.remove('bg-blue-600', 'text-white');
+            item.classList.add('text-gray-300');
+        });
+        
+        const sidebarQuotes = document.querySelector('[data-tab="quotes"]');
+        if (sidebarQuotes) {
+            sidebarQuotes.classList.remove('text-gray-300');
+            sidebarQuotes.classList.add('bg-blue-600', 'text-white');
+            console.log('✅ Sidebar quotes activé');
+        }
+        
+        // Recharger la liste des devis
+        setTimeout(() => {
+            console.log('🔄 Rechargement des devis');
+            
+            // S'assurer que le container est visible
+            const quotesContainer = document.getElementById('quotesList');
+            if (quotesContainer) {
+                quotesContainer.style.display = 'block !important';
+                quotesContainer.style.visibility = 'visible !important';
+                quotesContainer.classList.remove('hidden');
+            }
+            
+            // Recharger
+            if (typeof loadQuotesList === 'function') {
+                loadQuotesList();
+                console.log('✅ Liste des devis rechargée');
+            } else {
+                console.log('⚠️ loadQuotesList non disponible');
+            }
+        }, 150);
+    }
+    
+    console.log('✅ CORRECTIF TERMINÉ - Les devis devraient être visibles maintenant !');
+};
+
+console.log('🎉 CORRECTIF APPLIQUÉ AVEC SUCCÈS !');
+console.log('📋 Maintenant testez : cliquez sur "Nouveau Devis" puis sur "← Retour"');</pre>
+    </div>
+
+    <div style="background: #e6f7ff; padding: 15px; border-radius: 8px; margin: 20px 0;">
+        <h3>🧪 Test après application :</h3>
+        <ol>
+            <li>Cliquez sur <strong>"Nouveau Devis"</strong></li>
+            <li>Cliquez sur <strong>"← Retour"</strong></li>
+            <li>Vérifiez que vos 4 devis sont toujours visibles</li>
+        </ol>
+    </div>
+
+    <script>
+        // Auto-sélection du code pour faciliter la copie
+        document.getElementById('code').onclick = function() {
+            const range = document.createRange();
+            range.selectNode(this);
+            window.getSelection().removeAllRanges();
+            window.getSelection().addRange(range);
+        };
+    </script>
+</body>
+</html>
