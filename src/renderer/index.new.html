@@ -370,9 +370,15 @@
                         <!-- Informations client - Layout équilibré -->
                         <div class="space-y-3">
                             <div class="grid grid-cols-1 md:grid-cols-4 gap-3">
-                                <div>
-                                    <label for="clientName" class="block text-sm font-medium text-gray-700 mb-1">Client *</label>
-                                    <input type="text" id="clientName" name="clientName" required class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 text-sm">
+                                <div class="grid grid-cols-2 gap-2">
+                                    <div>
+                                        <label for="clientFirstName" class="block text-sm font-medium text-gray-700 mb-1">Prénom *</label>
+                                        <input type="text" id="clientFirstName" name="clientFirstName" required class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 text-sm">
+                                    </div>
+                                    <div>
+                                        <label for="clientLastName" class="block text-sm font-medium text-gray-700 mb-1">Nom *</label>
+                                        <input type="text" id="clientLastName" name="clientLastName" required class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 text-sm">
+                                    </div>
                                 </div>
                                 <div>
                                     <label for="clientEmail" class="block text-sm font-medium text-gray-700 mb-1">Email</label>
