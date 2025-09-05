@@ -176,6 +176,81 @@ class DatabaseService {
         }
     }
 
+    async createOrUpdateClient(clientData) {
+        if (!this.isRealDatabase()) {
+            return this.createMockClient(clientData); // Fallback pour mode démo
+        }
+
+        try {
+            // Chercher d'abord si le client existe déjà (par email ou nom complet)
+            let existingClient = null;
+            
+            if (clientData.email) {
+                const { data: emailMatch } = await this.supabase
+                    .from('clients')
+                    .select('*')
+                    .eq('email', clientData.email)
+                    .single();
+                existingClient = emailMatch;
+            }
+            
+            // Si pas trouvé par email, chercher par nom complet
+            if (!existingClient && (clientData.firstName || clientData.lastName)) {
+                const fullName = `${clientData.firstName || ''} ${clientData.lastName || ''}`.trim();
+                if (fullName) {
+                    const { data: nameMatches } = await this.supabase
+                        .from('clients')
+                        .select('*')
+                        .or(`first_name.eq.${clientData.firstName},last_name.eq.${clientData.lastName}`);
+                    
+                    existingClient = nameMatches && nameMatches.length > 0 ? nameMatches[0] : null;
+                }
+            }
+            
+            const clientDbData = {
+                first_name: clientData.firstName || clientData.first_name || '',
+                last_name: clientData.lastName || clientData.last_name || '',
+                email: clientData.email || '',
+                phone: clientData.phone || '',
+                address: clientData.address || '',
+                updated_at: new Date().toISOString()
+            };
+            
+            if (existingClient) {
+                // Mettre à jour le client existant
+                console.log('👤 [CLIENT] Mise à jour du client existant:', existingClient.id);
+                const { data, error } = await this.supabase
+                    .from('clients')
+                    .update(clientDbData)
+                    .eq('id', existingClient.id)
+                    .select()
+                    .single();
+                
+                if (error) throw error;
+                return data;
+            } else {
+                // Créer un nouveau client
+                console.log('👤 [CLIENT] Création d\'un nouveau client');
+                clientDbData.created_at = new Date().toISOString();
+                
+                const { data, error } = await this.supabase
+                    .from('clients')
+                    .insert([clientDbData])
+                    .select()
+                    .single();
+                
+                if (error) throw error;
+                return data;
+            }
+
+        } catch (error) {
+            console.error('Erreur lors de la création/mise à jour du client:', error);
+            // Ne pas faire échouer la sauvegarde du devis si la création du client échoue
+            console.log('👤 [CLIENT] Création/mise à jour du client ignorée à cause de l\'erreur');
+            return null;
+        }
+    }
+
     // === GESTION DES PRODUITS ===
     async getProducts() {
         if (!this.isRealDatabase()) {

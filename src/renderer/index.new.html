@@ -327,7 +327,34 @@
                 <h1 class="text-2xl font-bold text-gray-900 mb-6">Clients</h1>
                 <div class="bg-white rounded-xl shadow-sm border border-gray-200">
                     <div class="p-6">
-                        <p class="text-gray-500">Section clients en construction...</p>
+                        <div id="clientsList" class="space-y-4">
+                            <!-- Les clients seront affichés ici -->
+                            <div class="text-center py-8 text-gray-500">
+                                <p>Aucun client créé pour le moment.</p>
+                                <p class="text-sm mt-2">Les clients apparaîtront automatiquement quand vous créerez des devis.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Onglet Client individuel (template) -->
+            <div id="clientDetailTab" class="tab-content p-6 hidden">
+                <div class="flex items-center justify-between mb-6">
+                    <div>
+                        <h1 id="clientDetailName" class="text-2xl font-bold text-gray-900"></h1>
+                        <div id="clientDetailInfo" class="text-sm text-gray-600 mt-1"></div>
+                    </div>
+                    <button onclick="switchTab('clients')" class="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg transition-colors">
+                        ← Retour aux clients
+                    </button>
+                </div>
+                <div class="bg-white rounded-xl shadow-sm border border-gray-200">
+                    <div class="p-6">
+                        <h2 class="text-lg font-semibold text-gray-900 mb-4">Devis de ce client</h2>
+                        <div id="clientDetailQuotes" class="space-y-4">
+                            <!-- Les devis du client seront affichés ici -->
+                        </div>
                     </div>
                 </div>
             </div>
@@ -2040,6 +2067,8 @@
                 // Charger les données spécifiques à l'onglet
                 if (tabName === 'quotes') {
                     loadQuotesList();
+                } else if (tabName === 'clients') {
+                    loadClients();
                 }
             }
             
@@ -2659,6 +2688,243 @@
                     });
                 }
                 
+                // ===== GESTION DES CLIENTS =====
+                
+                // Fonction pour créer ou mettre à jour un client à partir d'un devis
+                window.createOrUpdateClientFromQuote = async (quoteData) => {
+                    try {
+                        console.log('👤 [CLIENT] Création/mise à jour du client depuis le devis...');
+                        
+                        // Vérifier si on a des données client valides
+                        if (!quoteData.clientEmail && !quoteData.clientFirstName && !quoteData.clientLastName) {
+                            console.log('👤 [CLIENT] Pas de données client suffisantes, création ignorée');
+                            return;
+                        }
+                        
+                        const clientData = {
+                            firstName: quoteData.clientFirstName || '',
+                            lastName: quoteData.clientLastName || '',
+                            email: quoteData.clientEmail || '',
+                            phone: quoteData.clientPhone || '',
+                            address: quoteData.clientAddress || ''
+                        };
+                        
+                        // Créer ou mettre à jour le client via le service de base de données
+                        if (window.dbService && typeof window.dbService.createOrUpdateClient === 'function') {
+                            const clientResult = await window.dbService.createOrUpdateClient(clientData);
+                            console.log('✅ [CLIENT] Client créé/mis à jour:', clientResult);
+                        } else {
+                            console.log('👤 [CLIENT] Service de base de données non disponible pour les clients');
+                        }
+                        
+                        // Recharger la liste des clients
+                        await loadClients();
+                        
+                    } catch (error) {
+                        console.error('❌ [CLIENT] Erreur lors de la création/mise à jour du client:', error);
+                    }
+                };
+                
+                // Fonction pour charger et afficher la liste des clients
+                window.loadClients = async () => {
+                    try {
+                        console.log('👥 [CLIENTS] Chargement de la liste des clients...');
+                        
+                        // Récupérer les clients depuis les devis (pour l'instant)
+                        const quotes = await window.dbService.getQuotes();
+                        
+                        // Extraire les clients uniques des devis
+                        const clientsMap = new Map();
+                        quotes.forEach(quote => {
+                            if (quote.client_email || quote.client_name) {
+                                const clientKey = quote.client_email || quote.client_name;
+                                if (!clientsMap.has(clientKey)) {
+                                    clientsMap.set(clientKey, {
+                                        name: quote.client_name || 'Client non spécifié',
+                                        email: quote.client_email || '',
+                                        phone: quote.client_phone || '',
+                                        address: quote.client_address || '',
+                                        quotesCount: 1,
+                                        totalAmount: quote.total_ttc || 0,
+                                        lastQuoteDate: quote.quote_date || quote.created_at
+                                    });
+                                } else {
+                                    const client = clientsMap.get(clientKey);
+                                    client.quotesCount++;
+                                    client.totalAmount += quote.total_ttc || 0;
+                                    if (quote.quote_date > client.lastQuoteDate) {
+                                        client.lastQuoteDate = quote.quote_date;
+                                    }
+                                }
+                            }
+                        });
+                        
+                        const clients = Array.from(clientsMap.values());
+                        console.log('👥 [CLIENTS] Clients trouvés:', clients.length);
+                        
+                        // Afficher les clients
+                        displayClients(clients);
+                        
+                    } catch (error) {
+                        console.error('❌ [CLIENTS] Erreur lors du chargement des clients:', error);
+                    }
+                };
+                
+                // Fonction pour afficher les clients dans l'interface
+                window.displayClients = (clients) => {
+                    const clientsListContainer = document.getElementById('clientsList');
+                    if (!clientsListContainer) {
+                        console.error('❌ [CLIENTS] Container clientsList non trouvé');
+                        return;
+                    }
+                    
+                    if (!clients || clients.length === 0) {
+                        clientsListContainer.innerHTML = `
+                            <div class="text-center py-8 text-gray-500">
+                                <p>Aucun client créé pour le moment.</p>
+                                <p class="text-sm mt-2">Les clients apparaîtront automatiquement quand vous créerez des devis.</p>
+                            </div>
+                        `;
+                        return;
+                    }
+                    
+                    // Générer le HTML des clients
+                    const clientsHTML = clients.map(client => {
+                        const lastQuoteDate = new Date(client.lastQuoteDate).toLocaleDateString('fr-FR');
+                        
+                        return `
+                            <div class="border border-gray-200 rounded-lg p-4 hover:bg-gray-50 transition-colors cursor-pointer" 
+                                 onclick="showClientDetail('${client.email || client.name}', '${client.name}', '${client.email}', '${client.phone}', '${client.quotesCount}', '${client.totalAmount}')">
+                                <div class="flex items-center justify-between">
+                                    <div class="flex-1">
+                                        <div class="flex items-center gap-3">
+                                            <h4 class="font-medium text-gray-900">${client.name}</h4>
+                                            <span class="px-2 py-1 text-xs font-medium rounded-full bg-blue-100 text-blue-800">
+                                                ${client.quotesCount} devis
+                                            </span>
+                                        </div>
+                                        <div class="text-sm text-gray-500 mt-1">
+                                            ${client.email ? `${client.email} • ` : ''}${lastQuoteDate} • ${client.totalAmount.toFixed(2)}€ total
+                                        </div>
+                                        ${client.phone ? `<div class="text-sm text-gray-600 mt-1">${client.phone}</div>` : ''}
+                                    </div>
+                                </div>
+                            </div>
+                        `;
+                    }).join('');
+                    
+                    clientsListContainer.innerHTML = clientsHTML;
+                    console.log(`✅ [CLIENTS] ${clients.length} clients affichés`);
+                };
+                
+                // Fonction pour afficher les détails d'un client dans un onglet dédié
+                window.showClientDetail = async (clientIdentifier, clientName, clientEmail, clientPhone, quotesCount, totalAmount) => {
+                    try {
+                        console.log('📋 [CLIENT-DETAIL] Ouverture de l\'onglet pour:', clientName);
+                        
+                        // Mettre à jour les informations du client dans l'onglet
+                        const nameElement = document.getElementById('clientDetailName');
+                        const infoElement = document.getElementById('clientDetailInfo');
+                        
+                        if (nameElement) {
+                            nameElement.textContent = clientName;
+                        }
+                        
+                        if (infoElement) {
+                            let infoText = '';
+                            if (clientEmail && clientEmail !== 'undefined') {
+                                infoText += clientEmail;
+                            }
+                            if (clientPhone && clientPhone !== 'undefined') {
+                                infoText += (infoText ? ' • ' : '') + clientPhone;
+                            }
+                            infoText += (infoText ? ' • ' : '') + `${quotesCount} devis • ${parseFloat(totalAmount).toFixed(2)}€ total`;
+                            infoElement.textContent = infoText;
+                        }
+                        
+                        // Récupérer et afficher les devis du client
+                        const allQuotes = await window.dbService.getQuotes();
+                        const clientQuotes = allQuotes.filter(quote => 
+                            quote.client_email === clientIdentifier || 
+                            quote.client_name === clientIdentifier ||
+                            quote.client_name === clientName
+                        );
+                        
+                        console.log('📋 [CLIENT-DETAIL] Devis trouvés:', clientQuotes.length);
+                        
+                        // Générer le HTML des devis
+                        const quotesHTML = clientQuotes.map(quote => {
+                            const date = new Date(quote.quote_date || quote.created_at).toLocaleDateString('fr-FR');
+                            
+                            return `
+                                <div class="border border-gray-200 rounded-lg p-3 hover:bg-gray-50 transition-colors">
+                                    <div class="flex items-center justify-between">
+                                        <div class="flex-1">
+                                            <div>
+                                                <h4 class="font-medium text-gray-900">${quote.quote_number || 'N/A'}</h4>
+                                            </div>
+                                            <div class="text-sm text-gray-500 mt-1">
+                                                ${date} • ${quote.total_ttc || quote.subtotal_ht || 0}€ TTC
+                                            </div>
+                                            ${quote.notes ? `<div class="text-sm text-gray-600 mt-2">${quote.notes}</div>` : ''}
+                                        </div>
+                                        <div class="flex items-center gap-2">
+                                            <button onclick="editQuote('${quote.id}')" class="px-3 py-1 text-sm text-blue-600 hover:text-blue-800 hover:bg-blue-50 rounded">
+                                                Modifier
+                                            </button>
+                                            <button onclick="generateQuotePDF('${quote.id}')" class="px-3 py-1 text-sm text-green-600 hover:text-green-800 hover:bg-green-50 rounded">
+                                                PDF
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            `;
+                        }).join('');
+                        
+                        // Afficher le contenu dans l'onglet
+                        const quotesContainer = document.getElementById('clientDetailQuotes');
+                        if (quotesContainer) {
+                            quotesContainer.innerHTML = quotesHTML || `
+                                <div class="text-center py-8 text-gray-500">
+                                    <p>Aucun devis trouvé pour ce client.</p>
+                                </div>
+                            `;
+                        }
+                        
+                        // Basculer vers l'onglet client detail
+                        switchToClientDetail();
+                        
+                    } catch (error) {
+                        console.error('❌ [CLIENT-DETAIL] Erreur lors de l\'affichage des détails du client:', error);
+                        alert('Erreur lors du chargement des détails du client.');
+                    }
+                };
+                
+                // Fonction pour basculer vers l'onglet client detail
+                window.switchToClientDetail = () => {
+                    // Masquer tous les onglets
+                    document.querySelectorAll('.tab-content').forEach(tab => {
+                        tab.classList.remove('active');
+                        tab.classList.add('hidden');
+                    });
+                    
+                    // Afficher l'onglet client detail
+                    const clientDetailTab = document.getElementById('clientDetailTab');
+                    if (clientDetailTab) {
+                        clientDetailTab.classList.add('active');
+                        clientDetailTab.classList.remove('hidden');
+                    }
+                    
+                    // Désactiver tous les éléments de sidebar
+                    document.querySelectorAll('.sidebar-item').forEach(item => {
+                        item.classList.remove('active');
+                    });
+                };
+                
+                // Supprimer les anciennes fonctions modal
+                window.showClientQuotes = window.showClientDetail; // Alias pour compatibilité
+                window.closeClientQuotesModal = () => switchTab('clients'); // Rediriger vers l'onglet clients
+                
                 // Fonction de sauvegarde commune
                 window.handleSaveQuote = async (buttonElement) => {
                     console.log('💾 Clic sur le bouton Enregistrer détecté !');
@@ -3136,6 +3402,10 @@
                                 if (dbResult && dbResult.id) {
                                     quoteData.id = dbResult.id; // Garder l'ID pour référence
                                     console.log('✅ ID du devis:', dbResult.id);
+                                    
+                                    // 🆕 CRÉATION AUTOMATIQUE DU CLIENT
+                                    await createOrUpdateClientFromQuote(quoteData);
+                                    
                                 } else {
                                     console.warn('⚠️ Aucun ID retourné:', dbResult);
                                 }
