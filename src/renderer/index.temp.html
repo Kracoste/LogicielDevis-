@@ -1,0 +1,715 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Logiciel de Devis</title>
+    <link rel="stylesheet" href="styles/output.css">
+    <style>
+        .drag-region {
+            -webkit-app-region: drag;
+        }
+        .no-drag {
+            -webkit-app-region: no-drag;
+        }
+        .sidebar-item {
+            display: flex;
+            align-items: center;
+            width: 100%;
+            padding: 12px 16px;
+            text-align: left;
+            color: #374151;
+            background: transparent;
+            border: none;
+            border-radius: 8px;
+            transition: all 0.2s;
+            cursor: pointer;
+        }
+        .sidebar-item:hover {
+            background-color: #f3f4f6;
+        }
+        .sidebar-item.active {
+            background-color: #eff6ff;
+            color: #2563eb;
+            border-right: 2px solid #2563eb;
+        }
+        .tab-content {
+            display: none;
+        }
+        .tab-content.active {
+            display: block;
+        }
+    </style>
+</head>
+<body class="bg-gray-50 h-screen">
+    <!-- Barre de titre personnalisée -->
+    <div class="drag-region h-12 bg-white border-b border-gray-200 flex items-center justify-between px-4">
+        <div class="flex items-center space-x-3">
+            <div class="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
+                <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                </svg>
+            </div>
+            <span class="font-semibold text-gray-900">Logiciel de Devis</span>
+        </div>
+        
+        <div class="no-drag flex items-center space-x-2">
+            <button id="minimizeBtn" class="p-2 hover:bg-gray-100 rounded-lg transition-colors">
+                <svg class="w-4 h-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 12H4"></path>
+                </svg>
+            </button>
+            <button id="maximizeBtn" class="p-2 hover:bg-gray-100 rounded-lg transition-colors">
+                <svg class="w-4 h-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4"></path>
+                </svg>
+            </button>
+            <button id="closeBtn" class="p-2 hover:bg-red-100 hover:text-red-600 rounded-lg transition-colors">
+                <svg class="w-4 h-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                </svg>
+            </button>
+        </div>
+    </div>
+
+    <!-- Contenu principal -->
+    <div class="flex h-[calc(100vh-3rem)]">
+        <!-- Sidebar -->
+        <aside class="w-64 bg-white border-r border-gray-200 flex flex-col">
+            <!-- User info -->
+            <div class="p-4 border-b border-gray-200">
+                <div class="flex items-center space-x-3">
+                    <div class="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
+                        <span id="userInitials" class="text-blue-600 font-semibold text-sm">U</span>
+                    </div>
+                    <div>
+                        <div id="userName" class="font-medium text-gray-900">Utilisateur</div>
+                        <div id="userCompany" class="text-sm text-gray-600">Mon Entreprise</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Navigation -->
+            <nav class="flex-1 p-4 space-y-2">
+                <button class="sidebar-item active" data-tab="dashboard">
+                    <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2H5a2 2 0 00-2-2z"></path>
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5a2 2 0 012-2h4a2 2 0 012 2v6a2 2 0 01-2 2H10a2 2 0 01-2-2V5z"></path>
+                    </svg>
+                    <span>Tableau de bord</span>
+                </button>
+
+                <button class="sidebar-item" data-tab="quotes">
+                    <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                    </svg>
+                    <span>Devis</span>
+                    <span id="quotesCount" class="ml-auto px-2 py-1 text-xs bg-blue-100 text-blue-600 rounded-full">0</span>
+                </button>
+
+                <button class="sidebar-item" data-tab="clients">
+                    <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path>
+                    </svg>
+                    <span>Clients</span>
+                    <span id="clientsCount" class="ml-auto px-2 py-1 text-xs bg-green-100 text-green-600 rounded-full">0</span>
+                </button>
+
+                <button class="sidebar-item" data-tab="suppliers">
+                    <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"></path>
+                    </svg>
+                    <span>Fournisseurs</span>
+                    <span id="suppliersCount" class="ml-auto px-2 py-1 text-xs bg-yellow-100 text-yellow-600 rounded-full">0</span>
+                </button>
+
+                <button class="sidebar-item" data-tab="settings">
+                    <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path>
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                    </svg>
+                    <span>Paramètres</span>
+                </button>
+            </nav>
+
+            <!-- Logout -->
+            <div class="p-4 border-t border-gray-200">
+                <button id="logoutBtn" class="w-full flex items-center justify-center space-x-2 px-4 py-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path>
+                    </svg>
+                    <span>Déconnexion</span>
+                </button>
+            </div>
+        </aside>
+
+        <!-- Main content -->
+        <main class="flex-1 overflow-auto">
+            <!-- Dashboard Tab -->
+            <div id="dashboardTab" class="tab-content active p-6">
+                <h1 class="text-2xl font-bold text-gray-900 mb-6">Tableau de bord</h1>
+                
+                <!-- Stats Grid -->
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+                    <!-- Devis Card -->
+                    <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-sm font-medium text-gray-600 uppercase tracking-wide">Devis</p>
+                                <p id="totalQuotes" class="text-2xl font-semibold text-gray-900">0</p>
+                            </div>
+                            <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
+                                <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                                </svg>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Clients Card -->
+                    <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-sm font-medium text-gray-600 uppercase tracking-wide">Clients</p>
+                                <p id="totalClients" class="text-2xl font-semibold text-gray-900">0</p>
+                            </div>
+                            <div class="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
+                                <svg class="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path>
+                                </svg>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- CA Card -->
+                    <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-sm font-medium text-gray-600 uppercase tracking-wide">Chiffre d'affaires</p>
+                                <p id="totalCA" class="text-2xl font-semibold text-gray-900">0 €</p>
+                            </div>
+                            <div class="w-12 h-12 bg-yellow-100 rounded-lg flex items-center justify-center">
+                                <svg class="w-6 h-6 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1"></path>
+                                </svg>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Bénéfice Card -->
+                    <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-sm font-medium text-gray-600 uppercase tracking-wide">Bénéfice</p>
+                                <p id="totalBenefit" class="text-2xl font-semibold text-gray-900">0 €</p>
+                            </div>
+                            <div class="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center">
+                                <svg class="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"></path>
+                                </svg>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Additional Stats -->
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
+                        <h3 class="text-lg font-semibold text-gray-900 mb-4">Charges URSSAF</h3>
+                        <p id="totalURSSAF" class="text-2xl font-semibold text-red-600">0 €</p>
+                    </div>
+                    
+                    <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
+                        <h3 class="text-lg font-semibold text-gray-900 mb-4">Coût des Fournitures</h3>
+                        <p id="totalFournitures" class="text-2xl font-semibold text-orange-600">0 €</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Quotes Tab -->
+            <div id="quotesTab" class="tab-content p-6">
+                <div class="flex items-center justify-between mb-6">
+                    <h1 class="text-2xl font-bold text-gray-900">Devis</h1>
+                    <button id="createQuoteBtn" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium transition-colors flex items-center space-x-2">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                        </svg>
+                        <span>Nouveau Devis</span>
+                    </button>
+                </div>
+
+                <!-- Quotes List -->
+                <div class="bg-white rounded-xl shadow-sm border border-gray-200">
+                    <div class="p-6">
+                        <h3 class="text-lg font-semibold text-gray-900 mb-4">Liste des devis</h3>
+                        <div id="quotesList" class="space-y-4">
+                            <!-- Quotes will be loaded here -->
+                            <div class="text-center py-8 text-gray-500">
+                                <svg class="mx-auto h-12 w-12 text-gray-400" stroke="currentColor" fill="none" viewBox="0 0 48 48">
+                                    <path d="M34 40h10v-4a6 6 0 00-10.712-3.714M34 40H14m20 0v-4a9.971 9.971 0 00-.712-3.714M14 40H4v-4a6 6 0 0110.713-3.714M14 40v-4c0-1.313.253-2.566.713-3.714m0 0A10.003 10.003 0 0124 26c4.21 0 7.813 2.602 9.288 6.286M30 14a6 6 0 11-12 0 6 6 0 0112 0zm12 6a4 4 0 11-8 0 4 4 0 018 0zm-28 0a4 4 0 11-8 0 4 4 0 018 0z" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path>
+                                </svg>
+                                <h3 class="mt-2 text-sm font-medium text-gray-900">Aucun devis</h3>
+                                <p class="mt-1 text-sm text-gray-500">Commencez par créer votre premier devis.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Clients Tab -->
+            <div id="clientsTab" class="tab-content p-6">
+                <div class="flex items-center justify-between mb-6">
+                    <h1 class="text-2xl font-bold text-gray-900">Clients</h1>
+                    <button id="createClientBtn" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg font-medium transition-colors flex items-center space-x-2">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                        </svg>
+                        <span>Nouveau Client</span>
+                    </button>
+                </div>
+
+                <div class="bg-white rounded-xl shadow-sm border border-gray-200">
+                    <div class="p-6">
+                        <h3 class="text-lg font-semibold text-gray-900 mb-4">Liste des clients</h3>
+                        <div id="clientsList" class="space-y-4">
+                            <div class="text-center py-8 text-gray-500">
+                                <p>Aucun client enregistré pour le moment.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Suppliers Tab -->
+            <div id="suppliersTab" class="tab-content p-6">
+                <div class="flex items-center justify-between mb-6">
+                    <h1 class="text-2xl font-bold text-gray-900">Fournisseurs</h1>
+                    <button id="createSupplierBtn" class="bg-yellow-600 hover:bg-yellow-700 text-white px-4 py-2 rounded-lg font-medium transition-colors flex items-center space-x-2">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                        </svg>
+                        <span>Nouveau Fournisseur</span>
+                    </button>
+                </div>
+
+                <div class="bg-white rounded-xl shadow-sm border border-gray-200">
+                    <div class="p-6">
+                        <h3 class="text-lg font-semibold text-gray-900 mb-4">Liste des fournisseurs</h3>
+                        <div id="suppliersList" class="space-y-4">
+                            <div class="text-center py-8 text-gray-500">
+                                <p>Aucun fournisseur enregistré pour le moment.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Settings Tab -->
+            <div id="settingsTab" class="tab-content p-6">
+                <h1 class="text-2xl font-bold text-gray-900 mb-6">Paramètres</h1>
+                
+                <div class="bg-white rounded-xl shadow-sm border border-gray-200">
+                    <div class="p-6">
+                        <h3 class="text-lg font-semibold text-gray-900 mb-4">Informations de l'entreprise</h3>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Nom de l'entreprise</label>
+                                <input type="text" id="companyName" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="Mon Entreprise">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">SIRET</label>
+                                <input type="text" id="companySIRET" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="12345678901234">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Adresse</label>
+                                <input type="text" id="companyAddress" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="123 Rue Example">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Téléphone</label>
+                                <input type="tel" id="companyPhone" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="01 23 45 67 89">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Email</label>
+                                <input type="email" id="companyEmail" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="contact@monentreprise.fr">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Taux URSSAF (%)</label>
+                                <input type="number" id="urssafRate" step="0.1" min="0" max="100" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="22.0">
+                            </div>
+                        </div>
+                        <div class="mt-6">
+                            <button id="saveSettingsBtn" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium transition-colors">
+                                Enregistrer
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Modal de création de devis -->
+    <div id="quoteModal" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-xl shadow-xl w-full max-w-4xl max-h-[90vh] overflow-y-auto">
+            <div class="flex items-center justify-between p-6 border-b border-gray-200">
+                <h2 class="text-xl font-semibold text-gray-900">Nouveau Devis</h2>
+                <button id="closeQuoteModal" class="text-gray-400 hover:text-gray-600 transition-colors">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                </button>
+            </div>
+            
+            <div class="p-6">
+                <form id="quoteForm">
+                    <!-- Informations client -->
+                    <div class="mb-6">
+                        <h3 class="text-lg font-semibold text-gray-900 mb-4">Informations client</h3>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Nom du client *</label>
+                                <input type="text" id="clientName" required class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="Nom du client">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Email</label>
+                                <input type="email" id="clientEmail" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="email@exemple.fr">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Téléphone</label>
+                                <input type="tel" id="clientPhone" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="01 23 45 67 89">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Adresse</label>
+                                <input type="text" id="clientAddress" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="123 Rue Example">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Prestations -->
+                    <div class="mb-6">
+                        <div class="flex items-center justify-between mb-4">
+                            <h3 class="text-lg font-semibold text-gray-900">Prestations</h3>
+                            <button type="button" id="addServiceBtn" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-2 shadow-sm">
+                                <span class="text-lg font-bold">✕</span>
+                                Ajouter une prestation
+                            </button>
+                        </div>
+                        
+                        <div id="servicesContainer">
+                            <div class="service-item bg-gray-50 p-4 rounded-lg mb-4">
+                                <div class="grid grid-cols-1 md:grid-cols-5 gap-4">
+                                    <div class="md:col-span-2">
+                                        <label class="block text-sm font-medium text-gray-700 mb-1">Description *</label>
+                                        <textarea class="service-description w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-vertical" rows="3" placeholder="Décrivez en détail la prestation proposée..." required></textarea>
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-1">Quantité *</label>
+                                        <input type="number" class="service-quantity w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" value="1" min="1" required>
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-1">Prix unitaire HT *</label>
+                                        <input type="number" class="service-price w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" step="0.01" min="0" placeholder="0.00" required>
+                                    </div>
+                                    <div class="flex items-end">
+                                        <button type="button" class="remove-service-btn w-full bg-red-500 hover:bg-red-600 text-white px-3 py-2 rounded-lg font-medium transition-colors">
+                                            Supprimer
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Totaux -->
+                    <div class="mb-6 bg-gray-50 p-4 rounded-lg">
+                        <h3 class="text-lg font-semibold text-gray-900 mb-4">Récapitulatif</h3>
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
+                            <div class="flex justify-between">
+                                <span class="text-gray-600">Total HT:</span>
+                                <span id="totalHT" class="font-semibold">0,00 €</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-gray-600">TVA (20%):</span>
+                                <span id="totalTVA" class="font-semibold">0,00 €</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-gray-900 font-semibold">Total TTC:</span>
+                                <span id="totalTTC" class="font-bold text-lg">0,00 €</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Notes -->
+                    <div class="mb-6">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Notes / Conditions particulières</label>
+                        <textarea id="quoteNotes" rows="3" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="Conditions de paiement, délais, etc."></textarea>
+                    </div>
+
+                    <!-- Actions -->
+                    <div class="flex items-center justify-end space-x-3">
+                        <button type="button" id="cancelQuoteBtn" class="px-4 py-2 text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors">
+                            Annuler
+                        </button>
+                        <button type="submit" id="saveQuoteBtn" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium transition-colors">
+                            Créer et télécharger le PDF
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="js/supabase.min.js"></script>
+    <script src="js/init.js"></script>
+    <script src="js/app.js"></script>
+    
+    <script>
+        // Navigation functionality
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('🚀 [MAIN WINDOW] Initialisation de la navigation...');
+            
+            // Tab switching functionality
+            function switchTab(tabName) {
+                console.log(`🔄 [NAVIGATION] Switching to ${tabName} tab`);
+                
+                // Hide all tabs
+                document.querySelectorAll('.tab-content').forEach(tab => {
+                    tab.classList.remove('active');
+                    tab.classList.add('hidden');
+                });
+                
+                // Remove active from sidebar items
+                document.querySelectorAll('.sidebar-item').forEach(item => {
+                    item.classList.remove('active');
+                });
+                
+                // Show selected tab
+                const targetTab = document.getElementById(tabName + 'Tab');
+                if (targetTab) {
+                    targetTab.classList.remove('hidden');
+                    targetTab.classList.add('active');
+                }
+                
+                // Add active to clicked sidebar item
+                const sidebarItem = document.querySelector(`[data-tab="${tabName}"]`);
+                if (sidebarItem) {
+                    sidebarItem.classList.add('active');
+                }
+            }
+            
+            // Setup tab navigation
+            document.querySelectorAll('.sidebar-item').forEach(item => {
+                item.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    const tabName = e.currentTarget.getAttribute('data-tab');
+                    switchTab(tabName);
+                });
+            });
+            
+            // Window controls
+            const minimizeBtn = document.getElementById('minimizeBtn');
+            const maximizeBtn = document.getElementById('maximizeBtn');
+            const closeBtn = document.getElementById('closeBtn');
+            
+            if (minimizeBtn) {
+                minimizeBtn.addEventListener('click', () => {
+                    if (window.electronAPI) window.electronAPI.minimizeWindow();
+                });
+            }
+            
+            if (maximizeBtn) {
+                maximizeBtn.addEventListener('click', () => {
+                    if (window.electronAPI) window.electronAPI.maximizeWindow();
+                });
+            }
+            
+            if (closeBtn) {
+                closeBtn.addEventListener('click', () => {
+                    if (window.electronAPI) window.electronAPI.closeWindow();
+                });
+            }
+            
+            // Logout button
+            const logoutBtn = document.getElementById('logoutBtn');
+            if (logoutBtn) {
+                logoutBtn.addEventListener('click', async () => {
+                    console.log('🚪 [LOGOUT] Déconnexion...');
+                    
+                    if (window.authService && typeof window.authService.signOut === 'function') {
+                        await window.authService.signOut();
+                    }
+                    
+                    if (window.electronAPI && typeof window.electronAPI.showLogin === 'function') {
+                        window.electronAPI.showLogin();
+                    }
+                });
+            }
+            
+            console.log('✅ [MAIN WINDOW] Navigation initialisée');
+            
+            // Setup quote creation functionality
+            setupQuoteCreation();
+        });
+        
+        // Classe QuoteManager pour gérer les devis
+        class QuoteManager {
+            constructor() {
+                this.services = [];
+                this.currentQuote = null;
+            }
+            
+            // Calculer les totaux
+            calculateTotals() {
+                console.log('💰 Calcul des totaux en cours...');
+                let totalHT = 0;
+                
+                document.querySelectorAll('.service-item').forEach((item, index) => {
+                    const quantityInput = item.querySelector('.service-quantity');
+                    const priceInput = item.querySelector('.service-price');
+                    
+                    if (quantityInput && priceInput) {
+                        const quantity = parseFloat(quantityInput.value) || 0;
+                        const price = parseFloat(priceInput.value) || 0;
+                        const sousTotal = quantity * price;
+                        totalHT += sousTotal;
+                        
+                        if (sousTotal > 0) {
+                            console.log(`💡 Prestation ${index + 1}: ${quantity} × ${price}€ = ${sousTotal}€`);
+                        }
+                    }
+                });
+                
+                const totalTVA = Math.round((totalHT * 0.20) * 100) / 100; // TVA 20% avec arrondi
+                const totalTTC = Math.round((totalHT + totalTVA) * 100) / 100; // Total TTC avec arrondi
+                
+                console.log(`📊 TOTAUX CALCULÉS: HT=${totalHT}€, TVA=${totalTVA}€, TTC=${totalTTC}€`);
+                
+                // Mettre à jour l'affichage avec formatage français
+                const totalHTElement = document.getElementById('totalHT');
+                const totalTVAElement = document.getElementById('totalTVA');
+                const totalTTCElement = document.getElementById('totalTTC');
+                
+                if (totalHTElement) {
+                    totalHTElement.textContent = totalHT.toLocaleString('fr-FR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' €';
+                }
+                if (totalTVAElement) {
+                    totalTVAElement.textContent = totalTVA.toLocaleString('fr-FR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' €';
+                }
+                if (totalTTCElement) {
+                    totalTTCElement.textContent = totalTTC.toLocaleString('fr-FR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' €';
+                }
+                
+                console.log('✅ Récapitulatif mis à jour dans l\'interface');
+                return { totalHT, totalTVA, totalTTC };
+            }
+            
+            // Ajouter une prestation
+            addService() {
+                const container = document.getElementById('servicesContainer');
+                const serviceCount = container.children.length;
+                
+                const serviceHTML = `
+                    <div class="service-item bg-gray-50 p-4 rounded-lg mb-4">
+                        <div class="grid grid-cols-1 md:grid-cols-5 gap-4">
+                            <div class="md:col-span-2">
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Description *</label>
+                                <textarea class="service-description w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-vertical" rows="3" placeholder="Décrivez en détail la prestation proposée..." required></textarea>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Quantité *</label>
+                                <input type="number" class="service-quantity w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" value="1" min="1" required>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Prix unitaire HT *</label>
+                                <input type="number" class="service-price w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" step="0.01" min="0" placeholder="0.00" required>
+                            </div>
+                            <div class="flex items-end">
+                                <button type="button" class="remove-service-btn w-full bg-red-500 hover:bg-red-600 text-white px-3 py-2 rounded-lg font-medium transition-colors">
+                                    Supprimer
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                
+                container.insertAdjacentHTML('beforeend', serviceHTML);
+                this.setupServiceEventListeners();
+                this.calculateTotals();
+            }
+            
+            // Supprimer une prestation
+            removeService(serviceElement) {
+                const container = document.getElementById('servicesContainer');
+                if (container.children.length > 1) {
+                    serviceElement.remove();
+                    this.calculateTotals();
+                }
+            }
+            
+            // Configurer les event listeners pour les prestations
+            setupServiceEventListeners() {
+                console.log('🔧 Configuration des événements pour les prestations...');
+                
+                // Calculer les totaux quand les valeurs changent
+                document.querySelectorAll('.service-quantity, .service-price').forEach(input => {
+                    // Supprimer les anciens listeners pour éviter les doublons
+                    input.removeEventListener('input', this.calculateTotals.bind(this));
+                    input.removeEventListener('change', this.calculateTotals.bind(this));
+                    input.removeEventListener('keyup', this.calculateTotals.bind(this));
+                    
+                    // Ajouter les nouveaux listeners
+                    input.addEventListener('input', this.calculateTotals.bind(this));
+                    input.addEventListener('change', this.calculateTotals.bind(this));
+                    input.addEventListener('keyup', this.calculateTotals.bind(this));
+                    
+                    console.log(`✅ Événements attachés au champ: ${input.className}`);
+                });
+                
+                // Supprimer une prestation
+                document.querySelectorAll('.remove-service-btn').forEach(btn => {
+                    btn.removeEventListener('click', this.handleRemoveService.bind(this));
+                    btn.addEventListener('click', this.handleRemoveService.bind(this));
+                });
+                
+                console.log('✅ Tous les événements des prestations configurés');
+            }
+            
+            handleRemoveService(e) {
+                const serviceItem = e.target.closest('.service-item');
+                this.removeService(serviceItem);
+            }
+            
+            // Générer le PDF du devis
+            async generatePDF(quoteData) {
+                console.log('🔄 Génération du PDF...', quoteData);
+                
+                // Vérifier que jsPDF est disponible
+                if (typeof window.jsPDF === 'undefined') {
+                    console.error('❌ jsPDF non disponible');
+                    alert('Erreur: La bibliothèque de génération PDF n\'est pas disponible.');
+                    return;
+                }
+                
+                try {
+                    const { jsPDF } = window.jsPDF;
+                    const doc = new jsPDF();
+                    
+                    // Configuration
+                    const pageWidth = doc.internal.pageSize.width;
+                    const pageHeight = doc.internal.pageSize.height;
+                    const margin = 20;
+                    let currentY = margin;
+                    
+                    // Couleurs
+                    const primaryColor = [37, 99, 235]; // Blue-600
+                    const textColor = [55, 65, 81]; // Gray-700
+                    const lightGray = [243, 244, 246]; // Gray-100
+                    
+                    // En-tête
+                    doc.setFontSize(24);
+                    doc.setTextColor(...primaryColor);
+                    doc.text('DEVIS', pageWidth / 2, currentY, { align: 'center' });
+                    currentY += 15;
+                    

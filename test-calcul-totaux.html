@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Calcul Totaux</title>
+</head>
+<body>
+    <h1>Test de Calcul des Totaux</h1>
+    
+    <div id="servicesContainerFullPage">
+        <div>
+            <input type="text" name="service_description[]" value="Service 1" readonly>
+            <input type="number" name="service_quantity[]" value="2">
+            <input type="number" name="service_price[]" value="100.50">
+        </div>
+        <div>
+            <input type="text" name="service_description[]" value="Service 2" readonly>
+            <input type="number" name="service_quantity[]" value="1">
+            <input type="number" name="service_price[]" value="50.25">
+        </div>
+    </div>
+    
+    <div>
+        <select id="taxRateSelect">
+            <option value="20" selected>20%</option>
+            <option value="10">10%</option>
+            <option value="5.5">5.5%</option>
+            <option value="0">0%</option>
+        </select>
+    </div>
+    
+    <div>
+        <p>Sous-total HT: <span id="subtotalHT">0,00 €</span></p>
+        <p>TVA: <span id="taxAmount">0,00 €</span></p>
+        <p>Total TTC: <span id="totalTTC">0,00 €</span></p>
+    </div>
+    
+    <button onclick="window.updateTotal()">Calculer</button>
+    
+    <script>
+        // FONCTION DE CALCUL DES TOTAUX - CORRECTION DU BUG DES ZÉROS SUPPLÉMENTAIRES
+        window.updateTotal = function() {
+            try {
+                console.log('🔢 Calcul des totaux en cours...');
+                
+                let totalHT = 0;
+                
+                // Récupérer toutes les prestations avec validation stricte
+                const servicesContainer = document.getElementById('servicesContainerFullPage');
+                if (!servicesContainer) {
+                    console.warn('⚠️ Container de prestations non trouvé');
+                    return;
+                }
+                
+                // Sélectionner tous les groupes de prestations
+                const serviceRows = servicesContainer.querySelectorAll(':scope > div');
+                console.log('🔍 Nombre de prestations trouvées:', serviceRows.length);
+                
+                serviceRows.forEach((row, index) => {
+                    const quantityInput = row.querySelector('input[name="service_quantity[]"]');
+                    const priceInput = row.querySelector('input[name="service_price[]"]');
+                    
+                    if (quantityInput && priceInput) {
+                        // Validation stricte des valeurs avec nettoyage
+                        let quantityValue = quantityInput.value.trim();
+                        let priceValue = priceInput.value.trim();
+                        
+                        // Conversion sécurisée avec parseFloat
+                        const quantity = quantityValue === '' ? 0 : parseFloat(quantityValue);
+                        const price = priceValue === '' ? 0 : parseFloat(priceValue);
+                        
+                        // Validation des nombres
+                        if (!isNaN(quantity) && !isNaN(price) && quantity > 0 && price >= 0) {
+                            const lineTotal = quantity * price;
+                            totalHT += lineTotal;
+                            
+                            console.log(`📊 Prestation ${index + 1}: ${quantity} × ${price.toFixed(2)}€ = ${lineTotal.toFixed(2)}€`);
+                        } else {
+                            console.log(`⚠️ Prestation ${index + 1} ignorée (valeurs invalides): qty=${quantity}, price=${price}`);
+                        }
+                    } else {
+                        console.log(`⚠️ Prestation ${index + 1} ignorée (champs manquants)`);
+                    }
+                });
+                
+                // Récupérer le taux de TVA sélectionné
+                const taxRateSelect = document.getElementById('taxRateSelect');
+                const taxRate = taxRateSelect ? parseFloat(taxRateSelect.value) / 100 : 0.20;
+                
+                // Calculs finaux avec arrondi correct
+                const taxAmount = Math.round((totalHT * taxRate) * 100) / 100;
+                const totalTTC = Math.round((totalHT + taxAmount) * 100) / 100;
+                
+                console.log(`💰 Totaux calculés: HT=${totalHT.toFixed(2)}€, TVA=${taxAmount.toFixed(2)}€, TTC=${totalTTC.toFixed(2)}€`);
+                
+                // Mise à jour de l'affichage avec formatage français
+                const subtotalHTElement = document.getElementById('subtotalHT');
+                const taxAmountElement = document.getElementById('taxAmount');
+                const totalTTCElement = document.getElementById('totalTTC');
+                
+                if (subtotalHTElement) {
+                    subtotalHTElement.textContent = totalHT.toLocaleString('fr-FR', { 
+                        minimumFractionDigits: 2, 
+                        maximumFractionDigits: 2 
+                    }) + ' €';
+                }
+                
+                if (taxAmountElement) {
+                    taxAmountElement.textContent = taxAmount.toLocaleString('fr-FR', { 
+                        minimumFractionDigits: 2, 
+                        maximumFractionDigits: 2 
+                    }) + ' €';
+                }
+                
+                if (totalTTCElement) {
+                    totalTTCElement.textContent = totalTTC.toLocaleString('fr-FR', { 
+                        minimumFractionDigits: 2, 
+                        maximumFractionDigits: 2 
+                    }) + ' €';
+                }
+                
+                console.log('✅ Totaux mis à jour avec succès');
+                
+            } catch (error) {
+                console.error('❌ Erreur lors du calcul des totaux:', error);
+            }
+        };
+        
+        // Test automatique au chargement
+        window.addEventListener('load', function() {
+            setTimeout(() => {
+                console.log('🧪 Test automatique des calculs...');
+                window.updateTotal();
+            }, 100);
+        });
+        
+        // Ajouter des event listeners sur les champs
+        document.addEventListener('DOMContentLoaded', function() {
+            const inputs = document.querySelectorAll('input[name="service_quantity[]"], input[name="service_price[]"]');
+            inputs.forEach(input => {
+                input.addEventListener('input', window.updateTotal);
+                input.addEventListener('change', window.updateTotal);
+            });
+            
+            document.getElementById('taxRateSelect').addEventListener('change', window.updateTotal);
+        });
+    </script>
+</body>
+</html>

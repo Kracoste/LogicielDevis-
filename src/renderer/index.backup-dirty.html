@@ -370,15 +370,9 @@
                         <!-- Informations client - Layout équilibré -->
                         <div class="space-y-3">
                             <div class="grid grid-cols-1 md:grid-cols-4 gap-3">
-                                <div class="grid grid-cols-2 gap-2">
-                                    <div>
-                                        <label for="clientFirstName" class="block text-sm font-medium text-gray-700 mb-1">Prénom *</label>
-                                        <input type="text" id="clientFirstName" name="clientFirstName" required class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 text-sm">
-                                    </div>
-                                    <div>
-                                        <label for="clientLastName" class="block text-sm font-medium text-gray-700 mb-1">Nom *</label>
-                                        <input type="text" id="clientLastName" name="clientLastName" required class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 text-sm">
-                                    </div>
+                                <div>
+                                    <label for="clientName" class="block text-sm font-medium text-gray-700 mb-1">Client *</label>
+                                    <input type="text" id="clientName" name="clientName" required class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 text-sm">
                                 </div>
                                 <div>
                                     <label for="clientEmail" class="block text-sm font-medium text-gray-700 mb-1">Email</label>
@@ -1580,28 +1574,9 @@
                 // Ajouter la prestation au container
                 container.insertAdjacentHTML('beforeend', serviceHTML);
                 
-                // Attacher les event listeners aux nouveaux champs
-                const newServiceRow = container.lastElementChild;
-                const priceInput = newServiceRow.querySelector('input[name="service_price[]"]');
-                const quantityInput = newServiceRow.querySelector('input[name="service_quantity[]"]');
+                console.log('✅ [FORM] Prestation ajoutée');
                 
-                if (priceInput) {
-                    priceInput.addEventListener('input', function() {
-                        console.log('💰 [RECAP] Prix modifié:', this.value);
-                        updateTotal();
-                    });
-                }
-                
-                if (quantityInput) {
-                    quantityInput.addEventListener('input', function() {
-                        console.log('📊 [RECAP] Quantité modifiée:', this.value);
-                        updateTotal();
-                    });
-                }
-                
-                console.log('✅ [FORM] Prestation ajoutée avec event listeners');
-                
-                // Mettre à jour le total immédiatement
+                // Mettre à jour le total (si la fonction existe)
                 if (typeof updateTotal === 'function') {
                     updateTotal();
                 }
@@ -2387,9 +2362,6 @@
                                         field.style.opacity = '1';
                                     });
                                     console.log('✅ [OPEN VIEW] Tous les champs sont garantis éditables');
-                                    
-                                    // Attacher les event listeners pour le calcul automatique
-                                    attachRecapEventListeners();
                                 }
                             }, 100);
                             
@@ -3405,75 +3377,31 @@
                 
                 // Fonction pour mettre à jour le total
                 window.updateTotal = function() {
-                    console.log('🧮 [RECAP] Calcul des totaux...');
                     let totalHT = 0;
                     
                     document.querySelectorAll('#servicesContainerFullPage > div').forEach(serviceRow => {
                         const quantity = parseFloat(serviceRow.querySelector('input[name="service_quantity[]"]')?.value) || 0;
                         const price = parseFloat(serviceRow.querySelector('input[name="service_price[]"]')?.value) || 0;
-                        const lineTotal = quantity * price;
-                        totalHT += lineTotal;
-                        console.log(`📊 [RECAP] Ligne: ${quantity} × ${price}€ = ${lineTotal}€`);
+                        totalHT += quantity * price;
                     });
                     
-                    // Récupérer le taux de TVA sélectionné
-                    const taxRateSelect = document.getElementById('taxRateSelect');
-                    const taxRate = parseFloat(taxRateSelect?.value || 20) / 100; // Convertir en décimal
-                    const tva = totalHT * taxRate;
+                    const tva = totalHT * 0.20;
                     const totalTTC = totalHT + tva;
                     
-                    console.log(`💰 [RECAP] Total HT: ${totalHT}€, TVA (${(taxRate*100)}%): ${tva}€, TTC: ${totalTTC}€`);
+                // Mettre à jour l'affichage des totaux avec vérification null
+                function updateTotalsDisplay() {
+                    const totalAmount = document.getElementById('totalAmount');
+                    const taxAmount = document.getElementById('taxAmount');
+                    const totalAmountTTC = document.getElementById('totalAmountTTC');
+                    const totalHT = document.getElementById('totalHT');
+                    const totalTVA = document.getElementById('totalTVA');
+                    const totalTTC = document.getElementById('totalTTC');
                     
-                    // Mettre à jour l'affichage des totaux avec les bons IDs
-                    const subtotalHTElement = document.getElementById('subtotalHT');
-                    const taxAmountElement = document.getElementById('taxAmount');  
-                    const totalTTCElement = document.getElementById('totalTTC');
-                    
-                    if (subtotalHTElement) {
-                        subtotalHTElement.textContent = totalHT.toFixed(2) + ' €';
-                        console.log('✅ [RECAP] Sous-total HT mis à jour');
-                    }
-                    if (taxAmountElement) {
-                        taxAmountElement.textContent = tva.toFixed(2) + ' €';
-                        console.log('✅ [RECAP] TVA mise à jour');
-                    }
-                    if (totalTTCElement) {
-                        totalTTCElement.textContent = totalTTC.toFixed(2) + ' €';
-                        console.log('✅ [RECAP] Total TTC mis à jour');
-                    }
-                };
-                
-                // Fonction pour attacher les event listeners de récapitulatif automatique
-                function attachRecapEventListeners() {
-                    console.log('🎯 [RECAP] Attachement des event listeners...');
-                    
-                    // Supprimer les anciens event listeners pour éviter les doublons
-                    const existingFields = document.querySelectorAll('#servicesContainerFullPage input[name="service_quantity[]"], #servicesContainerFullPage input[name="service_price[]"]');
-                    existingFields.forEach(field => {
-                        // Créer un nouvel élément pour supprimer tous les event listeners
-                        const newField = field.cloneNode(true);
-                        field.parentNode.replaceChild(newField, field);
-                    });
-                    
-                    // Attacher les nouveaux event listeners
-                    const fields = document.querySelectorAll('#servicesContainerFullPage input[name="service_quantity[]"], #servicesContainerFullPage input[name="service_price[]"]');
-                    console.log(`🎯 [RECAP] Attachement sur ${fields.length} champs trouvés`);
-                    
-                    fields.forEach((field, index) => {
-                        field.addEventListener('input', function() {
-                            console.log(`💰 [RECAP] Champ modifié (${this.name}):`, this.value);
-                            updateTotal();
-                        });
-                        console.log(`✅ [RECAP] Event listener attaché au champ ${index + 1}/${fields.length}`);
-                    });
-                    
-                    // Calculer les totaux une première fois
-                    if (typeof updateTotal === 'function') {
-                        updateTotal();
-                    }
-                    
-                    console.log('✅ [RECAP] Event listeners attachés avec succès');
+                    if (totalAmount) totalAmount.textContent = totalHT.toFixed(2) + ' €';
+                    if (taxAmount) taxAmount.textContent = tva.toFixed(2) + ' €';
+                    if (totalAmountTTC) totalAmountTTC.textContent = totalTTC.toFixed(2) + ' €';
                 }
+                };
                 
                 // Ajouter les event listeners pour le calcul automatique sur les champs existants
                 document.querySelectorAll('#servicesContainerFullPage input[name="service_quantity[]"], #servicesContainerFullPage input[name="service_price[]"]').forEach(input => {

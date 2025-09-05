@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Récapitulatif Simple</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .container { max-width: 600px; margin: 0 auto; }
+        .prestation { 
+            display: flex; 
+            gap: 10px; 
+            margin-bottom: 10px; 
+            padding: 10px; 
+            border: 1px solid #ddd; 
+            border-radius: 5px; 
+        }
+        .prestation input { padding: 8px; border: 1px solid #ccc; border-radius: 3px; }
+        .recap { 
+            margin-top: 20px; 
+            padding: 15px; 
+            background: #f5f5f5; 
+            border-radius: 5px; 
+        }
+        .recap div { margin-bottom: 5px; }
+        .total { font-weight: bold; font-size: 18px; color: #2563eb; }
+    </style>
+    <script>
+        // 🚀 FONCTION SIMPLE DE MISE À JOUR DU RÉCAPITULATIF
+        function mettreAJourRecapitulatif() {
+            console.log('💰 MISE À JOUR RÉCAPITULATIF APPELÉE');
+            alert('💰 FONCTION APPELÉE !');
+            
+            let totalHT = 0;
+            
+            // Parcourir tous les champs de prix et quantité
+            const priceInputs = document.querySelectorAll('input[name="service_price[]"]');
+            const quantityInputs = document.querySelectorAll('input[name="service_quantity[]"]');
+            
+            priceInputs.forEach((priceInput, index) => {
+                const price = parseFloat(priceInput.value) || 0;
+                const quantityInput = quantityInputs[index];
+                const quantity = quantityInput ? (parseFloat(quantityInput.value) || 0) : 1;
+                
+                if (price > 0) {
+                    totalHT += price * quantity;
+                    console.log(`💡 Prestation ${index + 1}: ${quantity} × ${price}€ = ${(quantity * price)}€`);
+                }
+            });
+            
+            // Calculer TVA
+            const taxRateSelect = document.getElementById('taxRateSelect');
+            const taxRate = taxRateSelect ? parseFloat(taxRateSelect.value) / 100 : 0.20;
+            const taxAmount = Math.round((totalHT * taxRate) * 100) / 100;
+            const totalTTC = Math.round((totalHT + taxAmount) * 100) / 100;
+            
+            console.log(`📊 TOTAUX: HT=${totalHT}€, TVA=${taxAmount}€, TTC=${totalTTC}€`);
+            alert(`📊 RÉSULTAT: HT=${totalHT}€, TVA=${taxAmount}€, TTC=${totalTTC}€`);
+            
+            // Mettre à jour l'affichage
+            const subtotalHTElement = document.getElementById('subtotalHT');
+            const taxAmountElement = document.getElementById('taxAmount');
+            const totalTTCElement = document.getElementById('totalTTC');
+            
+            if (subtotalHTElement) {
+                subtotalHTElement.textContent = totalHT.toFixed(2).replace('.', ',') + ' €';
+                console.log('✅ Sous-total HT mis à jour:', subtotalHTElement.textContent);
+            }
+            
+            if (taxAmountElement) {
+                taxAmountElement.textContent = taxAmount.toFixed(2).replace('.', ',') + ' €';
+                console.log('✅ TVA mise à jour:', taxAmountElement.textContent);
+            }
+            
+            if (totalTTCElement) {
+                totalTTCElement.textContent = totalTTC.toFixed(2).replace('.', ',') + ' €';
+                console.log('✅ Total TTC mis à jour:', totalTTCElement.textContent);
+            }
+        }
+        
+        // Exposer la fonction globalement
+        window.mettreAJourRecapitulatif = mettreAJourRecapitulatif;
+        
+        // Test automatique au chargement de la page
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('🚀 Page chargée, fonction définie');
+            
+            // Ajouter les événements aux champs existants
+            document.querySelectorAll('input[name="service_price[]"], input[name="service_quantity[]"]').forEach(input => {
+                input.addEventListener('input', mettreAJourRecapitulatif);
+                input.addEventListener('change', mettreAJourRecapitulatif);
+            });
+            
+            // Test initial
+            mettreAJourRecapitulatif();
+        });
+    </script>
+</head>
+<body>
+    <div class="container">
+        <h1>🧪 Test Récapitulatif Automatique</h1>
+        
+        <h2>Prestations</h2>
+        <div class="prestation">
+            <input type="text" placeholder="Description prestation 1" style="flex: 1;">
+            <input type="number" name="service_quantity[]" value="1" min="1" placeholder="Qté" oninput="mettreAJourRecapitulatif()" onchange="mettreAJourRecapitulatif()">
+            <input type="number" name="service_price[]" value="" step="0.01" min="0" placeholder="Prix HT" oninput="mettreAJourRecapitulatif()" onchange="mettreAJourRecapitulatif()">
+        </div>
+        
+        <div class="prestation">
+            <input type="text" placeholder="Description prestation 2" style="flex: 1;">
+            <input type="number" name="service_quantity[]" value="1" min="1" placeholder="Qté" oninput="mettreAJourRecapitulatif()" onchange="mettreAJourRecapitulatif()">
+            <input type="number" name="service_price[]" value="" step="0.01" min="0" placeholder="Prix HT" oninput="mettreAJourRecapitulatif()" onchange="mettreAJourRecapitulatif()">
+        </div>
+        
+        <div class="prestation">
+            <input type="text" placeholder="Description prestation 3" style="flex: 1;">
+            <input type="number" name="service_quantity[]" value="1" min="1" placeholder="Qté" oninput="mettreAJourRecapitulatif()" onchange="mettreAJourRecapitulatif()">
+            <input type="number" name="service_price[]" value="" step="0.01" min="0" placeholder="Prix HT" oninput="mettreAJourRecapitulatif()" onchange="mettreAJourRecapitulatif()">
+        </div>
+        
+        <h2>TVA</h2>
+        <select id="taxRateSelect" onchange="mettreAJourRecapitulatif()">
+            <option value="20">TVA 20%</option>
+            <option value="10">TVA 10%</option>
+            <option value="5.5">TVA 5.5%</option>
+            <option value="0">Pas de TVA</option>
+        </select>
+        
+        <div class="recap">
+            <h2>📊 Récapitulatif</h2>
+            <div>Sous-total HT: <span id="subtotalHT">0,00 €</span></div>
+            <div>TVA: <span id="taxAmount">0,00 €</span></div>
+            <div class="total">Total TTC: <span id="totalTTC">0,00 €</span></div>
+        </div>
+        
+        <div style="margin-top: 20px; padding: 10px; background: #e3f2fd; border-radius: 5px;">
+            <h3>🔧 Instructions de test</h3>
+            <ol>
+                <li>Saisir des prix dans les champs "Prix HT"</li>
+                <li>Modifier les quantités</li>
+                <li>Observer la console (F12) pour voir les logs</li>
+                <li>Vérifier que le récapitulatif se met à jour automatiquement</li>
+            </ol>
+            
+            <button onclick="mettreAJourRecapitulatif()" style="padding: 10px 20px; background: #2563eb; color: white; border: none; border-radius: 5px; cursor: pointer;">
+                🔄 Forcer mise à jour récapitulatif
+            </button>
+        </div>
+    </div>
+</body>
+</html>

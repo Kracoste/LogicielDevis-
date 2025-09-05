@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Ultra-Simple</title>
+</head>
+<body>
+    <h1>🧪 Test Ultra-Simple Récapitulatif</h1>
+    
+    <div style="margin: 20px; font-family: Arial;">
+        <div style="margin: 10px 0;">
+            <label>Prix 1:</label>
+            <input type="number" id="prix1" value="0" step="0.01" style="margin: 10px; padding: 5px;" onchange="calculer()">
+        </div>
+        
+        <div style="margin: 10px 0;">
+            <label>Prix 2:</label>
+            <input type="number" id="prix2" value="0" step="0.01" style="margin: 10px; padding: 5px;" onchange="calculer()">
+        </div>
+        
+        <div style="margin: 20px 0; padding: 10px; background: #f0f0f0;">
+            <h3>Résultat:</h3>
+            <div>Total HT: <span id="totalHT">0,00 €</span></div>
+            <div>TVA (20%): <span id="tva">0,00 €</span></div>
+            <div><strong>Total TTC: <span id="totalTTC">0,00 €</span></strong></div>
+        </div>
+        
+        <button onclick="calculer()" style="padding: 10px 20px; background: blue; color: white; border: none; cursor: pointer;">
+            CALCULER MAINTENANT
+        </button>
+    </div>
+
+    <script>
+        function calculer() {
+            alert('🚨 FONCTION CALCULER APPELÉE !');
+            
+            const prix1 = parseFloat(document.getElementById('prix1').value) || 0;
+            const prix2 = parseFloat(document.getElementById('prix2').value) || 0;
+            
+            const totalHT = prix1 + prix2;
+            const tva = totalHT * 0.20;
+            const totalTTC = totalHT + tva;
+            
+            document.getElementById('totalHT').textContent = totalHT.toFixed(2) + ' €';
+            document.getElementById('tva').textContent = tva.toFixed(2) + ' €';
+            document.getElementById('totalTTC').textContent = totalTTC.toFixed(2) + ' €';
+            
+            alert('💰 Résultat: HT=' + totalHT.toFixed(2) + '€, TTC=' + totalTTC.toFixed(2) + '€');
+        }
+        
+        // Test au chargement
+        window.onload = function() {
+            alert('✅ Page chargée - Script fonctionnel !');
+            calculer();
+        };
+    </script>
+</body>
+</html>
