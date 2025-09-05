@@ -39,6 +39,62 @@
 		.tab-content.active {
 			display: block;
 		}
+
+		/* Transitions pour les contenus */
+		#quotesContainer, #quotesList {
+			transition: opacity 0.3s ease-in-out;
+			background-color: transparent;
+			min-height: 200px;
+		}
+
+		/* Protection contre le flash blanc */
+		.tab-content {
+			background-color: #f9fafb;
+		}
+		
+		.tab-content.active {
+			background-color: #f9fafb;
+		}
+
+		/* S'assurer que les containers ont toujours un fond */
+		#quotesList > div {
+			background-color: transparent !important;
+		}
+
+		/* Skeleton loader animations */
+		.skeleton {
+			position: relative;
+			overflow: hidden;
+		}
+		
+		.skeleton::before {
+			content: '';
+			position: absolute;
+			top: 0;
+			left: -100%;
+			width: 100%;
+			height: 100%;
+			background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
+			animation: shimmer 1.5s infinite;
+		}
+		
+		@keyframes shimmer {
+			0% { left: -100%; }
+			100% { left: 100%; }
+		}
+
+		/* Loading spinner styles */
+		.spinner {
+			border: 3px solid #f3f4f6;
+			border-top: 3px solid #2563eb;
+			border-radius: 50%;
+			animation: spin 1s linear infinite;
+		}
+		
+		@keyframes spin {
+			0% { transform: rotate(0deg); }
+			100% { transform: rotate(360deg); }
+		}
 		
 		/* CSS FORÇANT LA VUE NOUVEAU DEVIS À PRENDRE TOUT L'ÉCRAN */
 		#newQuoteView {
@@ -207,6 +263,15 @@
                     <span id="clientsCount" class="ml-auto px-2 py-1 text-xs bg-green-100 text-green-600 rounded-full">0</span>
                 </button>
 
+                <button class="sidebar-item" data-tab="invoices">
+                    <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+                    </svg>
+                    <span>Facturation</span>
+                    <span id="invoicesCount" class="ml-auto px-2 py-1 text-xs bg-yellow-100 text-yellow-600 rounded-full">0</span>
+                </button>
+
                 <button class="sidebar-item" data-tab="settings">
                     <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path>
@@ -235,22 +300,7 @@
                 
                 <!-- Stats Grid -->
                 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-                    <!-- Devis Card -->
-                    <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
-                        <div class="flex items-center justify-between">
-                            <div>
-                                <p class="text-sm font-medium text-gray-600 uppercase tracking-wide">Devis</p>
-                                <p id="totalQuotes" class="text-2xl font-semibold text-gray-900">0</p>
-                            </div>
-                            <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
-                                <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
-                                </svg>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Clients Card -->
+                    <!-- Nombre de clients Card -->
                     <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
                         <div class="flex items-center justify-between">
                             <div>
@@ -265,12 +315,27 @@
                         </div>
                     </div>
 
-                    <!-- CA Card -->
+                    <!-- Nombre de devis Card -->
                     <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
                         <div class="flex items-center justify-between">
                             <div>
-                                <p class="text-sm font-medium text-gray-600 uppercase tracking-wide">Chiffre d'affaires</p>
-                                <p id="totalCA" class="text-2xl font-semibold text-gray-900">0 €</p>
+                                <p class="text-sm font-medium text-gray-600 uppercase tracking-wide">Devis totaux</p>
+                                <p id="totalQuotes" class="text-2xl font-semibold text-gray-900">0</p>
+                            </div>
+                            <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
+                                <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                                </svg>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Montant total des devis Card -->
+                    <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-sm font-medium text-gray-600 uppercase tracking-wide">Montant devis</p>
+                                <p id="totalQuotesAmount" class="text-2xl font-semibold text-gray-900">0 €</p>
                             </div>
                             <div class="w-12 h-12 bg-yellow-100 rounded-lg flex items-center justify-center">
                                 <svg class="w-6 h-6 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -280,12 +345,15 @@
                         </div>
                     </div>
 
-                    <!-- Bénéfice Card -->
+                    <!-- Chiffre d'affaires (devis signés) Card -->
                     <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
                         <div class="flex items-center justify-between">
                             <div>
-                                <p class="text-sm font-medium text-gray-600 uppercase tracking-wide">Bénéfice</p>
-                                <p id="totalBenefit" class="text-2xl font-semibold text-gray-900">0 €</p>
+                                <p class="text-sm font-medium text-gray-600 uppercase tracking-wide">CA Signé</p>
+                                <p id="totalSignedAmount" class="text-2xl font-semibold text-gray-900">0 €</p>
+                                <p class="text-xs text-gray-500 mt-1">
+                                    <span id="signedQuotesCount">0</span> devis signés
+                                </p>
                             </div>
                             <div class="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center">
                                 <svg class="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -354,6 +422,22 @@
                         <h2 class="text-lg font-semibold text-gray-900 mb-4">Devis de ce client</h2>
                         <div id="clientDetailQuotes" class="space-y-4">
                             <!-- Les devis du client seront affichés ici -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Invoices/Facturation Tab -->
+            <div id="invoicesTab" class="tab-content p-6">
+                <h1 class="text-2xl font-bold text-gray-900 mb-6">Facturation</h1>
+                <div class="bg-white rounded-xl shadow-sm border border-gray-200">
+                    <div class="p-6">
+                        <div id="invoicesList" class="space-y-4">
+                            <!-- Les factures/devis approuvés seront affichés ici -->
+                            <div class="text-center py-8 text-gray-500">
+                                <p>Aucun devis approuvé pour le moment.</p>
+                                <p class="text-sm mt-2">Les devis approuvés apparaîtront automatiquement ici.</p>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -492,6 +576,43 @@
                                     <div>
                                         <label class="block text-sm font-medium text-gray-700 mb-2">Validité (jours)</label>
                                         <input type="number" name="quote_validity" value="30" min="1" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Section Acompte -->
+                            <div class="bg-yellow-50 p-4 rounded-lg border border-yellow-200">
+                                <h3 class="text-sm font-semibold text-yellow-800 mb-3">Acompte</h3>
+                                <div class="space-y-3">
+                                    <div>
+                                        <label class="flex items-center text-sm">
+                                            <input type="checkbox" id="downPaymentRequired" name="down_payment_required" class="mr-2 rounded border-yellow-300 text-yellow-600 focus:ring-yellow-500" onchange="toggleDownPaymentFields()">
+                                            <span class="text-yellow-700">Demander un acompte</span>
+                                        </label>
+                                    </div>
+                                    <div id="downPaymentFields" class="space-y-3" style="display: none;">
+                                        <div class="grid grid-cols-2 gap-3">
+                                            <div>
+                                                <label class="block text-xs font-medium text-yellow-700 mb-1">Type</label>
+                                                <select id="downPaymentType" name="down_payment_type" class="w-full px-2 py-1 text-sm border border-yellow-300 rounded focus:ring-1 focus:ring-yellow-500 bg-white" onchange="calculateDownPayment()">
+                                                    <option value="percentage">Pourcentage</option>
+                                                    <option value="fixed">Montant fixe</option>
+                                                </select>
+                                            </div>
+                                            <div>
+                                                <label class="block text-xs font-medium text-yellow-700 mb-1">Valeur</label>
+                                                <div class="flex">
+                                                    <input type="number" id="downPaymentValue" name="down_payment_value" min="0" step="0.01" class="flex-1 px-2 py-1 text-sm border border-yellow-300 rounded-l focus:ring-1 focus:ring-yellow-500" onchange="calculateDownPayment()" oninput="calculateDownPayment()">
+                                                    <span id="downPaymentUnit" class="px-2 py-1 text-xs bg-yellow-100 border border-l-0 border-yellow-300 rounded-r text-yellow-700">%</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="bg-yellow-100 p-2 rounded text-xs">
+                                            <div class="flex justify-between">
+                                                <span class="text-yellow-700">Montant de l'acompte :</span>
+                                                <span id="downPaymentAmount" class="font-medium text-yellow-800">0,00 €</span>
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -1041,6 +1162,61 @@
             }
         }
 
+        window.approveQuote = async function(quoteId) {
+            console.log('✅ [QUOTES] Approbation du devis:', quoteId);
+            
+            try {
+                if (!window.dbService) {
+                    console.error('❌ Service de base de données non disponible');
+                    alert('Erreur - Service de base de données non disponible');
+                    return;
+                }
+                
+                // Confirmation de l'utilisateur
+                const confirmed = confirm('Êtes-vous sûr de vouloir approuver ce devis ? Il sera transféré vers la facturation.');
+                if (!confirmed) {
+                    return;
+                }
+                
+                // Récupérer les détails du devis
+                const quote = await window.dbService.getQuoteById(quoteId);
+                if (!quote) {
+                    alert('Devis non trouvé');
+                    return;
+                }
+                
+                // Mettre à jour UNIQUEMENT le statut du devis à "accepted" (approuvé)
+                console.log('🔄 [DEBUG] Données à envoyer à updateQuote:', { status: 'accepted' });
+                const updatedQuote = await window.dbService.updateQuote(quoteId, {
+                    status: 'accepted'
+                });
+                console.log('🔄 [DEBUG] Résultat updateQuote:', updatedQuote);
+                
+                if (updatedQuote) {
+                    console.log('✅ [QUOTES] Devis approuvé avec succès:', updatedQuote);
+                    
+                    // Invalider les caches et recharger les données
+                    window.invalidateQuotesCache();
+                    
+                    // Basculer automatiquement vers l'onglet facturation
+                    switchTab('invoices');
+                    
+                    // Afficher un message de succès
+                    alert('Devis approuvé avec succès ! Il a été transféré vers la facturation.');
+                    
+                    // Recharger les listes de devis et factures
+                    await loadQuotesList();
+                    await loadInvoicesList();
+                } else {
+                    alert('Erreur lors de l\'approbation du devis');
+                }
+                
+            } catch (error) {
+                console.error('❌ [QUOTES] Erreur lors de l\'approbation:', error);
+                alert('Erreur lors de l\'approbation du devis');
+            }
+        }
+
         window.generateQuotePDF = async function(quoteId) {
             console.log('📄 [QUOTES] Génération PDF pour le devis:', quoteId);
             
@@ -1060,24 +1236,301 @@
                 
                 console.log('📄 [PDF] Génération PDF à partir du devis:', quote);
                 
+                // Préparer les services/prestations dans le bon format
+                let services = [];
+                if (quote.services && Array.isArray(quote.services)) {
+                    services = quote.services;
+                } else if (quote.prestations && Array.isArray(quote.prestations)) {
+                    // Convertir les prestations au format services
+                    services = quote.prestations.map(prestation => ({
+                        description: prestation.description || prestation.service_description || '',
+                        quantity: parseInt(prestation.quantity || prestation.service_quantity || 1),
+                        price: parseFloat(prestation.price || prestation.service_price || 0)
+                    }));
+                } else {
+                    console.warn('⚠️ [PDF] Aucune prestation trouvée pour ce devis');
+                    services = [];
+                }
+                
+                console.log('📄 [PDF] Services formatés pour le PDF:', services);
+                
                 // Appeler la même fonction de génération PDF que pour les nouveaux devis
-                await generateAndDownloadPDF({
-                    clientName: quote.client_name || '',
+                await window.generateAndDownloadPDF({
+                    clientName: quote.client_name || quote.client_first_name + ' ' + quote.client_last_name || '',
                     clientEmail: quote.client_email || '',
                     clientPhone: quote.client_phone || '',
                     clientAddress: quote.client_address || '',
                     quoteDate: quote.quote_date || new Date().toISOString().split('T')[0],
-                    notes: quote.notes || '',
-                    services: quote.services || [],
-                    totalHT: quote.total_ht || 0,
-                    totalTVA: quote.total_tva || 0,
-                    totalTTC: quote.total_ttc || 0,
+                    notes: quote.notes || quote.quote_notes || '',
+                    services: services,
+                    totalHT: parseFloat(quote.total_ht || quote.subtotal_ht || 0),
+                    totalTVA: parseFloat(quote.total_tva || quote.tax_amount || 0),
+                    totalTTC: parseFloat(quote.total_ttc || 0),
                     quoteNumber: quote.quote_number || `DEV-${Date.now()}`
                 });
                 
             } catch (error) {
                 console.error('❌ [QUOTES] Erreur lors de la génération PDF:', error);
-                alert('Erreur lors de la génération du PDF');
+                console.error('❌ [QUOTES] Stack trace:', error.stack);
+                
+                // Message d'erreur plus spécifique
+                let errorMessage = 'Erreur lors de la génération du PDF';
+                if (error.message.includes('jsPDF')) {
+                    errorMessage = 'Erreur: La bibliothèque PDF n\'est pas disponible. Veuillez recharger la page.';
+                } else if (error.message.includes('services')) {
+                    errorMessage = 'Erreur: Impossible de récupérer les prestations du devis.';
+                }
+                
+                alert(errorMessage + '\n\nDétails: ' + error.message);
+            }
+        }
+
+        window.printQuote = async function(quoteId) {
+            console.log('🖨️ [QUOTES] Impression du devis:', quoteId);
+            
+            try {
+                if (!window.dbService) {
+                    console.error('❌ Service de base de données non disponible');
+                    alert('Erreur - Service de base de données non disponible');
+                    return;
+                }
+                
+                // Récupérer les détails du devis
+                const quote = await window.dbService.getQuoteById(quoteId);
+                if (!quote) {
+                    alert('Devis non trouvé');
+                    return;
+                }
+                
+                console.log('🖨️ [PRINT] Préparation de l\'impression pour le devis:', quote);
+                
+                // Préparer les services/prestations
+                let services = [];
+                if (quote.services && Array.isArray(quote.services)) {
+                    services = quote.services;
+                } else if (quote.prestations && Array.isArray(quote.prestations)) {
+                    services = quote.prestations.map(prestation => ({
+                        description: prestation.description || prestation.service_description || '',
+                        quantity: parseInt(prestation.quantity || prestation.service_quantity || 1),
+                        price: parseFloat(prestation.price || prestation.service_price || 0)
+                    }));
+                } else {
+                    services = [];
+                }
+                
+                // Calculer les totaux
+                const totalHT = parseFloat(quote.total_ht || quote.subtotal_ht || 0);
+                const totalTVA = parseFloat(quote.total_tva || quote.tax_amount || 0);
+                const totalTTC = parseFloat(quote.total_ttc || 0);
+                
+                // Créer le contenu HTML pour l'impression
+                const printContent = `
+                    <!DOCTYPE html>
+                    <html>
+                    <head>
+                        <title>Devis ${quote.quote_number || ''}</title>
+                        <style>
+                            @media print {
+                                body { margin: 0; padding: 20px; }
+                                .no-print { display: none; }
+                            }
+                            body {
+                                font-family: Arial, sans-serif;
+                                line-height: 1.6;
+                                color: #333;
+                                max-width: 800px;
+                                margin: 0 auto;
+                                padding: 20px;
+                            }
+                            .header {
+                                text-align: center;
+                                margin-bottom: 30px;
+                                border-bottom: 2px solid #2563eb;
+                                padding-bottom: 20px;
+                            }
+                            .header h1 {
+                                color: #2563eb;
+                                margin: 0;
+                                font-size: 2rem;
+                            }
+                            .info-section {
+                                display: flex;
+                                justify-content: space-between;
+                                margin-bottom: 30px;
+                            }
+                            .info-block {
+                                flex: 1;
+                                margin-right: 20px;
+                            }
+                            .info-block:last-child {
+                                margin-right: 0;
+                            }
+                            .info-block h3 {
+                                color: #2563eb;
+                                margin-bottom: 10px;
+                                border-bottom: 1px solid #e5e7eb;
+                                padding-bottom: 5px;
+                            }
+                            .services-table {
+                                width: 100%;
+                                border-collapse: collapse;
+                                margin-bottom: 30px;
+                            }
+                            .services-table th,
+                            .services-table td {
+                                border: 1px solid #e5e7eb;
+                                padding: 12px;
+                                text-align: left;
+                            }
+                            .services-table th {
+                                background-color: #f3f4f6;
+                                font-weight: bold;
+                                color: #374151;
+                            }
+                            .services-table .price {
+                                text-align: right;
+                            }
+                            .totals {
+                                margin-left: auto;
+                                width: 300px;
+                                border: 1px solid #e5e7eb;
+                                border-radius: 8px;
+                                overflow: hidden;
+                            }
+                            .totals tr:last-child {
+                                background-color: #2563eb;
+                                color: white;
+                                font-weight: bold;
+                            }
+                            .notes {
+                                margin-top: 30px;
+                                padding: 20px;
+                                background-color: #f9fafb;
+                                border-radius: 8px;
+                                border-left: 4px solid #2563eb;
+                            }
+                            .print-button {
+                                background-color: #2563eb;
+                                color: white;
+                                border: none;
+                                padding: 10px 20px;
+                                border-radius: 4px;
+                                cursor: pointer;
+                                margin: 20px 0;
+                            }
+                            .print-button:hover {
+                                background-color: #1d4ed8;
+                            }
+                        </style>
+                    </head>
+                    <body>
+                        <div class="no-print">
+                            <button class="print-button" onclick="window.print()">🖨️ Imprimer</button>
+                            <button class="print-button" onclick="window.close()" style="background-color: #6b7280;">Fermer</button>
+                        </div>
+                        
+                        <div class="header">
+                            <h1>DEVIS</h1>
+                            <p>N° ${quote.quote_number || 'N/A'}</p>
+                            <p>Date: ${new Date(quote.quote_date || quote.created_at).toLocaleDateString('fr-FR')}</p>
+                        </div>
+                        
+                        <div class="info-section">
+                            <div class="info-block">
+                                <h3>Client</h3>
+                                <p><strong>${quote.client_name || ''}</strong></p>
+                                <p>${quote.client_email || ''}</p>
+                                <p>${quote.client_phone || ''}</p>
+                                <p>${quote.client_address || ''}</p>
+                            </div>
+                            
+                            <div class="info-block">
+                                <h3>Prestations</h3>
+                                ${services.length === 0 ? '<p>Aucune prestation spécifiée</p>' : ''}
+                            </div>
+                        </div>
+                        
+                        ${services.length > 0 ? `
+                        <table class="services-table">
+                            <thead>
+                                <tr>
+                                    <th>Description</th>
+                                    <th>Quantité</th>
+                                    <th>Prix unitaire</th>
+                                    <th>Total</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${services.map(service => `
+                                    <tr>
+                                        <td>${service.description || ''}</td>
+                                        <td>${service.quantity || 1}</td>
+                                        <td class="price">${(service.price || 0).toFixed(2)}€</td>
+                                        <td class="price">${((service.quantity || 1) * (service.price || 0)).toFixed(2)}€</td>
+                                    </tr>
+                                `).join('')}
+                            </tbody>
+                        </table>
+                        ` : ''}
+                        
+                        <table class="totals">
+                            <tr>
+                                <td><strong>Total HT:</strong></td>
+                                <td class="price"><strong>${totalHT.toFixed(2)}€</strong></td>
+                            </tr>
+                            <tr>
+                                <td><strong>TVA (20%):</strong></td>
+                                <td class="price"><strong>${totalTVA.toFixed(2)}€</strong></td>
+                            </tr>
+                            <tr>
+                                <td><strong>Total TTC:</strong></td>
+                                <td class="price"><strong>${totalTTC.toFixed(2)}€</strong></td>
+                            </tr>
+                        </table>
+                        
+                        ${quote.down_payment_required ? `
+                        <div style="margin-top: 20px; padding: 15px; background-color: #fef3c7; border-left: 4px solid #f59e0b; border-radius: 4px;">
+                            <h3 style="color: #92400e; margin: 0 0 10px 0;">Acompte requis</h3>
+                            <div style="display: flex; justify-content: space-between; align-items: center;">
+                                <span style="color: #92400e;">
+                                    ${quote.down_payment_type === 'percentage' ? 
+                                        `Acompte (${quote.down_payment_value}% du total) :` : 
+                                        'Acompte (montant fixe) :'
+                                    }
+                                </span>
+                                <span style="font-weight: bold; color: #92400e; font-size: 1.1em;">
+                                    ${(quote.down_payment_amount || 0).toFixed(2)}€
+                                </span>
+                            </div>
+                        </div>
+                        ` : ''}
+                        
+                        ${quote.notes ? `
+                        <div class="notes">
+                            <h3>Notes:</h3>
+                            <p>${quote.notes.replace(/\n/g, '<br>')}</p>
+                        </div>
+                        ` : ''}
+                    </body>
+                    </html>
+                `;
+                
+                // Ouvrir une nouvelle fenêtre pour l'impression
+                const printWindow = window.open('', '_blank', 'width=800,height=600');
+                printWindow.document.write(printContent);
+                printWindow.document.close();
+                
+                // Attendre que le contenu soit chargé puis lancer l'impression
+                printWindow.onload = function() {
+                    setTimeout(() => {
+                        printWindow.focus();
+                        printWindow.print();
+                    }, 500);
+                };
+                
+            } catch (error) {
+                console.error('❌ [QUOTES] Erreur lors de l\'impression:', error);
+                alert('Erreur lors de la préparation de l\'impression:\n' + error.message);
             }
         }
 
@@ -1106,6 +1559,9 @@
                 
                 // Recharger la liste (avec await pour s'assurer que c'est terminé)
                 if (typeof window.loadQuotesList === 'function') {
+                    // Invalider les caches et recharger
+                    window.invalidateQuotesCache();
+                    window.invalidateClientsCache();
                     await window.loadQuotesList();
                 } else {
                     console.warn('⚠️ [DELETE] loadQuotesList non disponible');
@@ -1117,111 +1573,148 @@
             }
         }
 
-        // ✨ FONCTION MISE À JOUR COMPTEUR DEVIS
+        // ✨ FONCTION MISE À JOUR STATISTIQUES COMPLÈTES DU TABLEAU DE BORD
         window.updateQuotesCount = async function() {
             try {
                 if (!window.dbService) {
-                    console.error('❌ [COUNT] Service de base de données non disponible');
+                    console.error('❌ [STATS] Service de base de données non disponible');
                     return;
                 }
                 
                 const quotes = await window.dbService.getQuotes();
-                const count = quotes ? quotes.length : 0;
                 
-                // Mettre à jour le compteur dans l'onglet Devis (sidebar)
-                const quotesCountElement = document.getElementById('quotesCount');
-                if (quotesCountElement) {
-                    quotesCountElement.textContent = count;
-                    console.log(`📊 [COUNT] Compteur onglet Devis mis à jour: ${count}`);
-                }
+                // Calculer les statistiques
+                const stats = calculateDashboardStats(quotes);
                 
-                // ✨ Mettre à jour le compteur dans le tableau de bord
-                const totalQuotesElement = document.getElementById('totalQuotes');
-                if (totalQuotesElement) {
-                    totalQuotesElement.textContent = count;
-                    console.log(`📊 [COUNT] Compteur tableau de bord mis à jour: ${count}`);
-                }
+                // Mettre à jour les compteurs dans l'interface
+                updateDashboardElements(stats);
                 
-                console.log(`📊 [COUNT] Compteurs mis à jour: ${count} devis`);
+                console.log(`📊 [STATS] Statistiques mises à jour:`, stats);
             } catch (error) {
-                console.error('❌ [COUNT] Erreur mise à jour compteur:', error);
+                console.error('❌ [STATS] Erreur mise à jour statistiques:', error);
             }
         };
-
-        window.loadQuotesList = async function() {
-            console.log('📋 [QUOTES] Chargement de la liste des devis...');
-            
-            try {
-                if (!window.dbService) {
-                    console.error('❌ [QUOTES] Service de base de données non disponible');
-                    return;
-                }
-                
-                const quotes = await window.dbService.getQuotes();
-                console.log('📋 [QUOTES] Devis récupérés:', quotes);
-                
-                // ✅ Correction: utiliser le bon ID du container
-                const container = document.getElementById('quotesList');
-                if (!container) {
-                    console.error('❌ [QUOTES] Container quotesList non trouvé');
-                    return;
-                }
-                
-                if (!quotes || quotes.length === 0) {
-                    container.innerHTML = `
-                        <div class="text-center py-8">
-                            <p class="text-gray-500">Aucun devis trouvé</p>
-                        </div>
-                    `;
-                    // ✨ Mise à jour du compteur même quand il n'y a pas de devis
-                    await window.updateQuotesCount();
-                    return;
-                }
-                
-                container.innerHTML = quotes.map(quote => `
-                    <div class="bg-white rounded-lg shadow-md p-6 border border-gray-200">
-                        <div class="flex justify-between items-start mb-4">
-                            <div>
-                                <h3 class="text-lg font-semibold text-gray-900">${quote.quote_number || 'N/A'}</h3>
-                                <p class="text-gray-600">${quote.client_name || 'N/A'}</p>
-                            </div>
-                            <div class="text-right">
-                                <p class="text-lg font-semibold text-gray-900">${(quote.total_ttc || 0).toFixed(2)} €</p>
-                                <p class="text-sm text-gray-500">${quote.quote_date || 'N/A'}</p>
-                            </div>
-                        </div>
-                        
-                        <div class="flex justify-end space-x-2 pt-4 border-t border-gray-100">
-                            <button onclick="editQuote('${quote.id}')" class="px-3 py-1 text-sm text-blue-600 hover:text-blue-800 hover:bg-blue-50 rounded">
-                                Modifier
-                            </button>
-                            <button onclick="deleteQuote('${quote.id}')" class="px-3 py-1 text-sm text-red-600 hover:text-red-800 hover:bg-red-50 rounded">
-                                Supprimer
-                            </button>
-                            <button onclick="generateQuotePDF('${quote.id}')" class="px-3 py-1 text-sm text-green-600 hover:text-green-800 hover:bg-green-50 rounded">
-                                PDF
-                            </button>
-                        </div>
-                    </div>
-                `).join('');
-                
-                console.log(`✅ [QUOTES] ${quotes.length} devis affichés`);
-                
-                // ✨ Mise à jour du compteur
-                await window.updateQuotesCount();
-                
-            } catch (error) {
-                console.error('❌ [QUOTES] Erreur lors du chargement des devis:', error);
-                // ✅ Correction: utiliser le bon ID du container
-                const container = document.getElementById('quotesList');
-                if (container) {
-                    container.innerHTML = `
-                        <div class="text-center py-8">
-                            <p class="text-red-500">Erreur lors du chargement des devis</p>
-                        </div>
-                    `;
-                }
+        
+        // Fonction pour calculer toutes les statistiques
+        function calculateDashboardStats(quotes) {
+            if (!quotes || quotes.length === 0) {
+                return {
+                    totalQuotes: 0,
+                    totalClients: 0,
+                    totalQuotesAmount: 0,
+                    signedQuotesCount: 0,
+                    totalSignedAmount: 0,
+                    totalInvoices: 0
+                };
             }
+            
+            // Filtrer les devis non approuvés pour les statistiques de devis
+            const nonApprovedQuotes = quotes.filter(quote => quote.status !== 'accepted');
+            
+            // Calculer le nombre total de devis (non approuvés)
+            const totalQuotes = nonApprovedQuotes.length;
+            
+            // Calculer le nombre de clients uniques (sur tous les devis)
+            const clientsSet = new Set();
+            quotes.forEach(quote => {
+                if (quote.client_email || quote.client_name) {
+                    const clientKey = quote.client_email || quote.client_name;
+                    clientsSet.add(clientKey);
+                }
+            });
+            const totalClients = clientsSet.size;
+            
+            // Calculer le montant total des devis (non approuvés)
+            const totalQuotesAmount = nonApprovedQuotes.reduce((total, quote) => {
+                const amount = parseFloat(quote.total_ttc || 0);
+                return total + amount;
+            }, 0);
+            
+            // Calculer le montant des devis signés (status = 'accepted' ou 'signed', non approuvés)
+            const signedQuotes = nonApprovedQuotes.filter(quote => 
+                quote.status === 'accepted' || quote.status === 'signed'
+            );
+            const signedQuotesCount = signedQuotes.length;
+            const totalSignedAmount = signedQuotes.reduce((total, quote) => {
+                const amount = parseFloat(quote.total_ttc || 0);
+                return total + amount;
+            }, 0);
+            
+            // Calculer le nombre de factures (devis acceptés/approuvés)
+            const approvedQuotes = quotes.filter(quote => quote.status === 'accepted');
+            const totalInvoices = approvedQuotes.length;
+            
+            return {
+                totalQuotes,
+                totalClients,
+                totalQuotesAmount,
+                signedQuotesCount,
+                totalSignedAmount,
+                totalInvoices
+            };
+        }
+        
+        // Fonction pour mettre à jour les éléments du DOM
+        function updateDashboardElements(stats) {
+            // Nombre de clients
+            const totalClientsElement = document.getElementById('totalClients');
+            if (totalClientsElement) {
+                totalClientsElement.textContent = stats.totalClients;
+            }
+            
+            // Nombre total de devis
+            const totalQuotesElement = document.getElementById('totalQuotes');
+            if (totalQuotesElement) {
+                totalQuotesElement.textContent = stats.totalQuotes;
+            }
+            
+            // Mettre à jour le compteur dans l'onglet Devis (sidebar)
+            const quotesCountElement = document.getElementById('quotesCount');
+            if (quotesCountElement) {
+                quotesCountElement.textContent = stats.totalQuotes;
+            }
+
+            // Mettre à jour le compteur dans l'onglet Clients (sidebar)
+            const clientsCountElement = document.getElementById('clientsCount');
+            if (clientsCountElement) {
+                clientsCountElement.textContent = stats.totalClients;
+            }
+
+            // Mettre à jour le compteur dans l'onglet Facturation (sidebar)
+            const invoicesCountElement = document.getElementById('invoicesCount');
+            if (invoicesCountElement) {
+                invoicesCountElement.textContent = stats.totalInvoices;
+            }
+            
+            // Montant total des devis
+            const totalQuotesAmountElement = document.getElementById('totalQuotesAmount');
+            if (totalQuotesAmountElement) {
+                totalQuotesAmountElement.textContent = formatCurrency(stats.totalQuotesAmount);
+            }
+            
+            // Montant des devis signés (chiffre d'affaires)
+            const totalSignedAmountElement = document.getElementById('totalSignedAmount');
+            if (totalSignedAmountElement) {
+                totalSignedAmountElement.textContent = formatCurrency(stats.totalSignedAmount);
+            }
+            
+            // Nombre de devis signés
+            const signedQuotesCountElement = document.getElementById('signedQuotesCount');
+            if (signedQuotesCountElement) {
+                signedQuotesCountElement.textContent = stats.signedQuotesCount;
+            }
+            
+            console.log(`📊 [STATS] Compteurs mis à jour: ${stats.totalQuotes} devis, ${stats.totalClients} clients`);
+            console.log(`💰 [STATS] Montants: ${formatCurrency(stats.totalQuotesAmount)} total, ${formatCurrency(stats.totalSignedAmount)} signé`);
+        }
+        
+        // Fonction utilitaire pour formater les montants en euros
+        function formatCurrency(amount) {
+            return new Intl.NumberFormat('fr-FR', {
+                style: 'decimal',
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2
+            }).format(amount) + ' €';
         }
         
         // === FIN DÉFINITIONS FONCTIONS GLOBALES ===
@@ -1237,6 +1730,17 @@
                 setTimeout(async () => {
                     console.log('🔄 [INIT] Chargement des données initiales...');
                     
+                    // Pré-afficher un état de chargement dans l'onglet devis
+                    const quotesListContainer = document.getElementById('quotesList');
+                    if (quotesListContainer) {
+                        quotesListContainer.innerHTML = `
+                            <div class="flex items-center justify-center py-8 text-gray-500">
+                                <div class="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600 mr-3"></div>
+                                <span>Chargement des devis...</span>
+                            </div>
+                        `;
+                    }
+                    
                     // Initialiser le compteur dès que possible
                     try {
                         await window.updateQuotesCount();
@@ -1250,10 +1754,14 @@
                     try {
                         await window.loadQuotesList();
                         console.log('✅ [INIT] Données des devis chargées');
+                        
+                        // Charger également les clients en cache pour éviter le délai lors du changement d'onglet
+                        await window.loadClients();
+                        console.log('✅ [INIT] Données des clients chargées');
                     } catch (error) {
-                        console.error('❌ [INIT] Erreur lors du chargement initial des devis:', error);
+                        console.error('❌ [INIT] Erreur lors du chargement initial des données:', error);
                     }
-                }, 1000);
+                }, 500);
                 
             } else {
                 console.error('💥 [MAIN WINDOW] Services non disponibles - Mode dégradé');
@@ -1485,62 +1993,220 @@
                 console.log('🎯 FERMETURE RADICALE TERMINÉE');
             }
 
+            // Variable pour éviter les chargements multiples simultanés
+            let isLoadingQuotes = false;
+            
+            // Cache pour les devis - chargés une seule fois au démarrage
+            let quotesCache = null;
+            let quotesHtmlCache = null;
+
+            // Cache pour les clients - chargés une seule fois au démarrage
+            let clientsCache = null;
+            let clientsHtmlCache = null;
+
             // Fonction pour charger les devis
             async function loadQuotesList() {
+                // Éviter les appels multiples simultanés
+                if (isLoadingQuotes) {
+                    console.log('⚠️ [QUOTES] Chargement déjà en cours, ignoré');
+                    return;
+                }
+                
                 console.log('📋 [QUOTES] Chargement de la liste des devis...');
+                
+                // Afficher un indicateur de chargement immédiatement
+                const quotesListContainer = document.getElementById('quotesList');
+                if (!quotesListContainer) {
+                    console.error('❌ [QUOTES] Container quotesList non trouvé');
+                    return;
+                }
+                
+                // Si les devis sont déjà en cache, les afficher immédiatement
+                if (quotesCache && quotesHtmlCache) {
+                    console.log('📋 [QUOTES] Affichage depuis le cache');
+                    quotesListContainer.style.cssText = `
+                        min-height: 200px;
+                        background-color: #f9fafb;
+                        opacity: 1;
+                        transition: none;
+                        padding: 1rem;
+                    `;
+                    quotesListContainer.innerHTML = quotesHtmlCache;
+                    return;
+                }
+                
+                isLoadingQuotes = true;
+                
+                // Vider immédiatement le container et appliquer un fond stable
+                quotesListContainer.innerHTML = '';
+                quotesListContainer.style.cssText = `
+                    min-height: 200px;
+                    background-color: #f9fafb;
+                    opacity: 1;
+                    transition: none;
+                    padding: 1rem;
+                `;
+                
+                // Affichage du spinner uniquement pour le premier chargement
+                quotesListContainer.innerHTML = `
+                    <div style="
+                        text-align: center;
+                        padding: 3rem 1rem;
+                        background-color: white;
+                        border-radius: 8px;
+                        border: 1px solid #e5e7eb;
+                        box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+                    ">
+                        <div style="
+                            width: 40px;
+                            height: 40px;
+                            border: 3px solid #f3f4f6;
+                            border-top: 3px solid #2563eb;
+                            border-radius: 50%;
+                            margin: 0 auto 1rem auto;
+                            animation: spin 1s linear infinite;
+                        "></div>
+                        <p style="color: #6b7280; font-size: 14px;">Chargement initial des devis...</p>
+                    </div>
+                `;
                 
                 try {
                     if (!window.dbService) {
                         console.error('❌ [QUOTES] Service de base de données non disponible');
-                        return;
-                    }
-                    
-                    const quotes = await window.dbService.getQuotes();
-                    console.log('📋 [QUOTES] Devis récupérés:', quotes);
-                    
-                    const quotesListContainer = document.getElementById('quotesList');
-                    if (!quotesListContainer) {
-                        console.error('❌ [QUOTES] Container quotesList non trouvé');
-                        return;
-                    }
-                    
-                    if (!quotes || quotes.length === 0) {
                         quotesListContainer.innerHTML = `
-                            <div class="text-center py-8 text-gray-500">
-                                <p>Aucun devis créé pour le moment.</p>
+                            <div style="text-align: center; padding: 3rem; background-color: white; border-radius: 8px; border: 1px solid #fecaca;">
+                                <p style="color: #dc2626;">Service de base de données non disponible.</p>
                             </div>
                         `;
+                        isLoadingQuotes = false;
                         return;
                     }
                     
-                    // Générer le HTML des devis
-                    const quotesHTML = quotes.map(quote => {
+                    // Attendre un minimum pour éviter le flash
+                    await new Promise(resolve => setTimeout(resolve, 800));
+                    
+                    const allQuotes = await window.dbService.getQuotes();
+                    // Filtrer pour exclure les devis acceptés (qui sont maintenant des factures)
+                    const quotes = allQuotes.filter(quote => quote.status !== 'accepted');
+                    console.log('📋 [QUOTES] Devis récupérés (non acceptés):', quotes);
+                    console.log('📋 [QUOTES] Total devis:', allQuotes.length, 'Non acceptés:', quotes.length);
+                    
+                    if (!quotes || quotes.length === 0) {
+                        const emptyHtml = `
+                            <div style="
+                                text-align: center;
+                                padding: 3rem;
+                                background-color: white;
+                                border-radius: 8px;
+                                border: 1px solid #e5e7eb;
+                                box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+                            ">
+                                <p style="color: #6b7280; font-size: 16px; margin-bottom: 0.5rem;">Aucun devis créé pour le moment.</p>
+                                <p style="color: #9ca3af; font-size: 14px;">Cliquez sur "Nouveau Devis" pour commencer.</p>
+                            </div>
+                        `;
+                        
+                        // Mettre en cache
+                        quotesCache = [];
+                        quotesHtmlCache = emptyHtml;
+                        
+                        quotesListContainer.innerHTML = emptyHtml;
+                        isLoadingQuotes = false;
+                        return;
+                    }
+                    
+                    // Mettre les devis en cache
+                    quotesCache = quotes;
+                    
+                    // Générer le HTML des devis avec des styles inline complets pour éviter tous les problèmes CSS
+                    const quotesHTML = quotesCache.map(quote => {
                         const date = new Date(quote.quote_date || quote.created_at).toLocaleDateString('fr-FR');
-                        const status = quote.status || 'draft';
-                        const statusColor = status === 'sent' ? 'bg-blue-100 text-blue-800' : 
-                                          status === 'accepted' ? 'bg-green-100 text-green-800' : 
-                                          status === 'rejected' ? 'bg-red-100 text-red-800' :
-                                          'bg-gray-100 text-gray-800';
                         
                         return `
-                            <div class="border border-gray-200 rounded-lg p-3 hover:bg-gray-50 transition-colors">
-                                <div class="flex items-center justify-between">
-                                    <div class="flex-1">
-                                        <div>
-                                            <h4 class="font-medium text-gray-900">${quote.client_name || quote.client_email || 'Client non spécifié'}</h4>
-                                        </div>
-                                        <div class="text-sm text-gray-500 mt-1">
+                            <div style="
+                                border: 1px solid #e5e7eb;
+                                border-radius: 8px;
+                                padding: 1rem;
+                                background-color: white;
+                                box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+                                margin-bottom: 0.75rem;
+                                transition: background-color 0.2s ease;
+                            " onmouseover="this.style.backgroundColor='#f9fafb'" onmouseout="this.style.backgroundColor='white'">
+                                <div style="display: flex; align-items: center; justify-content: space-between;">
+                                    <div style="flex: 1;">
+                                        <h4 style="
+                                            font-weight: 500;
+                                            color: #111827;
+                                            margin: 0 0 0.5rem 0;
+                                            font-size: 16px;
+                                        ">${quote.client_name || quote.client_email || 'Client non spécifié'}</h4>
+                                        <div style="
+                                            font-size: 14px;
+                                            color: #6b7280;
+                                            margin: 0;
+                                        ">
                                             ${quote.quote_number || 'N/A'} • ${date} • ${quote.total_ttc || quote.subtotal_ht || 0}€ TTC
                                         </div>
                                     </div>
-                                    <div class="flex items-center gap-2">
-                                        <button onclick="editQuote('${quote.id}')" class="px-3 py-1 text-sm text-blue-600 hover:text-blue-800 hover:bg-blue-50 rounded">
+                                    <div style="display: flex; gap: 0.5rem;">
+                                        <button onclick="editQuote('${quote.id}')" style="
+                                            padding: 0.5rem 0.75rem;
+                                            font-size: 12px;
+                                            color: #2563eb;
+                                            background-color: white;
+                                            border: 1px solid #dbeafe;
+                                            border-radius: 4px;
+                                            cursor: pointer;
+                                            transition: all 0.2s ease;
+                                        " onmouseover="this.style.backgroundColor='#eff6ff'; this.style.color='#1d4ed8';" onmouseout="this.style.backgroundColor='white'; this.style.color='#2563eb';">
                                             Modifier
                                         </button>
-                                        <button onclick="generateQuotePDF('${quote.id}')" class="px-3 py-1 text-sm text-green-600 hover:text-green-800 hover:bg-green-50 rounded">
+                                        <button onclick="approveQuote('${quote.id}')" style="
+                                            padding: 0.5rem 0.75rem;
+                                            font-size: 12px;
+                                            color: #f59e0b;
+                                            background-color: white;
+                                            border: 1px solid #fef3c7;
+                                            border-radius: 4px;
+                                            cursor: pointer;
+                                            transition: all 0.2s ease;
+                                        " onmouseover="this.style.backgroundColor='#fffbeb'; this.style.color='#d97706';" onmouseout="this.style.backgroundColor='white'; this.style.color='#f59e0b';">
+                                            Approuvé
+                                        </button>
+                                        <button onclick="printQuote('${quote.id}')" style="
+                                            padding: 0.5rem 0.75rem;
+                                            font-size: 12px;
+                                            color: #7c3aed;
+                                            background-color: white;
+                                            border: 1px solid #e9d5ff;
+                                            border-radius: 4px;
+                                            cursor: pointer;
+                                            transition: all 0.2s ease;
+                                        " onmouseover="this.style.backgroundColor='#f3e8ff'; this.style.color='#6d28d9';" onmouseout="this.style.backgroundColor='white'; this.style.color='#7c3aed';">
+                                            Imprimer
+                                        </button>
+                                        <button onclick="generateQuotePDF('${quote.id}')" style="
+                                            padding: 0.5rem 0.75rem;
+                                            font-size: 12px;
+                                            color: #059669;
+                                            background-color: white;
+                                            border: 1px solid #d1fae5;
+                                            border-radius: 4px;
+                                            cursor: pointer;
+                                            transition: all 0.2s ease;
+                                        " onmouseover="this.style.backgroundColor='#ecfdf5'; this.style.color='#047857';" onmouseout="this.style.backgroundColor='white'; this.style.color='#059669';">
                                             PDF
                                         </button>
-                                        <button onclick="deleteQuote('${quote.id}')" class="px-3 py-1 text-sm text-red-600 hover:text-red-800 hover:bg-red-50 rounded">
+                                        <button onclick="deleteQuote('${quote.id}')" style="
+                                            padding: 0.5rem 0.75rem;
+                                            font-size: 12px;
+                                            color: #dc2626;
+                                            background-color: white;
+                                            border: 1px solid #fecaca;
+                                            border-radius: 4px;
+                                            cursor: pointer;
+                                            transition: all 0.2s ease;
+                                        " onmouseover="this.style.backgroundColor='#fef2f2'; this.style.color='#b91c1c';" onmouseout="this.style.backgroundColor='white'; this.style.color='#dc2626';">
                                             Supprimer
                                         </button>
                                     </div>
@@ -1549,21 +2215,155 @@
                         `;
                     }).join('');
                     
-                    quotesListContainer.innerHTML = quotesHTML;
-                    console.log(`✅ [QUOTES] ${quotes.length} devis affichés`);
+                    // Mettre le HTML en cache
+                    quotesHtmlCache = `<div style="padding: 0;">${quotesHTML}</div>`;
+                    
+                    // Affichage final
+                    quotesListContainer.innerHTML = quotesHtmlCache;
+                    console.log(`✅ [QUOTES] ${quotesCache.length} devis chargés et mis en cache`);
                     
                 } catch (error) {
                     console.error('❌ [QUOTES] Erreur lors du chargement des devis:', error);
-                    const quotesListContainer = document.getElementById('quotesList');
-                    if (quotesListContainer) {
-                        quotesListContainer.innerHTML = `
-                            <div class="text-center py-8 text-red-500">
-                                <p>Erreur lors du chargement des devis.</p>
-                            </div>
-                        `;
-                    }
+                    quotesListContainer.innerHTML = `
+                        <div style="text-align: center; padding: 3rem; background-color: white; border-radius: 8px; border: 1px solid #fecaca;">
+                            <p style="color: #dc2626; margin-bottom: 0.5rem;">Erreur lors du chargement des devis.</p>
+                            <p style="color: #9ca3af; font-size: 14px;">Veuillez réessayer dans quelques instants.</p>
+                        </div>
+                    `;
+                } finally {
+                    // Réinitialiser le flag de chargement
+                    isLoadingQuotes = false;
                 }
             }
+            
+            // Fonction pour invalider le cache des devis (appelée après création/modification/suppression)
+            function invalidateQuotesCache() {
+                console.log('🔄 [QUOTES] Invalidation du cache des devis');
+                quotesCache = null;
+                quotesHtmlCache = null;
+                isLoadingQuotes = false;
+            }
+            
+            // Fonction pour invalider le cache des clients (appelée après création/modification/suppression de devis)
+            function invalidateClientsCache() {
+                console.log('🔄 [CLIENTS] Invalidation du cache des clients');
+                clientsCache = null;
+                clientsHtmlCache = null;
+            }
+            
+            // Exposer les fonctions globalement
+            window.invalidateQuotesCache = invalidateQuotesCache;
+            window.invalidateClientsCache = invalidateClientsCache;
+            window.loadQuotesList = loadQuotesList;
+
+            // Fonction pour charger les factures (devis approuvés)
+            async function loadInvoicesList() {
+                console.log('💰 [INVOICES] Chargement de la liste des factures...');
+                
+                const invoicesListContainer = document.getElementById('invoicesList');
+                if (!invoicesListContainer) {
+                    console.error('❌ [INVOICES] Container invoicesList non trouvé');
+                    return;
+                }
+                
+                try {
+                    // Récupérer tous les devis approuvés/acceptés
+                    const quotes = await window.dbService.getQuotes();
+                    const approvedQuotes = quotes.filter(quote => quote.status === 'accepted');
+                    
+                    console.log('💰 [INVOICES] Factures trouvées:', approvedQuotes.length);
+                    
+                    if (approvedQuotes.length === 0) {
+                        invoicesListContainer.innerHTML = `
+                            <div class="text-center py-8 text-gray-500">
+                                <p>Aucun devis approuvé pour le moment.</p>
+                                <p class="text-sm mt-2">Les devis approuvés apparaîtront automatiquement ici.</p>
+                            </div>
+                        `;
+                        return;
+                    }
+                    
+                    // Générer le HTML pour les factures
+                    const invoicesHTML = approvedQuotes.map(quote => {
+                        const date = new Date(quote.quote_date || quote.created_at).toLocaleDateString('fr-FR');
+                        return `
+                            <div style="
+                                border: 1px solid #e5e7eb;
+                                border-radius: 8px;
+                                padding: 1rem;
+                                background-color: white;
+                                margin-bottom: 0.5rem;
+                                transition: all 0.2s ease;
+                                cursor: pointer;
+                            " onmouseover="this.style.backgroundColor='#f9fafb'" onmouseout="this.style.backgroundColor='white'">
+                                <div style="display: flex; align-items: center; justify-content: space-between;">
+                                    <div style="flex: 1;">
+                                        <h4 style="
+                                            font-weight: 500;
+                                            color: #111827;
+                                            margin: 0 0 0.5rem 0;
+                                            font-size: 16px;
+                                        ">${quote.client_name || quote.client_email || 'Client non spécifié'}</h4>
+                                        <div style="
+                                            font-size: 14px;
+                                            color: #6b7280;
+                                            margin: 0;
+                                        ">
+                                            ${quote.quote_number || 'N/A'} • ${date} • ${quote.total_ttc || quote.subtotal_ht || 0}€ TTC
+                                        </div>
+                                        <div style="
+                                            font-size: 12px;
+                                            color: #059669;
+                                            margin: 0.25rem 0 0 0;
+                                            font-weight: 500;
+                                        ">✅ Approuvé</div>
+                                    </div>
+                                    <div style="display: flex; gap: 0.5rem;">
+                                        <button onclick="printQuote('${quote.id}')" style="
+                                            padding: 0.5rem 0.75rem;
+                                            font-size: 12px;
+                                            color: #7c3aed;
+                                            background-color: white;
+                                            border: 1px solid #e9d5ff;
+                                            border-radius: 4px;
+                                            cursor: pointer;
+                                            transition: all 0.2s ease;
+                                        " onmouseover="this.style.backgroundColor='#f3e8ff'; this.style.color='#6d28d9';" onmouseout="this.style.backgroundColor='white'; this.style.color='#7c3aed';">
+                                            Imprimer
+                                        </button>
+                                        <button onclick="generateQuotePDF('${quote.id}')" style="
+                                            padding: 0.5rem 0.75rem;
+                                            font-size: 12px;
+                                            color: #059669;
+                                            background-color: white;
+                                            border: 1px solid #d1fae5;
+                                            border-radius: 4px;
+                                            cursor: pointer;
+                                            transition: all 0.2s ease;
+                                        " onmouseover="this.style.backgroundColor='#ecfdf5'; this.style.color='#047857';" onmouseout="this.style.backgroundColor='white'; this.style.color='#059669';">
+                                            Facture PDF
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        `;
+                    }).join('');
+                    
+                    invoicesListContainer.innerHTML = invoicesHTML;
+                    console.log('✅ [INVOICES] Liste des factures mise à jour');
+                    
+                } catch (error) {
+                    console.error('❌ [INVOICES] Erreur lors du chargement:', error);
+                    invoicesListContainer.innerHTML = `
+                        <div class="text-center py-8 text-red-500">
+                            <p>Erreur lors du chargement des factures</p>
+                        </div>
+                    `;
+                }
+            }
+            
+            // Exposer la fonction loadInvoicesList globalement
+            window.loadInvoicesList = loadInvoicesList;
 
             // Fonction pour ajouter une prestation dans le formulaire
             function addService(description = '', quantity = 1, unitPrice = 0) {
@@ -2064,13 +2864,20 @@
                 // NETTOYAGE SUPPLÉMENTAIRE après activation des onglets
                 setTimeout(() => removeAllGhostButtonsDefinitively(), 100);
                 
-                // Charger les données spécifiques à l'onglet
-                if (tabName === 'quotes') {
-                    loadQuotesList();
-                } else if (tabName === 'clients') {
-                    loadClients();
-                }
+                // Charger les données spécifiques à l'onglet avec un délai pour s'assurer que l'affichage est stable
+                setTimeout(() => {
+                    if (tabName === 'quotes') {
+                        loadQuotesList();
+                    } else if (tabName === 'clients') {
+                        loadClients();
+                    } else if (tabName === 'invoices') {
+                        loadInvoicesList();
+                    }
+                }, 150);
             }
+            
+            // Exposer switchTab globalement pour utilisation dans onclick
+            window.switchTab = switchTab;
             
             // Setup tab navigation
             document.querySelectorAll('.sidebar-item').forEach(item => {
@@ -2630,7 +3437,7 @@
                 console.log('🔍 Boutons Enregistrer trouvés:', {saveQuoteBtnFullPage, saveQuoteBtnMain});
                 
                 // Fonction utilitaire pour attendre que jsPDF soit chargé (version simplifiée)
-                function waitForJsPDF(maxRetries = 5, delay = 200) {
+                window.waitForJsPDF = function(maxRetries = 5, delay = 200) {
                     return new Promise((resolve, reject) => {
                         let retries = 0;
                         
@@ -2730,6 +3537,17 @@
                     try {
                         console.log('👥 [CLIENTS] Chargement de la liste des clients...');
                         
+                        // Si les clients sont déjà en cache, les afficher immédiatement
+                        if (clientsCache && clientsHtmlCache) {
+                            console.log('👥 [CLIENTS] Affichage depuis le cache');
+                            const clientsListContainer = document.getElementById('clientsList');
+                            if (clientsListContainer) {
+                                clientsListContainer.innerHTML = clientsHtmlCache;
+                            }
+                            console.log(`✅ [CLIENTS] ${clientsCache.length} clients affichés depuis le cache`);
+                            return;
+                        }
+                        
                         // Récupérer les clients depuis les devis (pour l'instant)
                         const quotes = await window.dbService.getQuotes();
                         
@@ -2762,6 +3580,9 @@
                         const clients = Array.from(clientsMap.values());
                         console.log('👥 [CLIENTS] Clients trouvés:', clients.length);
                         
+                        // Mettre en cache les clients
+                        clientsCache = clients;
+                        
                         // Afficher les clients
                         displayClients(clients);
                         
@@ -2793,8 +3614,7 @@
                         const lastQuoteDate = new Date(client.lastQuoteDate).toLocaleDateString('fr-FR');
                         
                         return `
-                            <div class="border border-gray-200 rounded-lg p-4 hover:bg-gray-50 transition-colors cursor-pointer" 
-                                 onclick="showClientDetail('${client.email || client.name}', '${client.name}', '${client.email}', '${client.phone}', '${client.quotesCount}', '${client.totalAmount}')">
+                            <div class="border border-gray-200 rounded-lg p-4 hover:bg-gray-50 transition-colors">
                                 <div class="flex items-center justify-between">
                                     <div class="flex-1">
                                         <div class="flex items-center gap-3">
@@ -2808,10 +3628,19 @@
                                         </div>
                                         ${client.phone ? `<div class="text-sm text-gray-600 mt-1">${client.phone}</div>` : ''}
                                     </div>
+                                    <div class="ml-4">
+                                        <button onclick="showClientDetail('${client.email || client.name}', '${client.name}', '${client.email}', '${client.phone}', '${client.quotesCount}', '${client.totalAmount}')" 
+                                                class="px-4 py-2 text-sm font-medium text-blue-600 bg-blue-50 border border-blue-200 rounded-lg hover:bg-blue-100 hover:text-blue-700 transition-colors">
+                                            Voir les devis associés
+                                        </button>
+                                    </div>
                                 </div>
                             </div>
                         `;
                     }).join('');
+                    
+                    // Mettre le HTML en cache
+                    clientsHtmlCache = clientsHTML;
                     
                     clientsListContainer.innerHTML = clientsHTML;
                     console.log(`✅ [CLIENTS] ${clients.length} clients affichés`);
@@ -3217,6 +4046,13 @@
                             clientAddress: formData.get('clientAddress') || '',
                             quoteDate: formData.get('quoteDate') || new Date().toISOString().split('T')[0],
                             notes: formData.get('quote_notes') || '',
+                            
+                            // Données d'acompte
+                            downPaymentRequired: formData.get('down_payment_required') === 'on',
+                            downPaymentType: formData.get('down_payment_type') || 'percentage',
+                            downPaymentValue: parseFloat(formData.get('down_payment_value')) || 0,
+                            downPaymentAmount: parseFloat(document.getElementById('downPaymentAmount')?.textContent?.replace(/[^\d,.-]/g, '').replace(',', '.')) || 0,
+                            
                             services: [],
                             createdAt: new Date().toISOString()
                         };
@@ -3430,7 +4266,7 @@
                         
                         try {
                             console.log('🔄 Tentative de génération PDF...');
-                            await generateAndDownloadPDF(quoteData);
+                            await window.generateAndDownloadPDF(quoteData);
                             pdfGenerated = true;
                             console.log('✅ PDF généré avec succès');
                         } catch (pdfError) {
@@ -3456,6 +4292,9 @@
                         // ✨ Actualisation de la liste des devis en temps réel
                         console.log('🔄 [CREATE] Actualisation de la liste des devis...');
                         try {
+                            // Invalider les caches et recharger
+                            window.invalidateQuotesCache();
+                            window.invalidateClientsCache();
                             await window.loadQuotesList();
                         } catch (listError) {
                             console.warn('⚠️ [CREATE] Erreur actualisation liste:', listError);
@@ -3626,12 +4465,12 @@
                 }
                 
                 // Fonction pour générer et télécharger le PDF (version simplifiée et robuste)
-                async function generateAndDownloadPDF(quoteData) {
+                window.generateAndDownloadPDF = async function(quoteData) {
                     try {
                         console.log('🔄 Début génération PDF...');
                         
                         // Attendre que jsPDF soit chargé avec délai réduit
-                        const jsPDFClass = await waitForJsPDF();
+                        const jsPDFClass = await window.waitForJsPDF();
                         console.log('✅ jsPDF disponible, création du document...');
                         
                         const doc = new jsPDFClass();
@@ -3667,13 +4506,21 @@
                         doc.text('PRESTATIONS:', margin, y);
                         y += 10;
                         
-                        quoteData.services.forEach((service, index) => {
-                            const total = service.quantity * service.price;
-                            doc.text(`${index + 1}. ${service.description}`, margin, y);
-                            y += 6;
-                            doc.text(`   Qté: ${service.quantity} | Prix: ${service.price.toFixed(2)}€ | Total: ${total.toFixed(2)}€`, margin, y);
+                        if (quoteData.services && quoteData.services.length > 0) {
+                            quoteData.services.forEach((service, index) => {
+                                const quantity = parseFloat(service.quantity || 1);
+                                const price = parseFloat(service.price || 0);
+                                const total = quantity * price;
+                                
+                                doc.text(`${index + 1}. ${service.description || 'Prestation sans description'}`, margin, y);
+                                y += 6;
+                                doc.text(`   Qté: ${quantity} | Prix: ${price.toFixed(2)}€ | Total: ${total.toFixed(2)}€`, margin, y);
+                                y += 8;
+                            });
+                        } else {
+                            doc.text('Aucune prestation définie', margin, y);
                             y += 8;
-                        });
+                        }
                         
                         // Totaux
                         y += 10;
@@ -3745,6 +4592,71 @@
                         totalTTCElement.textContent = totalTTC.toFixed(2) + ' €';
                         console.log('✅ [RECAP] Total TTC mis à jour');
                     }
+                    
+                    // Recalculer l'acompte si nécessaire
+                    if (typeof calculateDownPayment === 'function') {
+                        calculateDownPayment();
+                    }
+                };
+                
+                // Fonction pour afficher/masquer les champs d'acompte
+                window.toggleDownPaymentFields = function() {
+                    const checkbox = document.getElementById('downPaymentRequired');
+                    const fields = document.getElementById('downPaymentFields');
+                    
+                    if (checkbox && fields) {
+                        if (checkbox.checked) {
+                            fields.style.display = 'block';
+                            calculateDownPayment();
+                        } else {
+                            fields.style.display = 'none';
+                            document.getElementById('downPaymentAmount').textContent = '0,00 €';
+                        }
+                    }
+                };
+                
+                // Fonction pour calculer le montant de l'acompte
+                window.calculateDownPayment = function() {
+                    const typeSelect = document.getElementById('downPaymentType');
+                    const valueInput = document.getElementById('downPaymentValue');
+                    const unitSpan = document.getElementById('downPaymentUnit');
+                    const amountSpan = document.getElementById('downPaymentAmount');
+                    const checkbox = document.getElementById('downPaymentRequired');
+                    
+                    if (!typeSelect || !valueInput || !unitSpan || !amountSpan || !checkbox) {
+                        return;
+                    }
+                    
+                    // Mettre à jour l'unité affichée
+                    if (typeSelect.value === 'percentage') {
+                        unitSpan.textContent = '%';
+                        valueInput.max = '100';
+                        valueInput.step = '0.01';
+                    } else {
+                        unitSpan.textContent = '€';
+                        valueInput.max = '';
+                        valueInput.step = '0.01';
+                    }
+                    
+                    if (!checkbox.checked) {
+                        amountSpan.textContent = '0,00 €';
+                        return;
+                    }
+                    
+                    const value = parseFloat(valueInput.value) || 0;
+                    let downPaymentAmount = 0;
+                    
+                    if (typeSelect.value === 'percentage') {
+                        // Calculer le pourcentage du total TTC
+                        const totalTTCText = document.getElementById('totalTTC')?.textContent || '0,00 €';
+                        const totalTTC = parseFloat(totalTTCText.replace(/[^\d,.-]/g, '').replace(',', '.')) || 0;
+                        downPaymentAmount = (totalTTC * value) / 100;
+                    } else {
+                        // Montant fixe
+                        downPaymentAmount = value;
+                    }
+                    
+                    amountSpan.textContent = downPaymentAmount.toFixed(2) + ' €';
                 };
                 
                 // Fonction pour attacher les event listeners de récapitulatif automatique

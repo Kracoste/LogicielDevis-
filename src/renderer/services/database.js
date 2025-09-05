@@ -675,8 +675,12 @@ class DatabaseService {
 
     async updateQuote(quoteId, quoteData) {
         console.log('📝 [updateQuote] === DÉBUT MISE À JOUR DEVIS ===');
+        console.log('📊 [updateQuote] QuoteId reçu:', quoteId);
+        console.log('📊 [updateQuote] QuoteData reçu:', quoteData);
         console.log('📊 Données reçues:', JSON.stringify({
             id: quoteId,
+            quoteData: quoteData,
+            status: quoteData.status,
             clientName: quoteData.clientName,
             servicesCount: quoteData.services ? quoteData.services.length : 0,
             totalTTC: quoteData.totalTTC
@@ -702,17 +706,42 @@ class DatabaseService {
             
             // Préparer les données du devis principal
             const quoteUpdateData = {
-                client_name: quoteData.clientName || '',
-                client_email: quoteData.clientEmail || '',
-                client_phone: quoteData.clientPhone || '',
-                client_address: quoteData.clientAddress || '',
-                quote_date: quoteData.quoteDate || new Date().toISOString().split('T')[0],
-                notes: quoteData.notes || '',
-                subtotal_ht: quoteData.totalHT || 0,
-                tax_amount: quoteData.totalTVA || 0,
-                total_ttc: quoteData.totalTTC || 0,
                 updated_at: new Date().toISOString()
             };
+
+            // Ne mettre à jour que les champs qui ont des valeurs non-vides ou 0
+            if (quoteData.clientName !== undefined) {
+                quoteUpdateData.client_name = quoteData.clientName;
+            }
+            if (quoteData.clientEmail !== undefined) {
+                quoteUpdateData.client_email = quoteData.clientEmail;
+            }
+            if (quoteData.clientPhone !== undefined) {
+                quoteUpdateData.client_phone = quoteData.clientPhone;
+            }
+            if (quoteData.clientAddress !== undefined) {
+                quoteUpdateData.client_address = quoteData.clientAddress;
+            }
+            if (quoteData.quoteDate !== undefined) {
+                quoteUpdateData.quote_date = quoteData.quoteDate;
+            }
+            if (quoteData.notes !== undefined) {
+                quoteUpdateData.notes = quoteData.notes;
+            }
+            if (quoteData.totalHT !== undefined) {
+                quoteUpdateData.subtotal_ht = quoteData.totalHT;
+            }
+            if (quoteData.totalTVA !== undefined) {
+                quoteUpdateData.tax_amount = quoteData.totalTVA;
+            }
+            if (quoteData.totalTTC !== undefined) {
+                quoteUpdateData.total_ttc = quoteData.totalTTC;
+            }
+
+            // Ajouter le statut s'il est fourni
+            if (quoteData.status) {
+                quoteUpdateData.status = quoteData.status;
+            }
             
             console.log('📊 [updateQuote] Données du devis à mettre à jour:', quoteUpdateData);
             
