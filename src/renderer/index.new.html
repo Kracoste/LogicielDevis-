@@ -1496,19 +1496,15 @@
                                           'bg-gray-100 text-gray-800';
                         
                         return `
-                            <div class="border border-gray-200 rounded-lg p-4 hover:bg-gray-50 transition-colors">
+                            <div class="border border-gray-200 rounded-lg p-3 hover:bg-gray-50 transition-colors">
                                 <div class="flex items-center justify-between">
                                     <div class="flex-1">
-                                        <div class="flex items-center gap-3">
-                                            <h4 class="font-medium text-gray-900">${quote.quote_number || 'N/A'}</h4>
-                                            <span class="px-2 py-1 text-xs font-medium rounded-full ${statusColor}">
-                                                ${status === 'draft' ? 'Brouillon' : status === 'sent' ? 'Envoyé' : status === 'accepted' ? 'Accepté' : status === 'rejected' ? 'Refusé' : status}
-                                            </span>
+                                        <div>
+                                            <h4 class="font-medium text-gray-900">${quote.client_name || quote.client_email || 'Client non spécifié'}</h4>
                                         </div>
                                         <div class="text-sm text-gray-500 mt-1">
-                                            ${date} • ${quote.total_ttc || quote.subtotal_ht || 0}€ TTC
+                                            ${quote.quote_number || 'N/A'} • ${date} • ${quote.total_ttc || quote.subtotal_ht || 0}€ TTC
                                         </div>
-                                        ${quote.notes ? `<div class="text-sm text-gray-600 mt-2">${quote.notes}</div>` : ''}
                                     </div>
                                     <div class="flex items-center gap-2">
                                         <button onclick="editQuote('${quote.id}')" class="px-3 py-1 text-sm text-blue-600 hover:text-blue-800 hover:bg-blue-50 rounded">
@@ -1633,17 +1629,38 @@
                     // Informations client - DEBUG des valeurs
                     console.log('📋 [FORM] Valeurs client à charger:', {
                         client_name: quote.client_name,
+                        client_first_name: quote.client_first_name,
+                        client_last_name: quote.client_last_name,
                         client_email: quote.client_email,
                         client_phone: quote.client_phone,
-                        client_address: quote.client_address
+                        client_address: quote.client_address,
+                        notes: quote.notes
                     });
                     
-                    const clientName = form.querySelector('#clientName') || form.querySelector('input[name="clientName"]');
-                    if (clientName) {
-                        clientName.value = quote.client_name || '';
-                        console.log('📋 [FORM] Client name défini:', clientName.value);
+                    // Gérer le nom complet vs prénom/nom séparés
+                    const clientFirstName = form.querySelector('#clientFirstName') || form.querySelector('input[name="clientFirstName"]');
+                    const clientLastName = form.querySelector('#clientLastName') || form.querySelector('input[name="clientLastName"]');
+                    
+                    if (clientFirstName && clientLastName) {
+                        // Si on a les champs séparés, les utiliser
+                        clientFirstName.value = quote.client_first_name || '';
+                        clientLastName.value = quote.client_last_name || '';
+                        
+                        // Si on n'a que le nom complet, essayer de le diviser
+                        if (!quote.client_first_name && !quote.client_last_name && quote.client_name) {
+                            const nameParts = quote.client_name.trim().split(' ');
+                            if (nameParts.length >= 2) {
+                                clientFirstName.value = nameParts[0];
+                                clientLastName.value = nameParts.slice(1).join(' ');
+                            } else if (nameParts.length === 1) {
+                                clientLastName.value = nameParts[0];
+                            }
+                        }
+                        
+                        console.log('📋 [FORM] Prénom défini:', clientFirstName.value);
+                        console.log('📋 [FORM] Nom défini:', clientLastName.value);
                     } else {
-                        console.warn('⚠️ [FORM] Champ clientName non trouvé');
+                        console.warn('⚠️ [FORM] Champs clientFirstName/clientLastName non trouvés');
                     }
                     
                     const clientEmail = form.querySelector('#clientEmail') || form.querySelector('input[name="clientEmail"]');
@@ -1670,21 +1687,21 @@
                         console.warn('⚠️ [FORM] Champ clientAddress non trouvé');
                     }
                     
+                    // Notes - IMPORTANT : utiliser le bon nom de champ
+                    const quoteNotes = form.querySelector('textarea[name="quote_notes"]');
+                    if (quoteNotes) {
+                        quoteNotes.value = quote.notes || '';
+                        console.log('📋 [FORM] Notes définies:', quoteNotes.value);
+                    } else {
+                        console.warn('⚠️ [FORM] Champ quote_notes non trouvé');
+                    }
+                    
                     // Date
                     const quoteDate = form.querySelector('#quoteDate') || form.querySelector('input[name="quoteDate"]');
                     if (quoteDate && quote.quote_date) {
                         const date = new Date(quote.quote_date);
                         quoteDate.value = date.toISOString().split('T')[0];
                         console.log('📋 [FORM] Date définie:', quoteDate.value);
-                    }
-                    
-                    // Notes - CORRECTION du sélecteur
-                    const notes = form.querySelector('textarea[name="quote_notes"]');
-                    if (notes) {
-                        notes.value = quote.notes || '';
-                        console.log('📋 [FORM] Notes définies:', notes.value);
-                    } else {
-                        console.warn('⚠️ [FORM] Champ notes non trouvé');
                     }
                     
                     // OPTIMISATION - Utiliser directement les prestations déjà récupérées (pas de double récupération)
@@ -2919,16 +2936,33 @@
                     
                     try {
                         const formData = new FormData(form);
+                        
+                        // Construire le nom complet du client à partir du prénom et nom
+                        const firstName = formData.get('clientFirstName') || '';
+                        const lastName = formData.get('clientLastName') || '';
+                        const fullName = `${firstName.trim()} ${lastName.trim()}`.trim() || 'Client non spécifié';
+                        
                         const quoteData = {
-                            clientName: formData.get('clientName') || 'Client non spécifié',
+                            clientName: fullName,
+                            clientFirstName: firstName,
+                            clientLastName: lastName,
                             clientEmail: formData.get('clientEmail') || '',
                             clientPhone: formData.get('clientPhone') || '',
                             clientAddress: formData.get('clientAddress') || '',
                             quoteDate: formData.get('quoteDate') || new Date().toISOString().split('T')[0],
-                            notes: formData.get('quoteNotes') || '',
+                            notes: formData.get('quote_notes') || '',
                             services: [],
                             createdAt: new Date().toISOString()
                         };
+                        
+                        console.log('📋 Données récupérées du formulaire:', {
+                            firstName,
+                            lastName,
+                            fullName,
+                            notes: formData.get('quote_notes'),
+                            email: formData.get('clientEmail'),
+                            phone: formData.get('clientPhone')
+                        });
                         
                         console.log('📊 Collecte des services...');
                         const serviceInputs = document.querySelectorAll('#servicesContainerFullPage > div');
